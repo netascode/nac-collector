@@ -1,0 +1,4 @@
+nac_collector/__pycache__
+*.yaml
+*.json
+tmp/

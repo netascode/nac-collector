@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "nac-collector"
+version = "0.1.0"
+description = ""
+authors = ["Kuba Mazurkiewicz <kmazurki@cisco.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+requests = "^2.31.0"
+click = "^8.1.7"
+gitpython = "^3.1.42"
+pyyaml = "^6.0.1"
+
+[tool.poetry.scripts]
+nac-collector = "nac_collector.main:cli"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
