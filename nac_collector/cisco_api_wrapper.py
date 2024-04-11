@@ -1,7 +1,7 @@
 import requests
 import logging
 import urllib3
-import yaml
+from ruamel.yaml import YAML
 import json
 import time
 
@@ -28,6 +28,8 @@ class CiscoClient:
         self.ssl_verify = ssl_verify
         self.auth_type = auth_type
         self.solution = solution
+        # Create an instance of the YAML class
+        self.yaml = YAML(typ='safe', pure=True)
 
     def authenticate(self, auth_endpoint):
         """
@@ -139,7 +141,7 @@ class CiscoClient:
         # Load endpoints from the YAML file
         logger.info("Loading endpoints from %s", endpoints_yaml_file)
         with open(endpoints_yaml_file, "r") as f:
-            endpoints = yaml.safe_load(f)
+            endpoints = self.yaml.load(f)
 
         # Initialize an empty dictionary
         final_dict = {}

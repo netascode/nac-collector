@@ -4,7 +4,7 @@ from git import Repo
 import os
 import shutil
 import logging
-import yaml
+from ruamel.yaml import YAML
 
 logger = logging.getLogger("main")
 
@@ -17,6 +17,8 @@ class GithubRepoWrapper:
         self.logger = logging.getLogger(__name__)
         self.logger.debug("Initializing GithubRepoWrapper")
         self._clone_repo()
+        # Create an instance of the YAML class
+        self.yaml = YAML(typ='safe', pure=True)
 
     def _clone_repo(self):
         # Check if the directory exists and is not empty
@@ -44,7 +46,7 @@ class GithubRepoWrapper:
             for file in files:
                 if file.endswith(".yaml"):
                     with open(os.path.join(root, file), "r") as f:
-                        data = yaml.safe_load(f)
+                        data = self.yaml.load(f)
                         if "rest_endpoint" in data:
                             self.logger.info(
                                 "Found rest_endpoint: %s in file: %s",
@@ -60,7 +62,7 @@ class GithubRepoWrapper:
         # Save endpoints to a YAML file
         filename = f"endpoints_{self.solution}.yaml"
         with open(filename, "w") as f:
-            yaml.dump(endpoints, f)
+            self.yaml.dump(endpoints, f)
         self.logger.info("Saved endpoints to %s", filename)
 
         self._delete_repo()
