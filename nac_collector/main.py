@@ -28,21 +28,24 @@ from nac_collector.constants import (
     "-u",
     type=str,
     required=True,
-    help="Username for authentication",
+    envvar="NAC_USERNAME",
+    help="Username for authentication. Can also be set using the NAC_USERNAME environment variable",
 )
 @click.option(
     "--password",
     "-p",
     type=str,
     required=True,
-    help="Password for authentication",
+    envvar="NAC_PASSWORD",
+    help="Password for authentication. Can also be set using the NAC_PASSWORD environment variable",
 )
 @click.option(
     "--url",
     "-url",
     type=str,
     required=True,
-    help="Base URL for the service",
+    envvar="NAC_URL",
+    help="Base URL for the service. Can also be set using the NAC_URL environment variable",
 )
 @click.option(
     "--verbose",
