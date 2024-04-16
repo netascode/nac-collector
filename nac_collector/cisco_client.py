@@ -53,7 +53,7 @@ class CiscoClient(ABC):
             timeout (int): The number of seconds to wait for the server to send data before giving up.
 
         Returns:
-            response (aiohttp.ClientResponse): The response from the GET request.
+            response (requests.Response): The response from the GET request.
         """
         for _ in range(max_retries):
             try:
@@ -69,6 +69,42 @@ class CiscoClient(ABC):
                     response.headers.get("Retry-After", retry_after)
                 )  # Default to retry_after if 'Retry-After' header is not present
                 logger.info(f"GET {url} rate limited. Retrying in {retry_after} seconds.")
+                time.sleep(retry_after)
+            else:
+                # If the status code is not 429, return the response
+                return response
+
+        # If the status code is 429 after max_retries attempts, return the last response
+        return response
+
+    def post_request(self, url, data, max_retries, retry_after, timeout=10):
+        """
+        Send a POST request to a specific URL and handle a 429 status code.
+
+        Parameters:
+            url (str): The URL to send the POST request to.
+            data (dict): The data to send in the body of the POST request.
+            max_retries (int): The maximum number of times to retry the request if the status code is 429.
+            retry_after (int): The number of seconds to wait before retrying the request if the status code is 429.
+            timeout (int): The number of seconds to wait for the server to send data before giving up.
+
+        Returns:
+            response (requests.Response): The response from the GET request.
+        """
+        for _ in range(max_retries):
+            try:
+                # Send a POST request to the URL
+                response = self.session.post(url, data=data, verify=self.ssl_verify, timeout=timeout)
+            except requests.exceptions.Timeout:
+                logger.error(f"POST {url} timed out after {timeout} seconds.")
+                continue
+
+            if response.status_code == 429:
+                # If the status code is 429 (Too Many Requests), wait for a certain amount of time before retrying
+                retry_after = int(
+                    response.headers.get("Retry-After", retry_after)
+                )  # Default to retry_after if 'Retry-After' header is not present
+                logger.info(f"POST {url} rate limited. Retrying in {retry_after} seconds.")
                 time.sleep(retry_after)
             else:
                 # If the status code is not 429, return the response

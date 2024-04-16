@@ -85,15 +85,62 @@ class CiscoClientSDWAN(CiscoClient):
 
         # Iterate through the endpoints excluding the ones which has %i and %v in endpoint['endpoint']
         for endpoint in endpoints:
-            if all(x not in endpoint["endpoint"] for x in ["%v", "%i"]):
-                endpoint_dict = {
-                    endpoint["name"]: {
-                        "items": [],
-                        "children": {},
-                        "endpoint": endpoint["endpoint"],
-                    }
+            endpoint_dict = {
+                endpoint["name"]: {
+                    "items": [],
+                    "children": {},
+                    "endpoint": endpoint["endpoint"],
                 }
+            }
 
+            # device templates
+            if endpoint["name"] == "cli_device_template":
+                response = self.get_request(
+                    self.base_url + endpoint["endpoint"],
+                    max_retries,
+                    retry_after,
+                    timeout,
+                )
+
+                for item in response.json()["data"]:
+                    if item["devicesAttached"] != 0:
+                        device_template_endpoint = endpoint["endpoint"] + "config/attached/" + str(item["templateId"])
+                        response = self.get_request(
+                            self.base_url + device_template_endpoint,
+                            max_retries,
+                            retry_after,
+                            timeout,
+                        )
+                        attached_uuids = [device["uuid"] for device in response.json()["data"]]
+                        data = {
+                            "templateId": str(item["templateId"]),
+                            "deviceIds": attached_uuids,
+                            "isEdited": False,
+                            "isMasterEdited": False,
+                        }
+
+                        response = self.post_request(
+                            self.base_url + "/template/device/config/input/",
+                            json.dumps(data),
+                            max_retries,
+                            retry_after,
+                            timeout,
+                        )
+                        if response.status_code == 200:
+                            # Get the JSON content of the response
+                            data = response.json()
+                            endpoint_dict[endpoint["name"]]["items"].extend(data["data"])
+                            # Save results to dictionary
+                            final_dict.update(endpoint_dict)
+                            logger.info(
+                                f"GET {device_template_endpoint} succeeded with status code {response.status_code}"
+                            )
+                        else:
+                            logger.error(
+                                f"GET {device_template_endpoint} failed with status code {response.status_code}"
+                            )
+
+            elif all(x not in endpoint["endpoint"] for x in ["%v", "%i"]):
                 response = self.get_request(
                     self.base_url + endpoint["endpoint"],
                     max_retries,
@@ -121,14 +168,8 @@ class CiscoClientSDWAN(CiscoClient):
                     logger.error(f"GET {endpoint} failed with status code {response.status_code}")
                     endpoints_with_errors.append(endpoint)
 
+            # for feature templates and device templates
             elif "%i" in endpoint["endpoint"]:
-                endpoint_dict = {
-                    endpoint["name"]: {
-                        "items": [],
-                        "children": {},
-                        "endpoint": endpoint["endpoint"],
-                    }
-                }
                 new_endpoint = endpoint["endpoint"].replace("/object/%i", "")  # Replace '/object/%i' with ''
                 response = self.get_request(self.base_url + new_endpoint, max_retries, retry_after, timeout)
                 for item in response.json()["data"]:
