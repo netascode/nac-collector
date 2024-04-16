@@ -79,7 +79,8 @@ class CiscoClientSDWAN(CiscoClient):
         # Initialize an empty dictionary
         final_dict = {}
 
-        # Initialize an empty list for endpoint with error 4XX
+        # Initialize an empty list for endpoint feature templates
+        # endpoints_feature_templates = []
         endpoints_with_errors = []
 
         # Iterate through the endpoints excluding the ones which has %i and %v in endpoint['endpoint']
@@ -119,6 +120,34 @@ class CiscoClientSDWAN(CiscoClient):
                 else:
                     logger.error(f"GET {endpoint} failed with status code {response.status_code}")
                     endpoints_with_errors.append(endpoint)
+
+            elif "%i" in endpoint["endpoint"]:
+                endpoint_dict = {
+                    endpoint["name"]: {
+                        "items": [],
+                        "children": {},
+                        "endpoint": endpoint["endpoint"],
+                    }
+                }
+                new_endpoint = endpoint["endpoint"].replace("/object/%i", "")  # Replace '/object/%i' with ''
+                response = self.get_request(self.base_url + new_endpoint, max_retries, retry_after, timeout)
+                for item in response.json()["data"]:
+                    template_endpoint = new_endpoint + "/object/" + str(item["templateId"])
+                    response = self.get_request(
+                        self.base_url + template_endpoint,
+                        max_retries,
+                        retry_after,
+                        timeout,
+                    )
+                    if response.status_code == 200:
+                        # Get the JSON content of the response
+                        data = response.json()
+                        endpoint_dict[endpoint["name"]]["items"].append(data)
+                        # Save results to dictionary
+                        final_dict.update(endpoint_dict)
+                        logger.info(f"GET {template_endpoint} succeeded with status code {response.status_code}")
+                    else:
+                        logger.error(f"GET {template_endpoint} failed with status code {response.status_code}")
 
         # Iterate through the endpoints with errors
         for endpoint in endpoints_with_errors:

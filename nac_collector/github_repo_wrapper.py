@@ -55,12 +55,18 @@ class GithubRepoWrapper:
                                 file,
                             )
                             endpoints.append(data["rest_endpoint"])
-                            endpoints_dict.append(
-                                {
-                                    "name": file.split(".yaml")[0],
-                                    "endpoint": data["rest_endpoint"],
-                                }
-                            )
+                            # for SDWAN feature_device_templates
+                            if file.split(".yaml")[0] == "feature_device_template":
+                                endpoints_dict.append(
+                                    {"name": file.split(".yaml")[0], "endpoint": "/template/device/object/%i"}
+                                )
+                            else:
+                                endpoints_dict.append(
+                                    {
+                                        "name": file.split(".yaml")[0],
+                                        "endpoint": data["rest_endpoint"],
+                                    }
+                                )
 
                 # for SDWAN feature_templates
                 if root.endswith("feature_templates"):
