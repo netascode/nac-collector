@@ -1,5 +1,13 @@
 # INSTRUCTION
 
+## Installation
+
+```sh
+poetry install
+```
+
+## Usage
+
 ```cli
 Usage: nac-collector [OPTIONS]
 

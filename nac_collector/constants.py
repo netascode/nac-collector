@@ -19,6 +19,12 @@ SOLUTION_ENDPOINTS = {
     # Add other solutions here
 }
 
+SOLUTION_AUTH_ENDPOINTS = {
+    "ISE": ["/admin/API/NetworkAccessConfig/ERS", "/admin/API/apiService/get"],
+    "SDWAN": ["/j_security_check"],
+    # Add other solutions here
+}
+
 GIT_TMP = "./tmp"
 
 MAX_RETRIES = 5

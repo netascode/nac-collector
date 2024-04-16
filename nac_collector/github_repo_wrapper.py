@@ -1,5 +1,3 @@
-# github_repo_wrapper.py
-
 from git import Repo
 import os
 import shutil
@@ -18,7 +16,9 @@ class GithubRepoWrapper:
         self.logger.debug("Initializing GithubRepoWrapper")
         self._clone_repo()
         # Create an instance of the YAML class
-        self.yaml = YAML(typ='safe', pure=True)
+        self.yaml = YAML(typ="safe", pure=True)
+        self.yaml.default_flow_style = False
+        self.yaml.sort_keys = False
 
     def _clone_repo(self):
         # Check if the directory exists and is not empty
@@ -42,6 +42,7 @@ class GithubRepoWrapper:
         definitions_dir = os.path.join(self.clone_dir, "gen", "definitions")
         self.logger.info("Inspecting YAML files in %s", definitions_dir)
         endpoints = []
+        endpoints_dict = []
         for root, dirs, files in os.walk(definitions_dir):
             for file in files:
                 if file.endswith(".yaml"):
@@ -54,15 +55,30 @@ class GithubRepoWrapper:
                                 file,
                             )
                             endpoints.append(data["rest_endpoint"])
+                            endpoints_dict.append(
+                                {
+                                    "name": file.split(".yaml")[0],
+                                    "endpoint": data["rest_endpoint"],
+                                }
+                            )
+
+                # for SDWAN feature_templates
                 if root.endswith("feature_templates"):
                     self.logger.debug("Found feature_templates directory")
                     endpoints.append("/template/feature/object/%i")
+                    endpoints_dict.append(
+                        {
+                            "name": "feature_templates",
+                            "endpoint": "/template/feature/object/%i",
+                        }
+                    )
                     break
 
         # Save endpoints to a YAML file
         filename = f"endpoints_{self.solution}.yaml"
+
         with open(filename, "w") as f:
-            self.yaml.dump(endpoints, f)
+            self.yaml.dump(endpoints_dict, f)
         self.logger.info("Saved endpoints to %s", filename)
 
         self._delete_repo()

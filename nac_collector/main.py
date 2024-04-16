@@ -2,12 +2,11 @@ import click
 import logging
 import time
 
-from nac_collector.cisco_api_wrapper import CiscoClient
+# from nac_collector.cisco_client import CiscoClient
+from nac_collector.cisco_client_sdwan import CiscoClientSDWAN
+from nac_collector.cisco_client_ise import CiscoClientISE
 from nac_collector.github_repo_wrapper import GithubRepoWrapper
 from nac_collector.constants import (
-    AUTH_TYPE_MAPPING,
-    AUTH_ENDPOINT_MAPPING,
-    SOLUTION_ENDPOINTS,
     GIT_TMP,
     MAX_RETRIES,
     RETRY_AFTER,
@@ -84,24 +83,54 @@ def cli(
         )
         wrapper.get_definitions()
 
-    auth_type = AUTH_TYPE_MAPPING.get(solution)
+    if solution == "SDWAN":
+        client = CiscoClientSDWAN(
+            username=username,
+            password=password,
+            base_url=url,
+            ssl_verify=False,
+        )
 
-    client = CiscoClient(
-        username=username,
-        password=password,
-        base_url=url,
-        auth_type=auth_type,
-        ssl_verify=False,
-        solution=solution.lower(),
-    )
+        # Authenticate
+        client.authenticate()
 
-    solution_auth_endpoints = SOLUTION_ENDPOINTS.get(solution, [])
-    for endpoint in solution_auth_endpoints:
-        auth_endpoint = AUTH_ENDPOINT_MAPPING.get(endpoint)
-        client.authenticate(auth_endpoint=auth_endpoint)
+        endpoints_yaml_file = f"endpoints_{solution.lower()}.yaml"
+        client.get_from_endpoints(endpoints_yaml_file, MAX_RETRIES, RETRY_AFTER, TIMEOUT)
 
-    endpoints_yaml_file = f"endpoints_{solution.lower()}.yaml"
-    client.get_from_endpoints(endpoints_yaml_file, MAX_RETRIES, RETRY_AFTER, TIMEOUT)
+    elif solution == "ISE":
+        client = CiscoClientISE(
+            username=username,
+            password=password,
+            base_url=url,
+            ssl_verify=False,
+        )
+
+        # Authenticate
+        client.authenticate()
+
+        endpoints_yaml_file = f"endpoints_{solution.lower()}.yaml"
+        client.get_from_endpoints(endpoints_yaml_file, MAX_RETRIES, RETRY_AFTER, TIMEOUT)
+
+    else:
+        pass
+        # client = CiscoClient(
+        #     username=username,
+        #     password=password,
+        #     base_url=url,
+        #     auth_type=auth_type,
+        #     ssl_verify=False,
+        #     solution=solution.lower(),
+        # )
+
+    # solution_auth_endpoints = SOLUTION_ENDPOINTS.get(solution, [])
+    # for endpoint in solution_auth_endpoints:
+    #     auth_endpoint = AUTH_ENDPOINT_MAPPING.get(endpoint)
+    #     print(auth_endpoint)
+    #     input("SS")
+    #     client.authenticate(auth_endpoint=auth_endpoint)
+
+    # endpoints_yaml_file = f"endpoints_{solution.lower()}.yaml"
+    # client.get_from_endpoints(endpoints_yaml_file, MAX_RETRIES, RETRY_AFTER, TIMEOUT)
 
     # Record the stop time
     stop_time = time.time()

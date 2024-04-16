@@ -1,39 +1,80 @@
-- /api/v1/policy/network-access/policy-set
-- /ers/config/networkdevicegroup
-- /ers/config/allowedprotocols
-- /api/v1/policy/device-admin/policy-set/global-exception
-- /ers/config/sgt
-- /api/v1/policy/network-access/dictionaries
-- /ers/config/activedirectory/%v/addGroups
-- /api/v1/policy/network-access/condition
-- /ers/config/activedirectory/%v/joinAllNodes
-- /ers/config/sgacl
-- /api/v1/policy/device-admin/policy-set/%v/authentication
-- /ers/config/allowedprotocols
-- /api/v1/license/system/tier-state
-- /ers/config/endpointgroup
-- /api/v1/policy/device-admin/policy-set/%v/exception
-- /ers/config/certificateprofile
-- /api/v1/policy/device-admin/time-condition
-- /ers/config/authorizationprofile
-- /api/v1/policy/network-access/policy-set/%v/authentication
-- /api/v1/policy/network-access/time-condition
-- /ers/config/idstoresequence
-- /api/v1/repository
-- /ers/config/activedirectory
-- /ers/config/activedirectory/%v/getGroupsByDomain
-- /api/v1/policy/device-admin/policy-set/%v/authorization
-- /api/v1/policy/device-admin/policy-set
-- /api/v1/policy/network-access/policy-set/%v/exception
-- /ers/config/tacacscommandsets
-- /ers/config/sgmapping
-- /ers/config/identitygroup
-- /ers/config/egressmatrixcell
-- /api/v1/policy/device-admin/condition
-- /ers/config/downloadableacl
-- /api/v1/policy/network-access/policy-set/%v/authorization
-- /api/v1/policy/network-access/policy-set/global-exception
-- /ers/config/internaluser
-- /ers/config/networkdevice
-- /ers/config/sgmappinggroup
-- /ers/config/tacacsprofile
+- endpoint: /api/v1/policy/network-access/policy-set
+  name: network_access_policy_set
+- endpoint: /ers/config/networkdevicegroup
+  name: network_device_group
+- endpoint: /ers/config/allowedprotocols
+  name: allowed_protocols
+- endpoint: /api/v1/policy/device-admin/policy-set/global-exception
+  name: device_admin_authorization_global_exception_rule
+- endpoint: /ers/config/sgt
+  name: trustsec_security_group
+- endpoint: /api/v1/policy/network-access/dictionaries
+  name: network_access_dictionary
+- endpoint: /ers/config/activedirectory/%v/addGroups
+  name: active_directory_add_groups
+- endpoint: /api/v1/policy/network-access/condition
+  name: network_access_condition
+- endpoint: /ers/config/activedirectory/%v/joinAllNodes
+  name: active_directory_join_domain_with_all_nodes
+- endpoint: /ers/config/sgacl
+  name: trustsec_security_group_acl
+- endpoint: /api/v1/policy/device-admin/policy-set/%v/authentication
+  name: device_admin_authentication_rule
+- endpoint: /ers/config/allowedprotocols
+  name: allowed_protocols_tacacs
+- endpoint: /api/v1/license/system/tier-state
+  name: license_tier_state
+- endpoint: /ers/config/endpointgroup
+  name: endpoint_identity_group
+- endpoint: /api/v1/policy/device-admin/policy-set/%v/exception
+  name: device_admin_authorization_exception_rule
+- endpoint: /ers/config/certificateprofile
+  name: certificate_authentication_profile
+- endpoint: /api/v1/policy/device-admin/time-condition
+  name: device_admin_time_and_date_condition
+- endpoint: /ers/config/authorizationprofile
+  name: authorization_profile
+- endpoint: /api/v1/policy/network-access/policy-set/%v/authentication
+  name: network_access_authentication_rule
+- endpoint: /api/v1/policy/network-access/time-condition
+  name: network_access_time_and_date_condition
+- endpoint: /ers/config/idstoresequence
+  name: identity_source_sequence
+- endpoint: /api/v1/repository
+  name: repository
+- endpoint: /ers/config/activedirectory
+  name: active_directory_join_point
+- endpoint: /ers/config/activedirectory/%v/getGroupsByDomain
+  name: active_directory_groups_by_domain
+- endpoint: /api/v1/policy/device-admin/policy-set/%v/authorization
+  name: device_admin_authorization_rule
+- endpoint: /ers/config/endpoint
+  name: endpoint
+- endpoint: /api/v1/policy/device-admin/policy-set
+  name: device_admin_policy_set
+- endpoint: /api/v1/policy/network-access/policy-set/%v/exception
+  name: network_access_authorization_exception_rule
+- endpoint: /ers/config/tacacscommandsets
+  name: tacacs_command_set
+- endpoint: /ers/config/sgmapping
+  name: trustsec_ip_to_sgt_mapping
+- endpoint: /ers/config/identitygroup
+  name: user_identity_group
+- endpoint: /ers/config/egressmatrixcell
+  name: trustsec_egress_matrix_cell
+- endpoint: /api/v1/policy/device-admin/condition
+  name: device_admin_condition
+- endpoint: /ers/config/downloadableacl
+  name: downloadable_acl
+- endpoint: /api/v1/policy/network-access/policy-set/%v/authorization
+  name: network_access_authorization_rule
+- endpoint: /api/v1/policy/network-access/policy-set/global-exception
+  name: network_access_authorization_global_exception_rule
+- endpoint: /ers/config/internaluser
+  name: internal_user
+- endpoint: /ers/config/networkdevice
+  name: network_device
+- endpoint: /ers/config/sgmappinggroup
+  name: trustsec_ip_to_sgt_mapping_group
+- endpoint: /ers/config/tacacsprofile
+  name: tacacs_profile

@@ -1,69 +1,138 @@
-- /template/feature/object/%i
-- /v1/feature-profile/sdwan/system/%v/banner
-- /v1/feature-profile/sdwan/system/%v/omp
-- /v1/feature-profile/sdwan/system/%v/bfd
-- /v1/feature-profile/sdwan/system/%v/aaa
-- /v1/feature-profile/sdwan/system/%v/global
-- /template/policy/list/aspath/
-- /template/policy/definition/control/
-- /template/policy/list/tloc/
-- /template/policy/definition/advancedMalwareProtection/
-- /v1/feature-profile/sdwan/cli/
-- /template/policy/list/ipssignature/
-- /template/policy/list/geolocation/
-- /template/policy/definition/mesh/
-- /template/policy/list/fqdn/
-- /template/policy/list/preferredcolorgroup/
-- /template/policy/definition/cflowd/
-- /template/policy/list/expandedcommunity/
-- /template/policy/definition/urlfiltering/
-- /template/policy/list/sla/
-- /template/policy/list/site/
-- /template/policy/definition/vpnmembershipgroup/
-- /template/policy/list/protocolname/
-- /v1/feature-profile/sdwan/system/
-- /template/policy/definition/aclv6/
-- /template/policy/vedge/
-- /template/policy/list/urlblacklist/
-- /template/policy/definition/rewriterule/
-- /template/policy/list/dataprefix/
-- /template/policy/list/region/
-- /template/policy/list/appprobe/
-- /template/policy/list/localdomain/
-- /template/policy/definition/ruleset/
-- /template/policy/definition/securitygroup/
-- /v1/feature-profile/sdwan/service/
-- /template/policy/list/color/
-- /template/policy/definition/hubandspoke/
-- /template/policy/list/prefix/
-- /template/policy/list/urlwhitelist/
-- /device
-- /template/policy/definition/approute/
-- /template/policy/list/app/
-- /template/policy/list/port/
-- /template/policy/definition/data/
-- /template/device/
-- /template/policy/definition/vedgeroute/
-- /template/device/
-- /template/policy/definition/qosmap/
-- /template/policy/vsmart/
-- /v1/feature-profile/sdwan/transport/
-- /template/policy/list/localapp/
-- /template/policy/list/class/
-- /template/policy/definition/deviceaccesspolicyv6/
-- /template/policy/definition/dnssecurity/
-- /template/policy/security/
-- /template/policy/list/dataipv6prefix/
-- /template/policy/list/community/
-- /template/policy/list/mirror/
-- /template/policy/list/vpn/
-- /template/policy/definition/deviceaccesspolicy/
-- /template/policy/list/extcommunity/
-- /template/policy/definition/intrusionprevention/
-- /template/policy/definition/sslutdprofile/
-- /template/policy/definition/advancedinspectionprofile/
-- /template/policy/definition/acl/
-- /template/policy/list/zone/
-- /template/policy/list/policer/
-- /device/vedgeinventory/detail
-- /template/policy/list/ipv6prefix/
+- endpoint: /template/feature/object/%i
+  name: feature_templates
+- endpoint: /v1/feature-profile/sdwan/system/%v/banner
+  name: system_banner
+- endpoint: /v1/feature-profile/sdwan/system/%v/omp
+  name: system_omp
+- endpoint: /v1/feature-profile/sdwan/system/%v/bfd
+  name: system_bfd
+- endpoint: /v1/feature-profile/sdwan/system/%v/aaa
+  name: system_aaa
+- endpoint: /v1/feature-profile/sdwan/system/%v/global
+  name: system_global
+- endpoint: /template/policy/list/aspath/
+  name: as_path_list_policy_object
+- endpoint: /template/policy/definition/control/
+  name: custom_control_topology_policy_definition
+- endpoint: /template/policy/list/tloc/
+  name: tloc_list_policy_object
+- endpoint: /template/policy/definition/advancedMalwareProtection/
+  name: advanced_malware_protection_policy_definition
+- endpoint: /v1/feature-profile/sdwan/cli/
+  name: cli_feature_profile
+- endpoint: /template/policy/list/ipssignature/
+  name: ips_signature_list_policy_object
+- endpoint: /template/policy/list/geolocation/
+  name: geo_location_list_policy_object
+- endpoint: /template/policy/definition/mesh/
+  name: mesh_topology_policy_definition
+- endpoint: /template/policy/list/fqdn/
+  name: data_fqdn_prefix_list_policy_object
+- endpoint: /template/policy/list/preferredcolorgroup/
+  name: preferred_color_group_policy_object
+- endpoint: /template/policy/definition/cflowd/
+  name: cflowd_policy_definition
+- endpoint: /template/policy/list/expandedcommunity/
+  name: expanded_community_list_policy_object
+- endpoint: /template/policy/definition/urlfiltering/
+  name: url_filtering_definition
+- endpoint: /template/policy/list/sla/
+  name: sla_class_policy_object
+- endpoint: /template/policy/list/site/
+  name: site_list_policy_object
+- endpoint: /template/policy/definition/vpnmembershipgroup/
+  name: vpn_membership_policy_definition
+- endpoint: /template/policy/list/protocolname/
+  name: protocol_list_policy_object
+- endpoint: /v1/feature-profile/sdwan/system/
+  name: system_feature_profile
+- endpoint: /template/policy/definition/aclv6/
+  name: ipv6_acl_policy_definition
+- endpoint: /template/policy/vedge/
+  name: localized_policy
+- endpoint: /template/policy/list/urlblacklist/
+  name: block_url_list_policy_object
+- endpoint: /template/policy/definition/rewriterule/
+  name: rewrite_rule_policy_definition
+- endpoint: /template/policy/list/dataprefix/
+  name: data_ipv4_prefix_list_policy_object
+- endpoint: /template/policy/list/region/
+  name: region_list_policy_object
+- endpoint: /template/policy/list/appprobe/
+  name: app_probe_class_policy_object
+- endpoint: /template/policy/list/localdomain/
+  name: domain_list_policy_object
+- endpoint: /template/policy/definition/ruleset/
+  name: rule_set_policy_definition
+- endpoint: /template/policy/definition/securitygroup/
+  name: object_group_policy_definition
+- endpoint: /v1/feature-profile/sdwan/service/
+  name: service_feature_profile
+- endpoint: /template/policy/list/color/
+  name: color_list_policy_object
+- endpoint: /template/policy/definition/hubandspoke/
+  name: hub_and_spoke_topology_policy_definition
+- endpoint: /template/policy/list/prefix/
+  name: ipv4_prefix_list_policy_object
+- endpoint: /template/policy/list/urlwhitelist/
+  name: allow_url_list_policy_object
+- endpoint: /device
+  name: device
+- endpoint: /template/policy/definition/approute/
+  name: application_aware_routing_policy_definition
+- endpoint: /template/policy/list/app/
+  name: application_list_policy_object
+- endpoint: /template/policy/list/port/
+  name: port_list_policy_object
+- endpoint: /template/policy/definition/data/
+  name: traffic_data_policy_definition
+- endpoint: /template/device/
+  name: feature_device_template
+- endpoint: /template/policy/definition/vedgeroute/
+  name: route_policy_definition
+- endpoint: /template/device/
+  name: cli_device_template
+- endpoint: /template/policy/definition/qosmap/
+  name: qos_map_policy_definition
+- endpoint: /template/policy/vsmart/
+  name: centralized_policy
+- endpoint: /v1/feature-profile/sdwan/transport/
+  name: transport_feature_profile
+- endpoint: /template/policy/list/localapp/
+  name: local_application_list_policy_object
+- endpoint: /template/policy/list/class/
+  name: class_map_policy_object
+- endpoint: /template/policy/definition/deviceaccesspolicyv6/
+  name: ipv6_device_acl_policy_definition
+- endpoint: /template/policy/definition/dnssecurity/
+  name: dns_security_policy_definition
+- endpoint: /template/policy/security/
+  name: security_policy
+- endpoint: /template/policy/list/dataipv6prefix/
+  name: data_ipv6_prefix_list_policy_object
+- endpoint: /template/policy/list/community/
+  name: standard_community_list_policy_object
+- endpoint: /template/policy/list/mirror/
+  name: mirror_policy_object
+- endpoint: /template/policy/list/vpn/
+  name: vpn_list_policy_object
+- endpoint: /template/policy/definition/deviceaccesspolicy/
+  name: ipv4_device_acl_policy_definition
+- endpoint: /template/policy/list/extcommunity/
+  name: extended_community_list_policy_object
+- endpoint: /template/policy/definition/intrusionprevention/
+  name: intrusion_prevention_policy_definition
+- endpoint: /template/policy/definition/sslutdprofile/
+  name: tls_ssl_profile_policy_definition
+- endpoint: /template/policy/definition/advancedinspectionprofile/
+  name: advanced_inspection_profile_policy_definition
+- endpoint: /template/policy/definition/acl/
+  name: ipv4_acl_policy_definition
+- endpoint: /template/policy/list/zone/
+  name: zone_list_policy_object
+- endpoint: /template/policy/list/policer/
+  name: policer_policy_object
+- endpoint: /device/vedgeinventory/detail
+  name: vedge_inventory
+- endpoint: /template/policy/list/ipv6prefix/
+  name: ipv6_prefix_list_policy_object
