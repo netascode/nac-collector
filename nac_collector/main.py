@@ -117,7 +117,8 @@ def cli(
         client.authenticate()
 
         endpoints_yaml_file = f"endpoints_{solution.lower()}.yaml"
-        client.get_from_endpoints(endpoints_yaml_file)
+        final_dict = client.get_from_endpoints(endpoints_yaml_file)
+        client.write_to_json(final_dict, f"{solution.lower()}")
 
     elif solution == "ISE":
         client = CiscoClientISE(

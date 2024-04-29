@@ -83,7 +83,7 @@ class CiscoClientSDWAN(CiscoClient):
             endpoints_yaml_file (str): The name of the YAML file containing the endpoints.
 
         Returns:
-            None
+            dict: The final dictionary containing the data retrieved from the endpoints.
         """
         # Load endpoints from the YAML file
         logger.info("Loading endpoints from %s", endpoints_yaml_file)
@@ -97,12 +97,32 @@ class CiscoClientSDWAN(CiscoClient):
         # endpoints_feature_templates = []
         endpoints_with_errors = []
 
-        # Iterate through the endpoints excluding the ones which has %i and %v in endpoint['endpoint']
+        # Iterate through the endpoints
         for endpoint in endpoints:
             endpoint_dict = CiscoClient.create_endpoint_dict(endpoint)
 
+            if all(x not in endpoint["endpoint"] for x in ["%v", "%i"]):
+                endpoint_dict = CiscoClient.create_endpoint_dict(endpoint)
+
+                endpoint_dict[endpoint["name"]]["endpoint"] = endpoint["endpoint"]
+
+                response = self.get_request(self.base_url + endpoint["endpoint"])
+
+                # Get the JSON content of the response
+                data = response.json()
+
+                if isinstance(data, list):
+                    endpoint_dict[endpoint["name"]]["items"] = data
+                elif data.get("data"):
+                    endpoint_dict[endpoint["name"]]["items"] = data["data"]
+
+                # Save results to dictionary
+                final_dict.update(endpoint_dict)
+
+                self.log_response(endpoint, response)
+
             # device templates
-            if endpoint["name"] == "cli_device_template":
+            elif endpoint["name"] == "cli_device_template":
                 response = self.get_request(self.base_url + endpoint["endpoint"])
 
                 for item in response.json()["data"]:
@@ -123,55 +143,19 @@ class CiscoClientSDWAN(CiscoClient):
                             self.base_url + "/template/device/config/input/",
                             json.dumps(data),
                         )
-                        if response.status_code == 200:
-                            # Get the JSON content of the response
-                            data = response.json()
-                            endpoint_dict[endpoint["name"]]["items"].extend(data["data"])
-                            # Save results to dictionary
-                            final_dict.update(endpoint_dict)
 
-                        self.log_response(endpoint, response)
-
-            elif all(x not in endpoint["endpoint"] for x in ["%v", "%i"]):
-                response = self.get_request(
-                    self.base_url + endpoint["endpoint"],
-                )
-
-                # Check if the request was successful
-                if response.status_code == 200:
-                    # Get the JSON content of the response
-                    data = response.json()
-
-                    if isinstance(data, list):
-                        endpoint_dict[endpoint["name"]]["items"] = data
-                    elif data.get("data"):
-                        endpoint_dict[endpoint["name"]]["items"] = data["data"]
-                    else:
-                        endpoint_dict[endpoint["name"]]["items"] = data
-
-                    # Save results to dictionary
-                    final_dict.update(endpoint_dict)
-
-                else:
-                    endpoints_with_errors.append(endpoint)
-
-                self.log_response(endpoint, response)
-
-            # for feature templates and device templates
-            elif "%i" in endpoint["endpoint"]:
-                new_endpoint = endpoint["endpoint"].replace("/object/%i", "")  # Replace '/object/%i' with ''
-                response = self.get_request(self.base_url + new_endpoint)
-                for item in response.json()["data"]:
-                    template_endpoint = new_endpoint + "/object/" + str(item["templateId"])
-                    response = self.get_request(self.base_url + template_endpoint)
-                    if response.status_code == 200:
-                        # Get the JSON content of the response
                         data = response.json()
-                        endpoint_dict[endpoint["name"]]["items"].append(data)
+                        endpoint_dict[endpoint["name"]]["items"].extend(data["data"])
                         # Save results to dictionary
                         final_dict.update(endpoint_dict)
 
-                    self.log_response(endpoint, response)
+                        self.log_response(endpoint, response)
+
+            # for feature templates and device templates
+            elif "%i" in endpoint["endpoint"]:
+                endpoint_dict = self.get_feature_templates(endpoint, endpoint_dict)
+                # Save results to dictionary
+                final_dict.update(endpoint_dict)
 
         # Iterate through the endpoints with errors
         for endpoint in endpoints_with_errors:
@@ -223,16 +207,65 @@ class CiscoClientSDWAN(CiscoClient):
                 for item in response.json()["data"]:
                     template_endpoint = new_endpoint + "/object/" + str(item["templateId"])
                     response = self.get_request(self.base_url + template_endpoint)
-                    if response.status_code == 200:
-                        # Get the JSON content of the response
-                        data = response.json()
-                        endpoint_dict[endpoint["name"]]["items"].append(data)
-                        # Save results to dictionary
-                        final_dict.update(endpoint_dict)
+
+                    # Get the JSON content of the response
+                    data = response.json()
+                    endpoint_dict[endpoint["name"]]["items"].append(data)
+                    # Save results to dictionary
+                    final_dict.update(endpoint_dict)
 
                     self.log_response(endpoint, response)
 
-        # Write the final dictionary to a JSON file
-        with open(f"{self.SOLUTION}.json", "w", encoding="utf-8") as f:
-            json.dump(final_dict, f, indent=4)
-            logger.info("GET requests finished")
+        return final_dict
+
+    def get_feature_templates(self, endpoint, endpoint_dict):
+        """
+        Process feature templates and feature device templates
+
+        Args:
+            endpoint (dict): The endpoint to process.
+            endpoint_dict (dict): The dictionary to append items to.
+
+        Returns:
+            enpdoint_dict: The updated endpoint_dict with the processed templates.
+
+        """
+        new_endpoint = endpoint["endpoint"].replace("/object/%i", "")  # Replace '/object/%i' with ''
+        response = self.get_request(self.base_url + new_endpoint)
+        for item in response.json()["data"]:
+            template_endpoint = new_endpoint + "/object/" + str(item["templateId"])
+            response = self.get_request(self.base_url + template_endpoint)
+            if response.status_code == 200:
+                # Get the JSON content of the response
+                data = response.json()
+                endpoint_dict[endpoint["name"]]["items"].append(data)
+
+            self.log_response(template_endpoint, response)
+
+        return endpoint_dict
+
+    def get_feature_profiles(self, endpoint, endpoint_dict):
+        """
+        Process feature profiles
+
+        Args:
+            endpoint (dict): The endpoint to process.
+            endpoint_dict (dict): The dictionary to append items to.
+
+        Returns:
+            enpdoint_dict: The updated endpoint_dict with the processed templates.
+
+        """
+        new_endpoint = endpoint["endpoint"].replace("/object/%i", "")  # Replace '/object/%i' with ''
+        response = self.get_request(self.base_url + new_endpoint)
+        for item in response.json()["data"]:
+            template_endpoint = new_endpoint + "/object/" + str(item["templateId"])
+            response = self.get_request(self.base_url + template_endpoint)
+            if response.status_code == 200:
+                # Get the JSON content of the response
+                data = response.json()
+                endpoint_dict[endpoint["name"]]["items"].append(data)
+
+            self.log_response(template_endpoint, response)
+
+        return endpoint_dict

@@ -111,7 +111,7 @@ class CiscoClient(ABC):
             else:
                 # If the status code is neither 429 nor 200, log an error and continue to the next iteration
                 self.logger.error("GET %s returned an unexpected status code: %s", url, response.status_code)
-
+                response = []
         # If the status code is 429 after max_retries attempts,
         # or if no successful response was received, return the last response
         return response
