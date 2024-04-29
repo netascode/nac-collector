@@ -2,8 +2,18 @@
 
 ## Installation
 
-```sh
+This project uses [Poetry](https://python-poetry.org/) for dependency management. 
+
+You can install the project with the following command:
+
+```bash
 poetry install
+```
+
+Or with pip:
+
+```bash
+pip3 install .
 ```
 
 ## Usage
@@ -32,24 +42,40 @@ export NAC_URL=https://10.1.1.1
 
 ## SDWAN
 
-with env variables:
+If you installed with `poetry install` command:
+
+- with env variables
 ```sh
 poetry run nac-collector -s SDWAN -v --git-provider
 ```
 
-without env variables:
+- without env variables
 ```sh
 poetry run nac-collector -s SDWAN --username USERNAME --password PASSWORD --url URL -v --git-provider
 ```
 
+If you installed the project with pip, you can run the script directly from the command line:
+
+```sh
+nac-collector -s SDWAN -v --git-provider
+```
+
 ## ISE
 
-with env variables:
+If you installed with `poetry install` command:
+
+- with env variables
 ```sh
 poetry run nac-collector -s ISE -v --git-provider
 ```
 
-without env variables:
+- without env variables
 ```sh
 poetry run nac-collector -s ISE --username USERNAME --password PASSWORD --url URL -v --git-provider
+```
+
+If you installed the project with pip, you can run the script directly from the command line:
+
+```sh
+nac-collector -s ISE -v --git-provider
 ```

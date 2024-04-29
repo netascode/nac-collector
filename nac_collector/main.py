@@ -1,8 +1,12 @@
-import click
+"""
+This module is the main entry point for the NAC Collector application.
+It handles the authentication and data collection processes.
+"""
+
 import logging
 import time
+import click
 
-# from nac_collector.cisco_client import CiscoClient
 from nac_collector.cisco_client_sdwan import CiscoClientSDWAN
 from nac_collector.cisco_client_ise import CiscoClientISE
 from nac_collector.github_repo_wrapper import GithubRepoWrapper
@@ -66,6 +70,21 @@ def cli(
     verbose: bool,
     git_provider: bool,
 ) -> None:
+    """
+    Command Line Interface (CLI) function for the application.
+
+    Parameters:
+        solution (str): The name of the solution to be used.
+        username (str): The username for authentication.
+        password (str): The password for authentication.
+        url (str): The URL of the server to connect to.
+        verbose (bool): If True, detailed output will be printed to the console.
+        git_provider (bool): If True, the solution will be fetched from a Git provider.
+
+    Returns:
+        None
+    """
+
     # Record the start time
     start_time = time.time()
 
@@ -88,6 +107,9 @@ def cli(
             username=username,
             password=password,
             base_url=url,
+            max_retries=MAX_RETRIES,
+            retry_after=RETRY_AFTER,
+            timeout=TIMEOUT,
             ssl_verify=False,
         )
 
@@ -95,13 +117,16 @@ def cli(
         client.authenticate()
 
         endpoints_yaml_file = f"endpoints_{solution.lower()}.yaml"
-        client.get_from_endpoints(endpoints_yaml_file, MAX_RETRIES, RETRY_AFTER, TIMEOUT)
+        client.get_from_endpoints(endpoints_yaml_file)
 
     elif solution == "ISE":
         client = CiscoClientISE(
             username=username,
             password=password,
             base_url=url,
+            max_retries=MAX_RETRIES,
+            retry_after=RETRY_AFTER,
+            timeout=TIMEOUT,
             ssl_verify=False,
         )
 
@@ -109,28 +134,11 @@ def cli(
         client.authenticate()
 
         endpoints_yaml_file = f"endpoints_{solution.lower()}.yaml"
-        client.get_from_endpoints(endpoints_yaml_file, MAX_RETRIES, RETRY_AFTER, TIMEOUT)
+        final_dict = client.get_from_endpoints(endpoints_yaml_file)
+        client.write_to_json(final_dict, f"{solution.lower()}")
 
     else:
         pass
-        # client = CiscoClient(
-        #     username=username,
-        #     password=password,
-        #     base_url=url,
-        #     auth_type=auth_type,
-        #     ssl_verify=False,
-        #     solution=solution.lower(),
-        # )
-
-    # solution_auth_endpoints = SOLUTION_ENDPOINTS.get(solution, [])
-    # for endpoint in solution_auth_endpoints:
-    #     auth_endpoint = AUTH_ENDPOINT_MAPPING.get(endpoint)
-    #     print(auth_endpoint)
-    #     input("SS")
-    #     client.authenticate(auth_endpoint=auth_endpoint)
-
-    # endpoints_yaml_file = f"endpoints_{solution.lower()}.yaml"
-    # client.get_from_endpoints(endpoints_yaml_file, MAX_RETRIES, RETRY_AFTER, TIMEOUT)
 
     # Record the stop time
     stop_time = time.time()
@@ -141,4 +149,4 @@ def cli(
 
 
 if __name__ == "__main__":
-    cli()
+    cli()  # pylint: disable=no-value-for-parameter

@@ -3,3 +3,5 @@ nac_collector/__pycache__
 *.json
 tmp/
 .envrc
+.DS_Store
+.pylintrc

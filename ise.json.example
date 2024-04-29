@@ -1,9 +1,9 @@
 {
-    "/api/v1/policy/network-access/policy-set": {
+    "network_access_policy_set": {
         "items": [
             {
                 "default": false,
-                "id": "2aa263dc-e091-4a0a-aa1f-c6dfc06a3e44",
+                "id": "29b2a0be-3b0a-402a-9054-ba2aacde3f55",
                 "name": "rule_0",
                 "description": "My policy set",
                 "hitCounts": 0,
@@ -53,13 +53,13 @@
                 "isProxy": false,
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/2aa263dc-e091-4a0a-aa1f-c6dfc06a3e44",
+                    "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/29b2a0be-3b0a-402a-9054-ba2aacde3f55",
                     "type": "application/json"
                 }
             },
             {
                 "default": false,
-                "id": "3ae9aea2-f28a-4114-8209-de332d024269",
+                "id": "a17c7fd4-9177-44a8-89e8-36d19e77d4dd",
                 "name": "rule_1",
                 "description": null,
                 "hitCounts": 0,
@@ -77,7 +77,79 @@
                 "isProxy": false,
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/3ae9aea2-f28a-4114-8209-de332d024269",
+                    "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/a17c7fd4-9177-44a8-89e8-36d19e77d4dd",
+                    "type": "application/json"
+                }
+            },
+            {
+                "default": false,
+                "id": "90c0ce12-1ad7-464b-a22a-3ba47a7e4304",
+                "name": "rule_35",
+                "description": null,
+                "hitCounts": 0,
+                "rank": 2,
+                "state": "enabled",
+                "condition": {
+                    "link": null,
+                    "conditionType": "ConditionReference",
+                    "isNegate": false,
+                    "name": "5G",
+                    "id": "4cbef5c3-89c9-4911-960f-f674d8f4dadb",
+                    "description": "A condition to match 5G"
+                },
+                "serviceName": "Default Network Access",
+                "isProxy": false,
+                "link": {
+                    "rel": "self",
+                    "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/90c0ce12-1ad7-464b-a22a-3ba47a7e4304",
+                    "type": "application/json"
+                }
+            },
+            {
+                "default": false,
+                "id": "72a0c352-57dd-46d2-af28-95871fce49e2",
+                "name": "rule_33",
+                "description": null,
+                "hitCounts": 0,
+                "rank": 3,
+                "state": "enabled",
+                "condition": {
+                    "link": null,
+                    "conditionType": "ConditionReference",
+                    "isNegate": false,
+                    "name": "5G",
+                    "id": "4cbef5c3-89c9-4911-960f-f674d8f4dadb",
+                    "description": "A condition to match 5G"
+                },
+                "serviceName": "Default Network Access",
+                "isProxy": false,
+                "link": {
+                    "rel": "self",
+                    "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/72a0c352-57dd-46d2-af28-95871fce49e2",
+                    "type": "application/json"
+                }
+            },
+            {
+                "default": false,
+                "id": "d4a24561-c907-47a7-a05b-44727e0a09aa",
+                "name": "rule_3",
+                "description": null,
+                "hitCounts": 0,
+                "rank": 4,
+                "state": "enabled",
+                "condition": {
+                    "link": null,
+                    "conditionType": "ConditionReference",
+                    "isNegate": false,
+                    "name": "5G",
+                    "id": "4cbef5c3-89c9-4911-960f-f674d8f4dadb",
+                    "description": "A condition to match 5G"
+                },
+                "serviceName": "Default Network Access",
+                "isProxy": false,
+                "link": {
+                    "rel": "self",
+                    "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/d4a24561-c907-47a7-a05b-44727e0a09aa",
                     "type": "application/json"
                 }
             },
@@ -87,7 +159,7 @@
                 "name": "Default",
                 "description": "Default policy set",
                 "hitCounts": 0,
-                "rank": 2,
+                "rank": 5,
                 "state": "enabled",
                 "condition": null,
                 "serviceName": "Default Network Access",
@@ -100,641 +172,407 @@
             }
         ],
         "children": {
-            "authentication": [
-                {
-                    "rule": {
-                        "default": true,
-                        "id": "ba22acb0-af35-4c20-9776-b4f83c07f88d",
-                        "name": "Default",
-                        "hitCounts": 0,
-                        "rank": 0,
-                        "state": "enabled",
-                        "condition": null
-                    },
-                    "identitySourceName": "All_User_ID_Stores",
-                    "ifAuthFail": "REJECT",
-                    "ifUserNotFound": "REJECT",
-                    "ifProcessFail": "DROP",
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/2aa263dc-e091-4a0a-aa1f-c6dfc06a3e44/authentication/ba22acb0-af35-4c20-9776-b4f83c07f88d",
-                        "type": "application/json"
-                    }
-                },
-                {
-                    "rule": {
-                        "default": true,
-                        "id": "7630962c-f38e-4786-b5da-3566618e1120",
-                        "name": "Default",
-                        "hitCounts": 0,
-                        "rank": 0,
-                        "state": "enabled",
-                        "condition": null
-                    },
-                    "identitySourceName": "All_User_ID_Stores",
-                    "ifAuthFail": "REJECT",
-                    "ifUserNotFound": "REJECT",
-                    "ifProcessFail": "DROP",
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/3ae9aea2-f28a-4114-8209-de332d024269/authentication/7630962c-f38e-4786-b5da-3566618e1120",
-                        "type": "application/json"
-                    }
-                },
-                {
-                    "rule": {
-                        "default": false,
-                        "id": "0ae6467b-f6d7-46f0-9eef-04cad2365ef0",
-                        "name": "MAB",
-                        "hitCounts": 0,
-                        "rank": 0,
-                        "state": "enabled",
-                        "condition": {
-                            "link": null,
-                            "conditionType": "ConditionOrBlock",
-                            "isNegate": false,
-                            "children": [
-                                {
-                                    "link": null,
-                                    "conditionType": "ConditionReference",
-                                    "isNegate": false,
-                                    "name": "Wired_MAB",
-                                    "id": "af81c547-6d24-41db-a2b0-87361055f3c4",
-                                    "description": "A condition to match MAC Authentication Bypass service based authentication requests from switches, according to the corresponding MAB attributes defined in the device profile."
-                                },
-                                {
-                                    "link": null,
-                                    "conditionType": "ConditionReference",
-                                    "isNegate": false,
-                                    "name": "Wireless_MAB",
-                                    "id": "3a539d9a-6178-4ab9-a4a1-fdad703f1037",
-                                    "description": "A condition to match MAC Authentication Bypass service based authentication requests from wireless LAN controllers, according to the corresponding MAB attributes defined in the device profile."
-                                }
-                            ]
+            "network_access_authentication_rule": {
+                "items": [
+                    {
+                        "rule": {
+                            "default": false,
+                            "id": "01b325c0-96a4-4868-9b26-c91b47086cd6",
+                            "name": "MIN_AUTH",
+                            "hitCounts": 0,
+                            "rank": 0,
+                            "state": "enabled",
+                            "condition": {
+                                "link": null,
+                                "conditionType": "ConditionReference",
+                                "isNegate": false,
+                                "name": "5G",
+                                "id": "4cbef5c3-89c9-4911-960f-f674d8f4dadb",
+                                "description": "A condition to match 5G"
+                            }
+                        },
+                        "identitySourceName": "Internal Users",
+                        "ifAuthFail": "REJECT",
+                        "ifUserNotFound": "REJECT",
+                        "ifProcessFail": "DROP",
+                        "link": {
+                            "rel": "self",
+                            "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/29b2a0be-3b0a-402a-9054-ba2aacde3f55/authentication/01b325c0-96a4-4868-9b26-c91b47086cd6",
+                            "type": "application/json"
                         }
                     },
-                    "identitySourceName": "Internal Endpoints",
-                    "ifAuthFail": "REJECT",
-                    "ifUserNotFound": "CONTINUE",
-                    "ifProcessFail": "DROP",
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/a6031bf2-7c7b-425e-a38b-65d2836436d3/authentication/0ae6467b-f6d7-46f0-9eef-04cad2365ef0",
-                        "type": "application/json"
-                    }
-                },
-                {
-                    "rule": {
-                        "default": false,
-                        "id": "93bc687d-4c9e-4bca-b7d6-3fcc699e3ef6",
-                        "name": "Dot1X",
-                        "hitCounts": 0,
-                        "rank": 1,
-                        "state": "enabled",
-                        "condition": {
-                            "link": null,
-                            "conditionType": "ConditionOrBlock",
-                            "isNegate": false,
-                            "children": [
-                                {
-                                    "link": null,
-                                    "conditionType": "ConditionReference",
-                                    "isNegate": false,
-                                    "name": "Wired_802.1X",
-                                    "id": "b0b5fdb4-c716-48b8-b768-1014b4d4d3de",
-                                    "description": "A condition to match 802.1X based authentication requests from switches, according to the corresponding 802.1x attributes defined in the device profile."
-                                },
-                                {
-                                    "link": null,
-                                    "conditionType": "ConditionReference",
-                                    "isNegate": false,
-                                    "name": "Wireless_802.1X",
-                                    "id": "7c4a87ac-8bc2-42b4-a9fa-139f0a6cc094",
-                                    "description": "A condition to match 802.1X based authentication requests from wireless LAN controllers, according to the corresponding 802.1x attributes defined in the device profile."
-                                }
-                            ]
+                    {
+                        "rule": {
+                            "default": false,
+                            "id": "a4672de9-b2de-4785-8cbd-c03b9926584d",
+                            "name": "MAX_AUTH",
+                            "hitCounts": 0,
+                            "rank": 1,
+                            "state": "disabled",
+                            "condition": {
+                                "link": null,
+                                "conditionType": "ConditionAndBlock",
+                                "isNegate": false,
+                                "children": [
+                                    {
+                                        "link": null,
+                                        "conditionType": "ConditionOrBlock",
+                                        "isNegate": true,
+                                        "children": [
+                                            {
+                                                "link": null,
+                                                "conditionType": "ConditionAttributes",
+                                                "isNegate": false,
+                                                "dictionaryName": "Radius",
+                                                "attributeName": "User-Name",
+                                                "operator": "equals",
+                                                "dictionaryValue": null,
+                                                "attributeValue": "User1"
+                                            },
+                                            {
+                                                "link": null,
+                                                "conditionType": "ConditionReference",
+                                                "isNegate": false,
+                                                "name": "5G",
+                                                "id": "4cbef5c3-89c9-4911-960f-f674d8f4dadb",
+                                                "description": "A condition to match 5G"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "link": null,
+                                        "conditionType": "ConditionReference",
+                                        "isNegate": false,
+                                        "name": "5G",
+                                        "id": "4cbef5c3-89c9-4911-960f-f674d8f4dadb",
+                                        "description": "A condition to match 5G"
+                                    }
+                                ]
+                            }
+                        },
+                        "identitySourceName": "Internal Users",
+                        "ifAuthFail": "REJECT",
+                        "ifUserNotFound": "CONTINUE",
+                        "ifProcessFail": "DROP",
+                        "link": {
+                            "rel": "self",
+                            "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/29b2a0be-3b0a-402a-9054-ba2aacde3f55/authentication/a4672de9-b2de-4785-8cbd-c03b9926584d",
+                            "type": "application/json"
                         }
                     },
-                    "identitySourceName": "All_User_ID_Stores",
-                    "ifAuthFail": "REJECT",
-                    "ifUserNotFound": "REJECT",
-                    "ifProcessFail": "DROP",
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/a6031bf2-7c7b-425e-a38b-65d2836436d3/authentication/93bc687d-4c9e-4bca-b7d6-3fcc699e3ef6",
-                        "type": "application/json"
-                    }
-                },
-                {
-                    "rule": {
-                        "default": true,
-                        "id": "77e49100-56d7-4630-a81d-0bb307e49944",
-                        "name": "Default",
-                        "hitCounts": 0,
-                        "rank": 2,
-                        "state": "enabled",
-                        "condition": null
-                    },
-                    "identitySourceName": "All_User_ID_Stores",
-                    "ifAuthFail": "REJECT",
-                    "ifUserNotFound": "REJECT",
-                    "ifProcessFail": "DROP",
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/a6031bf2-7c7b-425e-a38b-65d2836436d3/authentication/77e49100-56d7-4630-a81d-0bb307e49944",
-                        "type": "application/json"
-                    }
-                }
-            ],
-            "exception": [],
-            "authorization": [
-                {
-                    "rule": {
-                        "default": true,
-                        "id": "c38d2a98-5a14-404b-b55c-5603befa6c52",
-                        "name": "Default",
-                        "hitCounts": 0,
-                        "rank": 0,
-                        "state": "enabled",
-                        "condition": null
-                    },
-                    "profile": [
-                        "DenyAccess"
-                    ],
-                    "securityGroup": null,
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/2aa263dc-e091-4a0a-aa1f-c6dfc06a3e44/authorization/c38d2a98-5a14-404b-b55c-5603befa6c52",
-                        "type": "application/json"
-                    }
-                },
-                {
-                    "rule": {
-                        "default": true,
-                        "id": "c3d52d49-7c79-4afd-949e-4d42eab712e0",
-                        "name": "Default",
-                        "hitCounts": 0,
-                        "rank": 0,
-                        "state": "enabled",
-                        "condition": null
-                    },
-                    "profile": [
-                        "DenyAccess"
-                    ],
-                    "securityGroup": null,
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/3ae9aea2-f28a-4114-8209-de332d024269/authorization/c3d52d49-7c79-4afd-949e-4d42eab712e0",
-                        "type": "application/json"
-                    }
-                },
-                {
-                    "rule": {
-                        "default": false,
-                        "id": "16c69f00-9a65-4496-9c5f-7f8aa314dc62",
-                        "name": "Wireless Block List Default",
-                        "hitCounts": 0,
-                        "rank": 0,
-                        "state": "enabled",
-                        "condition": {
-                            "link": null,
-                            "conditionType": "ConditionAndBlock",
-                            "isNegate": false,
-                            "children": [
-                                {
-                                    "link": null,
-                                    "conditionType": "ConditionReference",
-                                    "isNegate": false,
-                                    "name": "Wireless_Access",
-                                    "id": "2cdff892-d712-45ff-9dc0-60ff13a373fa",
-                                    "description": "Default condition used to match any authentication request from Cisco Wireless LAN Controller."
-                                },
-                                {
-                                    "link": null,
-                                    "conditionType": "ConditionAttributes",
-                                    "isNegate": false,
-                                    "dictionaryName": "IdentityGroup",
-                                    "attributeName": "Name",
-                                    "operator": "equals",
-                                    "dictionaryValue": null,
-                                    "attributeValue": "Endpoint Identity Groups:Blocked List"
-                                }
-                            ]
+                    {
+                        "rule": {
+                            "default": false,
+                            "id": "15621683-a00e-4664-b8a2-634d70759296",
+                            "name": "MIN_AUTH_RANK_2",
+                            "hitCounts": 0,
+                            "rank": 2,
+                            "state": "enabled",
+                            "condition": {
+                                "link": null,
+                                "conditionType": "ConditionReference",
+                                "isNegate": false,
+                                "name": "5G",
+                                "id": "4cbef5c3-89c9-4911-960f-f674d8f4dadb",
+                                "description": "A condition to match 5G"
+                            }
+                        },
+                        "identitySourceName": "Internal Users",
+                        "ifAuthFail": "REJECT",
+                        "ifUserNotFound": "REJECT",
+                        "ifProcessFail": "DROP",
+                        "link": {
+                            "rel": "self",
+                            "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/29b2a0be-3b0a-402a-9054-ba2aacde3f55/authentication/15621683-a00e-4664-b8a2-634d70759296",
+                            "type": "application/json"
                         }
                     },
-                    "profile": [
-                        "Block_Wireless_Access"
-                    ],
-                    "securityGroup": null,
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/a6031bf2-7c7b-425e-a38b-65d2836436d3/authorization/16c69f00-9a65-4496-9c5f-7f8aa314dc62",
-                        "type": "application/json"
+                    {
+                        "rule": {
+                            "default": true,
+                            "id": "b08875e6-9b65-4bb9-a0a3-a0bd7ebf4214",
+                            "name": "Default",
+                            "hitCounts": 0,
+                            "rank": 3,
+                            "state": "enabled",
+                            "condition": null
+                        },
+                        "identitySourceName": "Internal Users",
+                        "ifAuthFail": "REJECT",
+                        "ifUserNotFound": "REJECT",
+                        "ifProcessFail": "DROP",
+                        "link": {
+                            "rel": "self",
+                            "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/29b2a0be-3b0a-402a-9054-ba2aacde3f55/authentication/b08875e6-9b65-4bb9-a0a3-a0bd7ebf4214",
+                            "type": "application/json"
+                        }
                     }
-                },
-                {
-                    "rule": {
-                        "default": false,
-                        "id": "a9a1b27a-1424-445a-b745-1aedb4feb0b5",
-                        "name": "Profiled Cisco IP Phones",
-                        "hitCounts": 0,
-                        "rank": 1,
-                        "state": "enabled",
-                        "condition": {
-                            "link": null,
-                            "conditionType": "ConditionAttributes",
-                            "isNegate": false,
-                            "dictionaryName": "IdentityGroup",
-                            "attributeName": "Name",
-                            "operator": "equals",
-                            "dictionaryValue": null,
-                            "attributeValue": "Endpoint Identity Groups:Profiled:Cisco-IP-Phone"
+                ],
+                "children": {},
+                "endpoint": "/api/v1/policy/network-access/policy-set/%v/authentication"
+            },
+            "network_access_authorization_exception_rule": {
+                "items": [
+                    {
+                        "rule": {
+                            "default": false,
+                            "id": "66e4d619-8988-4a77-8093-7fae7b87d6a9",
+                            "name": "MIN_AUTHZ_EX",
+                            "hitCounts": 0,
+                            "rank": 0,
+                            "state": "enabled",
+                            "condition": {
+                                "link": null,
+                                "conditionType": "ConditionReference",
+                                "isNegate": false,
+                                "name": "5G",
+                                "id": "4cbef5c3-89c9-4911-960f-f674d8f4dadb",
+                                "description": "A condition to match 5G"
+                            }
+                        },
+                        "profile": [
+                            "MIN_AP"
+                        ],
+                        "securityGroup": null,
+                        "link": {
+                            "rel": "self",
+                            "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/29b2a0be-3b0a-402a-9054-ba2aacde3f55/exception/66e4d619-8988-4a77-8093-7fae7b87d6a9",
+                            "type": "application/json"
                         }
                     },
-                    "profile": [
-                        "Cisco_IP_Phones"
-                    ],
-                    "securityGroup": null,
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/a6031bf2-7c7b-425e-a38b-65d2836436d3/authorization/a9a1b27a-1424-445a-b745-1aedb4feb0b5",
-                        "type": "application/json"
-                    }
-                },
-                {
-                    "rule": {
-                        "default": false,
-                        "id": "64dc7467-5f14-488e-8547-47492ca7eb34",
-                        "name": "Profiled Non Cisco IP Phones",
-                        "hitCounts": 0,
-                        "rank": 2,
-                        "state": "enabled",
-                        "condition": {
-                            "link": null,
-                            "conditionType": "ConditionReference",
-                            "isNegate": false,
-                            "name": "Non_Cisco_Profiled_Phones",
-                            "id": "1580f31f-6cee-44d8-b389-3970f5fad215",
-                            "description": "Default condition used to match Non Cisco IP Phones"
+                    {
+                        "rule": {
+                            "default": false,
+                            "id": "a42c668c-9f6f-456d-8f28-dadd490c2f82",
+                            "name": "MAX_AUTHZ_EX",
+                            "hitCounts": 0,
+                            "rank": 1,
+                            "state": "disabled",
+                            "condition": {
+                                "link": null,
+                                "conditionType": "ConditionAndBlock",
+                                "isNegate": false,
+                                "children": [
+                                    {
+                                        "link": null,
+                                        "conditionType": "ConditionOrBlock",
+                                        "isNegate": true,
+                                        "children": [
+                                            {
+                                                "link": null,
+                                                "conditionType": "ConditionAttributes",
+                                                "isNegate": false,
+                                                "dictionaryName": "Radius",
+                                                "attributeName": "User-Name",
+                                                "operator": "equals",
+                                                "dictionaryValue": null,
+                                                "attributeValue": "User1"
+                                            },
+                                            {
+                                                "link": null,
+                                                "conditionType": "ConditionReference",
+                                                "isNegate": false,
+                                                "name": "5G",
+                                                "id": "4cbef5c3-89c9-4911-960f-f674d8f4dadb",
+                                                "description": "A condition to match 5G"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "link": null,
+                                        "conditionType": "ConditionReference",
+                                        "isNegate": false,
+                                        "name": "5G",
+                                        "id": "4cbef5c3-89c9-4911-960f-f674d8f4dadb",
+                                        "description": "A condition to match 5G"
+                                    }
+                                ]
+                            }
+                        },
+                        "profile": [
+                            "MIN_AP"
+                        ],
+                        "securityGroup": "BYOD",
+                        "link": {
+                            "rel": "self",
+                            "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/29b2a0be-3b0a-402a-9054-ba2aacde3f55/exception/a42c668c-9f6f-456d-8f28-dadd490c2f82",
+                            "type": "application/json"
                         }
                     },
-                    "profile": [
-                        "Non_Cisco_IP_Phones"
-                    ],
-                    "securityGroup": null,
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/a6031bf2-7c7b-425e-a38b-65d2836436d3/authorization/64dc7467-5f14-488e-8547-47492ca7eb34",
-                        "type": "application/json"
+                    {
+                        "rule": {
+                            "default": false,
+                            "id": "a703a13d-5595-4245-9054-aa95f081c05a",
+                            "name": "MIN_AUTHZ_EX_RANK_2",
+                            "hitCounts": 0,
+                            "rank": 2,
+                            "state": "enabled",
+                            "condition": {
+                                "link": null,
+                                "conditionType": "ConditionReference",
+                                "isNegate": false,
+                                "name": "5G",
+                                "id": "4cbef5c3-89c9-4911-960f-f674d8f4dadb",
+                                "description": "A condition to match 5G"
+                            }
+                        },
+                        "profile": [
+                            "MIN_AP"
+                        ],
+                        "securityGroup": null,
+                        "link": {
+                            "rel": "self",
+                            "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/29b2a0be-3b0a-402a-9054-ba2aacde3f55/exception/a703a13d-5595-4245-9054-aa95f081c05a",
+                            "type": "application/json"
+                        }
                     }
-                },
-                {
-                    "rule": {
-                        "default": false,
-                        "id": "ae216d30-f542-43f7-af69-8e258445c5a1",
-                        "name": "Unknown_Compliance_Redirect",
-                        "hitCounts": 0,
-                        "rank": 3,
-                        "state": "disabled",
-                        "condition": {
-                            "link": null,
-                            "conditionType": "ConditionAndBlock",
-                            "isNegate": false,
-                            "children": [
-                                {
-                                    "link": null,
-                                    "conditionType": "ConditionReference",
-                                    "isNegate": false,
-                                    "name": "Network_Access_Authentication_Passed",
-                                    "id": "3ec35754-4953-4bd1-a3e9-488a2f7f98f5",
-                                    "description": "Default condition used for basic Network Access requiring that authentication was successful."
-                                },
-                                {
-                                    "link": null,
-                                    "conditionType": "ConditionReference",
-                                    "isNegate": false,
-                                    "name": "Compliance_Unknown_Devices",
-                                    "id": "cb8ab3c0-111b-4177-81b2-d3d9e5fabb8a",
-                                    "description": "Default condition for unknown compliance devices"
-                                }
-                            ]
+                ],
+                "children": {},
+                "endpoint": "/api/v1/policy/network-access/policy-set/%v/exception"
+            },
+            "network_access_authorization_rule": {
+                "items": [
+                    {
+                        "rule": {
+                            "default": false,
+                            "id": "7088e797-e33a-4ee5-82cc-8da8f607f31c",
+                            "name": "MIN_AUTHZ",
+                            "hitCounts": 0,
+                            "rank": 0,
+                            "state": "enabled",
+                            "condition": {
+                                "link": null,
+                                "conditionType": "ConditionReference",
+                                "isNegate": false,
+                                "name": "5G",
+                                "id": "4cbef5c3-89c9-4911-960f-f674d8f4dadb",
+                                "description": "A condition to match 5G"
+                            }
+                        },
+                        "profile": [
+                            "MIN_AP"
+                        ],
+                        "securityGroup": null,
+                        "link": {
+                            "rel": "self",
+                            "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/29b2a0be-3b0a-402a-9054-ba2aacde3f55/authorization/7088e797-e33a-4ee5-82cc-8da8f607f31c",
+                            "type": "application/json"
                         }
                     },
-                    "profile": [
-                        "Cisco_Temporal_Onboard"
-                    ],
-                    "securityGroup": null,
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/a6031bf2-7c7b-425e-a38b-65d2836436d3/authorization/ae216d30-f542-43f7-af69-8e258445c5a1",
-                        "type": "application/json"
-                    }
-                },
-                {
-                    "rule": {
-                        "default": false,
-                        "id": "fb182d78-add6-4cf8-87e0-371139a5353e",
-                        "name": "NonCompliant_Devices_Redirect",
-                        "hitCounts": 0,
-                        "rank": 4,
-                        "state": "disabled",
-                        "condition": {
-                            "link": null,
-                            "conditionType": "ConditionAndBlock",
-                            "isNegate": false,
-                            "children": [
-                                {
-                                    "link": null,
-                                    "conditionType": "ConditionReference",
-                                    "isNegate": false,
-                                    "name": "Network_Access_Authentication_Passed",
-                                    "id": "3ec35754-4953-4bd1-a3e9-488a2f7f98f5",
-                                    "description": "Default condition used for basic Network Access requiring that authentication was successful."
-                                },
-                                {
-                                    "link": null,
-                                    "conditionType": "ConditionReference",
-                                    "isNegate": false,
-                                    "name": "Non_Compliant_Devices",
-                                    "id": "331a8411-16a4-46ce-a6be-c2a0730a68ad",
-                                    "description": "Default condition for non-compliant devices"
-                                }
-                            ]
+                    {
+                        "rule": {
+                            "default": false,
+                            "id": "12f3d895-ffd4-4bfc-88cc-af5c58b5db73",
+                            "name": "MAX_AUTHZ",
+                            "hitCounts": 0,
+                            "rank": 1,
+                            "state": "disabled",
+                            "condition": {
+                                "link": null,
+                                "conditionType": "ConditionAndBlock",
+                                "isNegate": false,
+                                "children": [
+                                    {
+                                        "link": null,
+                                        "conditionType": "ConditionOrBlock",
+                                        "isNegate": true,
+                                        "children": [
+                                            {
+                                                "link": null,
+                                                "conditionType": "ConditionAttributes",
+                                                "isNegate": false,
+                                                "dictionaryName": "Radius",
+                                                "attributeName": "User-Name",
+                                                "operator": "equals",
+                                                "dictionaryValue": null,
+                                                "attributeValue": "User1"
+                                            },
+                                            {
+                                                "link": null,
+                                                "conditionType": "ConditionReference",
+                                                "isNegate": false,
+                                                "name": "5G",
+                                                "id": "4cbef5c3-89c9-4911-960f-f674d8f4dadb",
+                                                "description": "A condition to match 5G"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "link": null,
+                                        "conditionType": "ConditionReference",
+                                        "isNegate": false,
+                                        "name": "5G",
+                                        "id": "4cbef5c3-89c9-4911-960f-f674d8f4dadb",
+                                        "description": "A condition to match 5G"
+                                    }
+                                ]
+                            }
+                        },
+                        "profile": [
+                            "MIN_AP"
+                        ],
+                        "securityGroup": "BYOD",
+                        "link": {
+                            "rel": "self",
+                            "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/29b2a0be-3b0a-402a-9054-ba2aacde3f55/authorization/12f3d895-ffd4-4bfc-88cc-af5c58b5db73",
+                            "type": "application/json"
                         }
                     },
-                    "profile": [
-                        "Cisco_Temporal_Onboard"
-                    ],
-                    "securityGroup": null,
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/a6031bf2-7c7b-425e-a38b-65d2836436d3/authorization/fb182d78-add6-4cf8-87e0-371139a5353e",
-                        "type": "application/json"
-                    }
-                },
-                {
-                    "rule": {
-                        "default": false,
-                        "id": "b7709200-4a77-4d2b-b6be-c803fe6c1435",
-                        "name": "Compliant_Devices_Access",
-                        "hitCounts": 0,
-                        "rank": 5,
-                        "state": "disabled",
-                        "condition": {
-                            "link": null,
-                            "conditionType": "ConditionAndBlock",
-                            "isNegate": false,
-                            "children": [
-                                {
-                                    "link": null,
-                                    "conditionType": "ConditionReference",
-                                    "isNegate": false,
-                                    "name": "Network_Access_Authentication_Passed",
-                                    "id": "3ec35754-4953-4bd1-a3e9-488a2f7f98f5",
-                                    "description": "Default condition used for basic Network Access requiring that authentication was successful."
-                                },
-                                {
-                                    "link": null,
-                                    "conditionType": "ConditionReference",
-                                    "isNegate": false,
-                                    "name": "Compliant_Devices",
-                                    "id": "465c1396-96ad-4d6c-8082-f70679e4e5c4",
-                                    "description": "Default condition for compliant devices"
-                                }
-                            ]
+                    {
+                        "rule": {
+                            "default": false,
+                            "id": "36445ad6-5a82-49d7-8e8d-5d68fe8c0e66",
+                            "name": "MIN_AUTHZ_RANK_2",
+                            "hitCounts": 0,
+                            "rank": 2,
+                            "state": "enabled",
+                            "condition": {
+                                "link": null,
+                                "conditionType": "ConditionReference",
+                                "isNegate": false,
+                                "name": "5G",
+                                "id": "4cbef5c3-89c9-4911-960f-f674d8f4dadb",
+                                "description": "A condition to match 5G"
+                            }
+                        },
+                        "profile": [
+                            "MIN_AP"
+                        ],
+                        "securityGroup": null,
+                        "link": {
+                            "rel": "self",
+                            "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/29b2a0be-3b0a-402a-9054-ba2aacde3f55/authorization/36445ad6-5a82-49d7-8e8d-5d68fe8c0e66",
+                            "type": "application/json"
                         }
                     },
-                    "profile": [
-                        "PermitAccess"
-                    ],
-                    "securityGroup": null,
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/a6031bf2-7c7b-425e-a38b-65d2836436d3/authorization/b7709200-4a77-4d2b-b6be-c803fe6c1435",
-                        "type": "application/json"
-                    }
-                },
-                {
-                    "rule": {
-                        "default": false,
-                        "id": "3a56ad71-033e-4cd3-b6a5-e179bde620f2",
-                        "name": "Employee_EAP-TLS",
-                        "hitCounts": 0,
-                        "rank": 6,
-                        "state": "disabled",
-                        "condition": {
-                            "link": null,
-                            "conditionType": "ConditionAndBlock",
-                            "isNegate": false,
-                            "children": [
-                                {
-                                    "link": null,
-                                    "conditionType": "ConditionReference",
-                                    "isNegate": false,
-                                    "name": "Wireless_802.1X",
-                                    "id": "7c4a87ac-8bc2-42b4-a9fa-139f0a6cc094",
-                                    "description": "A condition to match 802.1X based authentication requests from wireless LAN controllers, according to the corresponding 802.1x attributes defined in the device profile."
-                                },
-                                {
-                                    "link": null,
-                                    "conditionType": "ConditionReference",
-                                    "isNegate": false,
-                                    "name": "BYOD_is_Registered",
-                                    "id": "30ab315e-a45b-4b7a-8749-30223aeed6ba",
-                                    "description": "Default condition for BYOD flow for any device that has passed the NSP process"
-                                },
-                                {
-                                    "link": null,
-                                    "conditionType": "ConditionReference",
-                                    "isNegate": false,
-                                    "name": "EAP-TLS",
-                                    "id": "86edcb44-f0a4-483a-88d9-80b5c33baad8",
-                                    "description": "Default condition for BYOD flow for any device that has passed the NSP process"
-                                },
-                                {
-                                    "link": null,
-                                    "conditionType": "ConditionReference",
-                                    "isNegate": false,
-                                    "name": "MAC_in_SAN",
-                                    "id": "3607989e-05d3-481b-bb26-843461f87f5b",
-                                    "description": "Default condition for BYOD flow for any device that has passed the NSP process"
-                                }
-                            ]
+                    {
+                        "rule": {
+                            "default": true,
+                            "id": "ff8a6969-e690-4edf-9253-0e86095b945f",
+                            "name": "Default",
+                            "hitCounts": 0,
+                            "rank": 3,
+                            "state": "enabled",
+                            "condition": null
+                        },
+                        "profile": [
+                            "MIN_AP"
+                        ],
+                        "securityGroup": null,
+                        "link": {
+                            "rel": "self",
+                            "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/29b2a0be-3b0a-402a-9054-ba2aacde3f55/authorization/ff8a6969-e690-4edf-9253-0e86095b945f",
+                            "type": "application/json"
                         }
-                    },
-                    "profile": [
-                        "PermitAccess"
-                    ],
-                    "securityGroup": "BYOD",
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/a6031bf2-7c7b-425e-a38b-65d2836436d3/authorization/3a56ad71-033e-4cd3-b6a5-e179bde620f2",
-                        "type": "application/json"
                     }
-                },
-                {
-                    "rule": {
-                        "default": false,
-                        "id": "8bc09116-95b0-42fd-8fa1-3561bcede76d",
-                        "name": "Employee_Onboarding",
-                        "hitCounts": 0,
-                        "rank": 7,
-                        "state": "disabled",
-                        "condition": {
-                            "link": null,
-                            "conditionType": "ConditionAndBlock",
-                            "isNegate": false,
-                            "children": [
-                                {
-                                    "link": null,
-                                    "conditionType": "ConditionReference",
-                                    "isNegate": false,
-                                    "name": "Wireless_802.1X",
-                                    "id": "7c4a87ac-8bc2-42b4-a9fa-139f0a6cc094",
-                                    "description": "A condition to match 802.1X based authentication requests from wireless LAN controllers, according to the corresponding 802.1x attributes defined in the device profile."
-                                },
-                                {
-                                    "link": null,
-                                    "conditionType": "ConditionReference",
-                                    "isNegate": false,
-                                    "name": "EAP-MSCHAPv2",
-                                    "id": "c7201ef1-7f5b-4751-8e0b-183c970c98f4",
-                                    "description": "Default condition for BYOD Onboarding flow"
-                                }
-                            ]
-                        }
-                    },
-                    "profile": [
-                        "NSP_Onboard"
-                    ],
-                    "securityGroup": "BYOD",
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/a6031bf2-7c7b-425e-a38b-65d2836436d3/authorization/8bc09116-95b0-42fd-8fa1-3561bcede76d",
-                        "type": "application/json"
-                    }
-                },
-                {
-                    "rule": {
-                        "default": false,
-                        "id": "ee417a38-45c4-4095-a121-79e32e1129ed",
-                        "name": "Wi-Fi_Guest_Access",
-                        "hitCounts": 0,
-                        "rank": 8,
-                        "state": "disabled",
-                        "condition": {
-                            "link": null,
-                            "conditionType": "ConditionAndBlock",
-                            "isNegate": false,
-                            "children": [
-                                {
-                                    "link": null,
-                                    "conditionType": "ConditionReference",
-                                    "isNegate": false,
-                                    "name": "Guest_Flow",
-                                    "id": "0570328e-4bd1-4a49-af66-4c97841da365",
-                                    "description": "Default condition for guest flow"
-                                },
-                                {
-                                    "link": null,
-                                    "conditionType": "ConditionReference",
-                                    "isNegate": false,
-                                    "name": "Wireless_MAB",
-                                    "id": "3a539d9a-6178-4ab9-a4a1-fdad703f1037",
-                                    "description": "A condition to match MAC Authentication Bypass service based authentication requests from wireless LAN controllers, according to the corresponding MAB attributes defined in the device profile."
-                                }
-                            ]
-                        }
-                    },
-                    "profile": [
-                        "PermitAccess"
-                    ],
-                    "securityGroup": "Guests",
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/a6031bf2-7c7b-425e-a38b-65d2836436d3/authorization/ee417a38-45c4-4095-a121-79e32e1129ed",
-                        "type": "application/json"
-                    }
-                },
-                {
-                    "rule": {
-                        "default": false,
-                        "id": "7838ce1a-dff7-4046-ab23-454f9dce029a",
-                        "name": "Wi-Fi_Redirect_to_Guest_Login",
-                        "hitCounts": 0,
-                        "rank": 9,
-                        "state": "disabled",
-                        "condition": {
-                            "link": null,
-                            "conditionType": "ConditionReference",
-                            "isNegate": false,
-                            "name": "Wireless_MAB",
-                            "id": "3a539d9a-6178-4ab9-a4a1-fdad703f1037",
-                            "description": "A condition to match MAC Authentication Bypass service based authentication requests from wireless LAN controllers, according to the corresponding MAB attributes defined in the device profile."
-                        }
-                    },
-                    "profile": [
-                        "Cisco_WebAuth"
-                    ],
-                    "securityGroup": null,
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/a6031bf2-7c7b-425e-a38b-65d2836436d3/authorization/7838ce1a-dff7-4046-ab23-454f9dce029a",
-                        "type": "application/json"
-                    }
-                },
-                {
-                    "rule": {
-                        "default": false,
-                        "id": "b7a6edcb-4c4d-4668-8ad5-845fa91722e7",
-                        "name": "Basic_Authenticated_Access",
-                        "hitCounts": 0,
-                        "rank": 10,
-                        "state": "enabled",
-                        "condition": {
-                            "link": null,
-                            "conditionType": "ConditionReference",
-                            "isNegate": false,
-                            "name": "Network_Access_Authentication_Passed",
-                            "id": "3ec35754-4953-4bd1-a3e9-488a2f7f98f5",
-                            "description": "Default condition used for basic Network Access requiring that authentication was successful."
-                        }
-                    },
-                    "profile": [
-                        "PermitAccess"
-                    ],
-                    "securityGroup": null,
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/a6031bf2-7c7b-425e-a38b-65d2836436d3/authorization/b7a6edcb-4c4d-4668-8ad5-845fa91722e7",
-                        "type": "application/json"
-                    }
-                },
-                {
-                    "rule": {
-                        "default": true,
-                        "id": "c51af16f-82da-46fb-83b0-dcd78a50bbb3",
-                        "name": "Default",
-                        "hitCounts": 0,
-                        "rank": 11,
-                        "state": "enabled",
-                        "condition": null
-                    },
-                    "profile": [
-                        "DenyAccess"
-                    ],
-                    "securityGroup": null,
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/a6031bf2-7c7b-425e-a38b-65d2836436d3/authorization/c51af16f-82da-46fb-83b0-dcd78a50bbb3",
-                        "type": "application/json"
-                    }
-                }
-            ]
+                ],
+                "children": {},
+                "endpoint": "/api/v1/policy/network-access/policy-set/%v/authorization"
+            }
         },
-        "name": "network_access_policy_set"
+        "endpoint": "/api/v1/policy/network-access/policy-set"
     },
-    "/ers/config/networkdevicegroup": {
+    "network_device_group": {
         "items": [
             {
                 "id": "70c79c30-8bff-11e6-996c-525400b48521",
@@ -792,54 +630,54 @@
                 "othername": "Location"
             },
             {
-                "id": "f509ccc0-fbfa-11ee-8be0-5ebd6f274dc0",
+                "id": "d262a500-fff3-11ee-8be0-5ebd6f274dc0",
                 "name": "Location#All Locations#CHILD_LOCATION",
                 "description": "Child location network device group",
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/networkdevicegroup/f509ccc0-fbfa-11ee-8be0-5ebd6f274dc0",
+                    "href": "https://10.48.190.181/ers/config/networkdevicegroup/d262a500-fff3-11ee-8be0-5ebd6f274dc0",
                     "type": "application/json"
                 },
                 "othername": "Location"
             },
             {
-                "id": "f82f4fb0-fbfa-11ee-8be0-5ebd6f274dc0",
+                "id": "d9502c70-fff3-11ee-8be0-5ebd6f274dc0",
                 "name": "Location#All Locations#CHILD_LOCATION#CC_LOCATION",
                 "description": "",
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/networkdevicegroup/f82f4fb0-fbfa-11ee-8be0-5ebd6f274dc0",
+                    "href": "https://10.48.190.181/ers/config/networkdevicegroup/d9502c70-fff3-11ee-8be0-5ebd6f274dc0",
                     "type": "application/json"
                 },
                 "othername": "Location"
             },
             {
-                "id": "f1e9a100-fbfa-11ee-8be0-5ebd6f274dc0",
+                "id": "d5f7b2a0-fff3-11ee-8be0-5ebd6f274dc0",
                 "name": "ROOT_NDG#ROOT_NDG",
                 "description": "",
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/networkdevicegroup/f1e9a100-fbfa-11ee-8be0-5ebd6f274dc0",
+                    "href": "https://10.48.190.181/ers/config/networkdevicegroup/d5f7b2a0-fff3-11ee-8be0-5ebd6f274dc0",
                     "type": "application/json"
                 },
                 "othername": "ROOT_NDG"
             },
             {
-                "id": "fb65c290-fbfa-11ee-8be0-5ebd6f274dc0",
+                "id": "dca4d5b0-fff3-11ee-8be0-5ebd6f274dc0",
                 "name": "ROOT_NDG#ROOT_NDG#CHILD_NDG",
                 "description": "Child network device group",
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/networkdevicegroup/fb65c290-fbfa-11ee-8be0-5ebd6f274dc0",
+                    "href": "https://10.48.190.181/ers/config/networkdevicegroup/dca4d5b0-fff3-11ee-8be0-5ebd6f274dc0",
                     "type": "application/json"
                 },
                 "othername": "ROOT_NDG"
             }
         ],
         "children": {},
-        "name": "network_device_group"
+        "endpoint": "/ers/config/networkdevicegroup"
     },
-    "/ers/config/allowedprotocols": {
+    "allowed_protocols": {
         "items": [
             {
                 "id": "926901b0-8c01-11e6-996c-525400b48521",
@@ -957,7 +795,7 @@
                 }
             },
             {
-                "id": "f1e1d8d0-fbfa-11ee-8be0-5ebd6f274dc0",
+                "id": "d1fcde50-fff3-11ee-8be0-5ebd6f274dc0",
                 "name": "MAX_AP",
                 "description": "My ap",
                 "processHostLookup": false,
@@ -980,12 +818,12 @@
                 "requireMessageAuth": true,
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/allowedprotocols/f1e1d8d0-fbfa-11ee-8be0-5ebd6f274dc0",
+                    "href": "https://10.48.190.181/ers/config/allowedprotocols/d1fcde50-fff3-11ee-8be0-5ebd6f274dc0",
                     "type": "application/json"
                 }
             },
             {
-                "id": "f19629d0-fbfa-11ee-8be0-5ebd6f274dc0",
+                "id": "d22af330-fff3-11ee-8be0-5ebd6f274dc0",
                 "name": "MAX_AP_DA",
                 "description": "My ap",
                 "processHostLookup": false,
@@ -1007,12 +845,12 @@
                 "requireMessageAuth": false,
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/allowedprotocols/f19629d0-fbfa-11ee-8be0-5ebd6f274dc0",
+                    "href": "https://10.48.190.181/ers/config/allowedprotocols/d22af330-fff3-11ee-8be0-5ebd6f274dc0",
                     "type": "application/json"
                 }
             },
             {
-                "id": "f1dafb00-fbfa-11ee-8be0-5ebd6f274dc0",
+                "id": "d2012410-fff3-11ee-8be0-5ebd6f274dc0",
                 "name": "MIN_AP",
                 "description": "",
                 "eapTls": {
@@ -1087,12 +925,12 @@
                 "requireMessageAuth": false,
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/allowedprotocols/f1dafb00-fbfa-11ee-8be0-5ebd6f274dc0",
+                    "href": "https://10.48.190.181/ers/config/allowedprotocols/d2012410-fff3-11ee-8be0-5ebd6f274dc0",
                     "type": "application/json"
                 }
             },
             {
-                "id": "f1a9b1d0-fbfa-11ee-8be0-5ebd6f274dc0",
+                "id": "d2466a70-fff3-11ee-8be0-5ebd6f274dc0",
                 "name": "MIN_AP_DA",
                 "description": "",
                 "processHostLookup": false,
@@ -1114,20 +952,20 @@
                 "requireMessageAuth": false,
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/allowedprotocols/f1a9b1d0-fbfa-11ee-8be0-5ebd6f274dc0",
+                    "href": "https://10.48.190.181/ers/config/allowedprotocols/d2466a70-fff3-11ee-8be0-5ebd6f274dc0",
                     "type": "application/json"
                 }
             }
         ],
         "children": {},
-        "name": "allowed_protocols_tacacs"
+        "endpoint": "/ers/config/allowedprotocols"
     },
-    "/api/v1/policy/device-admin/policy-set/global-exception": {
+    "device_admin_authorization_global_exception_rule": {
         "items": [
             {
                 "rule": {
                     "default": false,
-                    "id": "32f4d09c-7925-4bcb-ab5a-f475596d6e7a",
+                    "id": "5cb7f563-ef43-451b-b2a1-ef3d08c85e52",
                     "name": "MIN_AUTHZ_GLOBAL_EX_DA",
                     "hitCounts": 0,
                     "rank": 0,
@@ -1145,14 +983,14 @@
                 "profile": "MIN_TP",
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/global-exception/32f4d09c-7925-4bcb-ab5a-f475596d6e7a",
+                    "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/global-exception/5cb7f563-ef43-451b-b2a1-ef3d08c85e52",
                     "type": "application/json"
                 }
             },
             {
                 "rule": {
                     "default": false,
-                    "id": "e6c7cc62-165f-4bf2-8b01-d204c77302cb",
+                    "id": "416955da-f08e-4a7b-a49e-956f8ba2463e",
                     "name": "MAX_AUTHZ_GLOBAL_EX_DA",
                     "hitCounts": 0,
                     "rank": 1,
@@ -1205,14 +1043,14 @@
                 "profile": "MIN_TP",
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/global-exception/e6c7cc62-165f-4bf2-8b01-d204c77302cb",
+                    "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/global-exception/416955da-f08e-4a7b-a49e-956f8ba2463e",
                     "type": "application/json"
                 }
             },
             {
                 "rule": {
                     "default": false,
-                    "id": "150f09a9-30ed-448d-9792-a67e20d52c14",
+                    "id": "efa1b189-b03e-4a5b-addf-85a6beb110e8",
                     "name": "MIN_AUTHZ_GLOBAL_EX_DA_RANK_2",
                     "hitCounts": 0,
                     "rank": 2,
@@ -1230,15 +1068,15 @@
                 "profile": "MIN_TP",
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/global-exception/150f09a9-30ed-448d-9792-a67e20d52c14",
+                    "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/global-exception/efa1b189-b03e-4a5b-addf-85a6beb110e8",
                     "type": "application/json"
                 }
             }
         ],
         "children": {},
-        "name": "device_admin_authorization_global_exception_rule"
+        "endpoint": "/api/v1/policy/device-admin/policy-set/global-exception"
     },
-    "/ers/config/sgt": {
+    "trustsec_security_group": {
         "items": [
             {
                 "id": "934557f0-8c01-11e6-996c-525400b48521",
@@ -1410,19 +1248,19 @@
                 }
             },
             {
-                "id": "6253fa24-5e69-4941-8285-3640f7d9ae06",
+                "id": "51a39249-6dca-40ce-a383-eaf55d564f49",
                 "name": "SGT101",
                 "value": 101,
                 "generationId": "0",
                 "propogateToApic": false,
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/sgt/6253fa24-5e69-4941-8285-3640f7d9ae06",
+                    "href": "https://10.48.190.181/ers/config/sgt/51a39249-6dca-40ce-a383-eaf55d564f49",
                     "type": "application/json"
                 }
             },
             {
-                "id": "c62225e3-1f99-4e61-ace8-976a477fa3f4",
+                "id": "f9ac2a73-db90-4628-9eef-4f0315d54171",
                 "name": "SGT102",
                 "description": "My SGT 102",
                 "value": 102,
@@ -1430,19 +1268,19 @@
                 "propogateToApic": true,
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/sgt/c62225e3-1f99-4e61-ace8-976a477fa3f4",
+                    "href": "https://10.48.190.181/ers/config/sgt/f9ac2a73-db90-4628-9eef-4f0315d54171",
                     "type": "application/json"
                 }
             },
             {
-                "id": "90cb1750-c754-4e15-ac95-7aeafce3fca1",
+                "id": "fc665031-c29b-4c8f-9373-130228afeb05",
                 "name": "SGT103",
                 "value": 103,
                 "generationId": "1",
                 "propogateToApic": false,
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/sgt/90cb1750-c754-4e15-ac95-7aeafce3fca1",
+                    "href": "https://10.48.190.181/ers/config/sgt/fc665031-c29b-4c8f-9373-130228afeb05",
                     "type": "application/json"
                 }
             },
@@ -1487,9 +1325,9 @@
             }
         ],
         "children": {},
-        "name": "trustsec_security_group"
+        "endpoint": "/ers/config/sgt"
     },
-    "/api/v1/policy/network-access/dictionaries": {
+    "network_access_dictionary": {
         "items": [
             {
                 "id": "3c1800e0-4fbe-11ed-a871-0050568f5811",
@@ -1936,7 +1774,7 @@
                 }
             },
             {
-                "id": "f18f9a20-fbfa-11ee-8be0-5ebd6f274dc0",
+                "id": "d1912430-fff3-11ee-8be0-5ebd6f274dc0",
                 "name": "MAX_DICT",
                 "description": "My dict",
                 "version": "1.1.1",
@@ -1960,7 +1798,7 @@
                 }
             },
             {
-                "id": "f190d2a0-fbfa-11ee-8be0-5ebd6f274dc0",
+                "id": "d1945880-fff3-11ee-8be0-5ebd6f274dc0",
                 "name": "MIN_DICT",
                 "description": "",
                 "version": "1.0",
@@ -2297,9 +2135,9 @@
             }
         ],
         "children": {},
-        "name": "network_access_dictionary"
+        "endpoint": "/api/v1/policy/network-access/dictionaries"
     },
-    "/api/v1/policy/network-access/condition": {
+    "network_access_condition": {
         "items": [
             {
                 "link": {
@@ -2678,43 +2516,36 @@
             {
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/network-access/condition/14a2bfb0-35bf-45d2-99c6-775e9a935cef",
+                    "href": "https://10.48.190.181/api/v1/policy/network-access/condition/c4087e78-687f-42c5-8158-0ceb51104813",
                     "type": "application/json"
                 },
                 "conditionType": "TimeAndDateCondition",
                 "isNegate": false,
-                "name": "MAX_TIME_DA",
-                "id": "14a2bfb0-35bf-45d2-99c6-775e9a935cef",
-                "description": "My time condition",
+                "name": "MIN_TIME",
+                "id": "c4087e78-687f-42c5-8158-0ceb51104813",
+                "description": null,
                 "hoursRange": {
-                    "startTime": "08:00",
-                    "endTime": "18:00"
+                    "startTime": "00:00",
+                    "endTime": "23:59"
                 },
-                "hoursRangeException": {
-                    "startTime": "10:00",
-                    "endTime": "12:00"
-                },
+                "hoursRangeException": null,
                 "weekDays": [
+                    "Sunday",
+                    "Monday",
                     "Tuesday",
-                    "Monday"
-                ],
-                "weekDaysException": [
                     "Wednesday",
-                    "Thursday"
+                    "Thursday",
+                    "Friday",
+                    "Saturday"
                 ],
-                "datesRange": {
-                    "startDate": "2021-01-01",
-                    "endDate": "2025-01-01"
-                },
-                "datesRangeException": {
-                    "startDate": "2022-01-01",
-                    "endDate": "2024-01-01"
-                }
+                "weekDaysException": [],
+                "datesRange": null,
+                "datesRangeException": null
             },
             {
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/network-access/condition/45d0cd79-be87-4f0e-9c0d-48bb1282498b",
+                    "href": "https://10.48.190.181/api/v1/policy/network-access/condition/6d0f5b7b-a44f-4b4b-80ea-f9ea04f19aef",
                     "type": "application/json"
                 },
                 "conditionType": "LibraryConditionAndBlock",
@@ -2755,65 +2586,19 @@
                     }
                 ],
                 "name": "MAX_CON",
-                "id": "45d0cd79-be87-4f0e-9c0d-48bb1282498b",
+                "id": "6d0f5b7b-a44f-4b4b-80ea-f9ea04f19aef",
                 "description": "My condition"
             },
             {
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/network-access/condition/fa7e8585-f5a2-4a7a-ac01-7ae622c7d7ca",
+                    "href": "https://10.48.190.181/api/v1/policy/network-access/condition/7f30bc74-0bd6-4999-ab6d-0271f9dfc5c3",
                     "type": "application/json"
                 },
                 "conditionType": "TimeAndDateCondition",
                 "isNegate": false,
-                "name": "MIN_TIME",
-                "id": "fa7e8585-f5a2-4a7a-ac01-7ae622c7d7ca",
-                "description": null,
-                "hoursRange": {
-                    "startTime": "00:00",
-                    "endTime": "23:59"
-                },
-                "hoursRangeException": null,
-                "weekDays": [
-                    "Sunday",
-                    "Monday",
-                    "Tuesday",
-                    "Wednesday",
-                    "Thursday",
-                    "Friday",
-                    "Saturday"
-                ],
-                "weekDaysException": [],
-                "datesRange": null,
-                "datesRangeException": null
-            },
-            {
-                "link": {
-                    "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/network-access/condition/41c20709-25fe-42b5-a9ef-234e341a738c",
-                    "type": "application/json"
-                },
-                "conditionType": "LibraryConditionAttributes",
-                "isNegate": false,
-                "dictionaryName": "CERTIFICATE",
-                "attributeName": "Is Expired",
-                "operator": "equals",
-                "dictionaryValue": null,
-                "attributeValue": "False",
-                "name": "MIN_CON",
-                "id": "41c20709-25fe-42b5-a9ef-234e341a738c",
-                "description": null
-            },
-            {
-                "link": {
-                    "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/network-access/condition/49792516-c280-445c-bd1b-87dca98d0dcc",
-                    "type": "application/json"
-                },
-                "conditionType": "TimeAndDateCondition",
-                "isNegate": false,
-                "name": "MAX_TIME",
-                "id": "49792516-c280-445c-bd1b-87dca98d0dcc",
+                "name": "MAX_TIME_DA",
+                "id": "7f30bc74-0bd6-4999-ab6d-0271f9dfc5c3",
                 "description": "My time condition",
                 "hoursRange": {
                     "startTime": "08:00",
@@ -2843,13 +2628,49 @@
             {
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/network-access/condition/2c28e0b0-331d-4cc0-9b97-b89815cb562f",
+                    "href": "https://10.48.190.181/api/v1/policy/network-access/condition/e45c504f-5d5c-4446-b6ad-8fd0144b7fd2",
+                    "type": "application/json"
+                },
+                "conditionType": "TimeAndDateCondition",
+                "isNegate": false,
+                "name": "MAX_TIME",
+                "id": "e45c504f-5d5c-4446-b6ad-8fd0144b7fd2",
+                "description": "My time condition",
+                "hoursRange": {
+                    "startTime": "08:00",
+                    "endTime": "18:00"
+                },
+                "hoursRangeException": {
+                    "startTime": "10:00",
+                    "endTime": "12:00"
+                },
+                "weekDays": [
+                    "Tuesday",
+                    "Monday"
+                ],
+                "weekDaysException": [
+                    "Wednesday",
+                    "Thursday"
+                ],
+                "datesRange": {
+                    "startDate": "2021-01-01",
+                    "endDate": "2025-01-01"
+                },
+                "datesRangeException": {
+                    "startDate": "2022-01-01",
+                    "endDate": "2024-01-01"
+                }
+            },
+            {
+                "link": {
+                    "rel": "self",
+                    "href": "https://10.48.190.181/api/v1/policy/network-access/condition/6bd7da1f-3444-4629-a991-14ef092c1d08",
                     "type": "application/json"
                 },
                 "conditionType": "TimeAndDateCondition",
                 "isNegate": false,
                 "name": "MIN_TIME_DA",
-                "id": "2c28e0b0-331d-4cc0-9b97-b89815cb562f",
+                "id": "6bd7da1f-3444-4629-a991-14ef092c1d08",
                 "description": null,
                 "hoursRange": {
                     "startTime": "00:00",
@@ -2868,12 +2689,29 @@
                 "weekDaysException": [],
                 "datesRange": null,
                 "datesRangeException": null
+            },
+            {
+                "link": {
+                    "rel": "self",
+                    "href": "https://10.48.190.181/api/v1/policy/network-access/condition/b72e93ba-bfab-4e68-a950-c590a0324a37",
+                    "type": "application/json"
+                },
+                "conditionType": "LibraryConditionAttributes",
+                "isNegate": false,
+                "dictionaryName": "CERTIFICATE",
+                "attributeName": "Is Expired",
+                "operator": "equals",
+                "dictionaryValue": null,
+                "attributeValue": "False",
+                "name": "MIN_CON",
+                "id": "b72e93ba-bfab-4e68-a950-c590a0324a37",
+                "description": null
             }
         ],
         "children": {},
-        "name": "network_access_condition"
+        "endpoint": "/api/v1/policy/network-access/condition"
     },
-    "/ers/config/sgacl": {
+    "trustsec_security_group_acl": {
         "items": [
             {
                 "id": "92919850-8c01-11e6-996c-525400b48521",
@@ -2900,19 +2738,19 @@
                 }
             },
             {
-                "id": "f209fa41-fbfa-11ee-8be0-5ebd6f274dc0",
+                "id": "d2cc1530-fff3-11ee-8be0-5ebd6f274dc0",
                 "name": "MAX_ACL",
                 "description": "My ACL",
                 "generationId": "0",
                 "aclcontent": "permit ip",
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/sgacl/f209fa41-fbfa-11ee-8be0-5ebd6f274dc0",
+                    "href": "https://10.48.190.181/ers/config/sgacl/d2cc1530-fff3-11ee-8be0-5ebd6f274dc0",
                     "type": "application/json"
                 }
             },
             {
-                "id": "f1f587f1-fbfa-11ee-8be0-5ebd6f274dc0",
+                "id": "d2dbcca0-fff3-11ee-8be0-5ebd6f274dc0",
                 "name": "MIN_ACL",
                 "description": "",
                 "generationId": "0",
@@ -2920,7 +2758,7 @@
                 "aclcontent": "permit ip",
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/sgacl/f1f587f1-fbfa-11ee-8be0-5ebd6f274dc0",
+                    "href": "https://10.48.190.181/ers/config/sgacl/d2dbcca0-fff3-11ee-8be0-5ebd6f274dc0",
                     "type": "application/json"
                 }
             },
@@ -2950,9 +2788,292 @@
             }
         ],
         "children": {},
-        "name": "trustsec_security_group_acl"
+        "endpoint": "/ers/config/sgacl"
     },
-    "/api/v1/license/system/tier-state": {
+    "allowed_protocols_tacacs": {
+        "items": [
+            {
+                "id": "926901b0-8c01-11e6-996c-525400b48521",
+                "name": "Default Device Admin",
+                "description": "Default Allowed Protocol Service Device Admin",
+                "processHostLookup": false,
+                "allowPapAscii": true,
+                "allowChap": true,
+                "allowMsChapV1": true,
+                "allowMsChapV2": false,
+                "allowEapMd5": false,
+                "allowLeap": false,
+                "allowEapTls": false,
+                "allowEapTtls": false,
+                "allowEapFast": false,
+                "allowPeap": false,
+                "allowTeap": false,
+                "allowPreferredEapProtocol": false,
+                "eapTlsLBit": false,
+                "allowWeakCiphersForEap": false,
+                "fiveG": false,
+                "requireMessageAuth": false,
+                "link": {
+                    "rel": "self",
+                    "href": "https://10.48.190.181/ers/config/allowedprotocols/926901b0-8c01-11e6-996c-525400b48521",
+                    "type": "application/json"
+                }
+            },
+            {
+                "id": "92613980-8c01-11e6-996c-525400b48521",
+                "name": "Default Network Access",
+                "description": "Default Allowed Protocol Service",
+                "eapTls": {
+                    "allowEapTlsAuthOfExpiredCerts": false,
+                    "eapTlsEnableStatelessSessionResume": false
+                },
+                "peap": {
+                    "allowPeapEapMsChapV2": true,
+                    "allowPeapEapMsChapV2PwdChange": true,
+                    "allowPeapEapMsChapV2PwdChangeRetries": 1,
+                    "allowPeapEapGtc": true,
+                    "allowPeapEapGtcPwdChange": true,
+                    "allowPeapEapGtcPwdChangeRetries": 1,
+                    "allowPeapEapTls": true,
+                    "allowPeapEapTlsAuthOfExpiredCerts": false,
+                    "requireCryptobinding": false,
+                    "allowPeapV0": false
+                },
+                "eapFast": {
+                    "allowEapFastEapMsChapV2": true,
+                    "allowEapFastEapMsChapV2PwdChange": true,
+                    "allowEapFastEapMsChapV2PwdChangeRetries": 3,
+                    "allowEapFastEapGtc": true,
+                    "allowEapFastEapGtcPwdChange": true,
+                    "allowEapFastEapGtcPwdChangeRetries": 3,
+                    "allowEapFastEapTls": true,
+                    "allowEapFastEapTlsAuthOfExpiredCerts": false,
+                    "eapFastUsePacs": true,
+                    "eapFastUsePacsTunnelPacTtl": 90,
+                    "eapFastUsePacsTunnelPacTtlUnits": "DAYS",
+                    "eapFastUsePacsUseProactivePacUpdatePrecentage": 90,
+                    "eapFastUsePacsAllowAnonymProvisioning": false,
+                    "eapFastUsePacsAllowAuthenProvisioning": true,
+                    "eapFastUsePacsServerReturns": true,
+                    "eapFastUsePacsAcceptClientCert": false,
+                    "eapFastUsePacsAllowMachineAuthentication": true,
+                    "eapFastUsePacsMachinePacTtl": 1,
+                    "eapFastUsePacsMachinePacTtlUnits": "WEEKS",
+                    "eapFastUsePacsStatelessSessionResume": true,
+                    "eapFastUsePacsAuthorizationPacTtl": 1,
+                    "eapFastUsePacsAuthorizationPacTtlUnits": "HOURS",
+                    "eapFastEnableEAPChaining": false
+                },
+                "eapTtls": {
+                    "eapTtlsPapAscii": true,
+                    "eapTtlsChap": true,
+                    "eapTtlsMsChapV1": true,
+                    "eapTtlsMsChapV2": true,
+                    "eapTtlsEapMd5": true,
+                    "eapTtlsEapMsChapV2": true,
+                    "eapTtlsEapMsChapV2PwdChange": true,
+                    "eapTtlsEapMsChapV2PwdChangeRetries": 1
+                },
+                "teap": {
+                    "allowTeapEapMsChapV2": true,
+                    "allowTeapEapMsChapV2PwdChange": true,
+                    "allowTeapEapMsChapV2PwdChangeRetries": 3,
+                    "allowTeapEapTls": true,
+                    "allowTeapEapTlsAuthOfExpiredCerts": false,
+                    "acceptClientCertDuringTunnelEst": true,
+                    "enableEapChaining": false,
+                    "allowDowngradeMsk": true
+                },
+                "processHostLookup": true,
+                "allowPapAscii": true,
+                "allowChap": false,
+                "allowMsChapV1": false,
+                "allowMsChapV2": false,
+                "allowEapMd5": true,
+                "allowLeap": false,
+                "allowEapTls": true,
+                "allowEapTtls": true,
+                "allowEapFast": true,
+                "allowPeap": true,
+                "allowTeap": true,
+                "allowPreferredEapProtocol": false,
+                "eapTlsLBit": false,
+                "allowWeakCiphersForEap": false,
+                "fiveG": false,
+                "requireMessageAuth": false,
+                "link": {
+                    "rel": "self",
+                    "href": "https://10.48.190.181/ers/config/allowedprotocols/92613980-8c01-11e6-996c-525400b48521",
+                    "type": "application/json"
+                }
+            },
+            {
+                "id": "d1fcde50-fff3-11ee-8be0-5ebd6f274dc0",
+                "name": "MAX_AP",
+                "description": "My ap",
+                "processHostLookup": false,
+                "allowPapAscii": false,
+                "allowChap": true,
+                "allowMsChapV1": true,
+                "allowMsChapV2": true,
+                "allowEapMd5": false,
+                "allowLeap": true,
+                "allowEapTls": false,
+                "allowEapTtls": false,
+                "allowEapFast": false,
+                "allowPeap": false,
+                "allowTeap": false,
+                "allowPreferredEapProtocol": true,
+                "preferredEapProtocol": "LEAP",
+                "eapTlsLBit": true,
+                "allowWeakCiphersForEap": true,
+                "fiveG": true,
+                "requireMessageAuth": true,
+                "link": {
+                    "rel": "self",
+                    "href": "https://10.48.190.181/ers/config/allowedprotocols/d1fcde50-fff3-11ee-8be0-5ebd6f274dc0",
+                    "type": "application/json"
+                }
+            },
+            {
+                "id": "d22af330-fff3-11ee-8be0-5ebd6f274dc0",
+                "name": "MAX_AP_DA",
+                "description": "My ap",
+                "processHostLookup": false,
+                "allowPapAscii": false,
+                "allowChap": true,
+                "allowMsChapV1": true,
+                "allowMsChapV2": false,
+                "allowEapMd5": false,
+                "allowLeap": false,
+                "allowEapTls": false,
+                "allowEapTtls": false,
+                "allowEapFast": false,
+                "allowPeap": false,
+                "allowTeap": false,
+                "allowPreferredEapProtocol": false,
+                "eapTlsLBit": false,
+                "allowWeakCiphersForEap": false,
+                "fiveG": false,
+                "requireMessageAuth": false,
+                "link": {
+                    "rel": "self",
+                    "href": "https://10.48.190.181/ers/config/allowedprotocols/d22af330-fff3-11ee-8be0-5ebd6f274dc0",
+                    "type": "application/json"
+                }
+            },
+            {
+                "id": "d2012410-fff3-11ee-8be0-5ebd6f274dc0",
+                "name": "MIN_AP",
+                "description": "",
+                "eapTls": {
+                    "allowEapTlsAuthOfExpiredCerts": false,
+                    "eapTlsEnableStatelessSessionResume": false
+                },
+                "peap": {
+                    "allowPeapEapMsChapV2": true,
+                    "allowPeapEapMsChapV2PwdChange": true,
+                    "allowPeapEapMsChapV2PwdChangeRetries": 1,
+                    "allowPeapEapGtc": false,
+                    "allowPeapEapTls": true,
+                    "allowPeapEapTlsAuthOfExpiredCerts": false,
+                    "requireCryptobinding": false,
+                    "allowPeapV0": false
+                },
+                "eapFast": {
+                    "allowEapFastEapMsChapV2": true,
+                    "allowEapFastEapMsChapV2PwdChange": true,
+                    "allowEapFastEapMsChapV2PwdChangeRetries": 1,
+                    "allowEapFastEapGtc": true,
+                    "allowEapFastEapGtcPwdChange": true,
+                    "allowEapFastEapGtcPwdChangeRetries": 1,
+                    "allowEapFastEapTls": true,
+                    "allowEapFastEapTlsAuthOfExpiredCerts": false,
+                    "eapFastUsePacs": true,
+                    "eapFastUsePacsTunnelPacTtl": 90,
+                    "eapFastUsePacsTunnelPacTtlUnits": "DAYS",
+                    "eapFastUsePacsUseProactivePacUpdatePrecentage": 10,
+                    "eapFastUsePacsAllowAnonymProvisioning": false,
+                    "eapFastUsePacsAllowAuthenProvisioning": false,
+                    "eapFastUsePacsAllowMachineAuthentication": false,
+                    "eapFastUsePacsStatelessSessionResume": false,
+                    "eapFastEnableEAPChaining": false
+                },
+                "eapTtls": {
+                    "eapTtlsPapAscii": true,
+                    "eapTtlsChap": true,
+                    "eapTtlsMsChapV1": true,
+                    "eapTtlsMsChapV2": true,
+                    "eapTtlsEapMd5": true,
+                    "eapTtlsEapMsChapV2": true,
+                    "eapTtlsEapMsChapV2PwdChange": true,
+                    "eapTtlsEapMsChapV2PwdChangeRetries": 1
+                },
+                "teap": {
+                    "allowTeapEapMsChapV2": true,
+                    "allowTeapEapMsChapV2PwdChange": true,
+                    "allowTeapEapMsChapV2PwdChangeRetries": 3,
+                    "allowTeapEapTls": true,
+                    "allowTeapEapTlsAuthOfExpiredCerts": false,
+                    "acceptClientCertDuringTunnelEst": true,
+                    "enableEapChaining": false,
+                    "allowDowngradeMsk": true
+                },
+                "processHostLookup": true,
+                "allowPapAscii": true,
+                "allowChap": false,
+                "allowMsChapV1": false,
+                "allowMsChapV2": false,
+                "allowEapMd5": true,
+                "allowLeap": false,
+                "allowEapTls": true,
+                "allowEapTtls": true,
+                "allowEapFast": true,
+                "allowPeap": true,
+                "allowTeap": true,
+                "allowPreferredEapProtocol": false,
+                "eapTlsLBit": false,
+                "allowWeakCiphersForEap": false,
+                "fiveG": false,
+                "requireMessageAuth": false,
+                "link": {
+                    "rel": "self",
+                    "href": "https://10.48.190.181/ers/config/allowedprotocols/d2012410-fff3-11ee-8be0-5ebd6f274dc0",
+                    "type": "application/json"
+                }
+            },
+            {
+                "id": "d2466a70-fff3-11ee-8be0-5ebd6f274dc0",
+                "name": "MIN_AP_DA",
+                "description": "",
+                "processHostLookup": false,
+                "allowPapAscii": true,
+                "allowChap": false,
+                "allowMsChapV1": false,
+                "allowMsChapV2": false,
+                "allowEapMd5": false,
+                "allowLeap": false,
+                "allowEapTls": false,
+                "allowEapTtls": false,
+                "allowEapFast": false,
+                "allowPeap": false,
+                "allowTeap": false,
+                "allowPreferredEapProtocol": false,
+                "eapTlsLBit": false,
+                "allowWeakCiphersForEap": false,
+                "fiveG": false,
+                "requireMessageAuth": false,
+                "link": {
+                    "rel": "self",
+                    "href": "https://10.48.190.181/ers/config/allowedprotocols/d2466a70-fff3-11ee-8be0-5ebd6f274dc0",
+                    "type": "application/json"
+                }
+            }
+        ],
+        "children": {},
+        "endpoint": "/ers/config/allowedprotocols"
+    },
+    "license_tier_state": {
         "items": [
             {
                 "name": "ESSENTIAL",
@@ -2964,11 +3085,11 @@
             },
             {
                 "name": "ADVANTAGE",
-                "status": "ENABLED",
+                "status": "DISABLED",
                 "compliance": "EVALUATION",
                 "consumptionCounter": 0,
-                "daysOutOfCompliance": "-",
-                "lastAuthorization": "-"
+                "daysOutOfCompliance": "",
+                "lastAuthorization": ""
             },
             {
                 "name": "PREMIER",
@@ -2988,9 +3109,9 @@
             }
         ],
         "children": {},
-        "name": "license_tier_state"
+        "endpoint": "/api/v1/license/system/tier-state"
     },
-    "/ers/config/endpointgroup": {
+    "endpoint_identity_group": {
         "items": [
             {
                 "id": "ffa36b00-8bff-11e6-996c-525400b48521",
@@ -3136,17 +3257,6 @@
                 }
             },
             {
-                "id": "1d91e350-fb36-11ee-8be0-5ebd6f274dc0",
-                "name": "EndpointGroup1",
-                "description": "Test endpoint identity group",
-                "systemDefined": false,
-                "link": {
-                    "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/endpointgroup/1d91e350-fb36-11ee-8be0-5ebd6f274dc0",
-                    "type": "application/json"
-                }
-            },
-            {
                 "id": "22c6c780-8c00-11e6-996c-525400b48521",
                 "name": "Epson-Device",
                 "description": "Identity Group for Profile: Epson-Device",
@@ -3182,25 +3292,25 @@
                 }
             },
             {
-                "id": "f17163c0-fbfa-11ee-8be0-5ebd6f274dc0",
+                "id": "d195df20-fff3-11ee-8be0-5ebd6f274dc0",
                 "name": "MAX_EIG",
                 "description": "My description",
                 "systemDefined": false,
                 "parentId": "aa000c30-8bff-11e6-996c-525400b48521",
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/endpointgroup/f17163c0-fbfa-11ee-8be0-5ebd6f274dc0",
+                    "href": "https://10.48.190.181/ers/config/endpointgroup/d195df20-fff3-11ee-8be0-5ebd6f274dc0",
                     "type": "application/json"
                 }
             },
             {
-                "id": "f172ea66-fbfa-11ee-8be0-5ebd6f274dc0",
+                "id": "d20b0f20-fff3-11ee-8be0-5ebd6f274dc0",
                 "name": "MIN_EIG",
                 "description": "",
                 "systemDefined": false,
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/endpointgroup/f172ea66-fbfa-11ee-8be0-5ebd6f274dc0",
+                    "href": "https://10.48.190.181/ers/config/endpointgroup/d20b0f20-fff3-11ee-8be0-5ebd6f274dc0",
                     "type": "application/json"
                 }
             },
@@ -3228,6 +3338,17 @@
                 }
             },
             {
+                "id": "aa13bb40-8bff-11e6-996c-525400b48521",
+                "name": "RegisteredDevices",
+                "description": "Asset Registered Endpoints Identity Group",
+                "systemDefined": true,
+                "link": {
+                    "rel": "self",
+                    "href": "https://10.48.190.181/ers/config/endpointgroup/aa13bb40-8bff-11e6-996c-525400b48521",
+                    "type": "application/json"
+                }
+            },
+            {
                 "id": "81557630-e1a1-11ee-8be0-5ebd6f274dc0",
                 "name": "ecobee-Device",
                 "description": "Identity Group for Profile: ecobee-Device",
@@ -3236,17 +3357,6 @@
                 "link": {
                     "rel": "self",
                     "href": "https://10.48.190.181/ers/config/endpointgroup/81557630-e1a1-11ee-8be0-5ebd6f274dc0",
-                    "type": "application/json"
-                }
-            },
-            {
-                "id": "aa13bb40-8bff-11e6-996c-525400b48521",
-                "name": "RegisteredDevices",
-                "description": "Asset Registered Endpoints Identity Group",
-                "systemDefined": true,
-                "link": {
-                    "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/endpointgroup/aa13bb40-8bff-11e6-996c-525400b48521",
                     "type": "application/json"
                 }
             },
@@ -3443,9 +3553,9 @@
             }
         ],
         "children": {},
-        "name": "endpoint_identity_group"
+        "endpoint": "/ers/config/endpointgroup"
     },
-    "/ers/config/certificateprofile": {
+    "certificate_authentication_profile": {
         "items": [
             {
                 "id": "925b6d20-8c01-11e6-996c-525400b48521",
@@ -3464,56 +3574,20 @@
             }
         ],
         "children": {},
-        "name": "certificate_authentication_profile"
+        "endpoint": "/ers/config/certificateprofile"
     },
-    "/api/v1/policy/device-admin/time-condition": {
+    "device_admin_time_and_date_condition": {
         "items": [
             {
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/device-admin/time-condition/14a2bfb0-35bf-45d2-99c6-775e9a935cef",
-                    "type": "application/json"
-                },
-                "conditionType": "TimeAndDateCondition",
-                "isNegate": false,
-                "name": "MAX_TIME_DA",
-                "id": "14a2bfb0-35bf-45d2-99c6-775e9a935cef",
-                "description": "My time condition",
-                "hoursRange": {
-                    "startTime": "08:00",
-                    "endTime": "18:00"
-                },
-                "hoursRangeException": {
-                    "startTime": "10:00",
-                    "endTime": "12:00"
-                },
-                "weekDays": [
-                    "Tuesday",
-                    "Monday"
-                ],
-                "weekDaysException": [
-                    "Wednesday",
-                    "Thursday"
-                ],
-                "datesRange": {
-                    "startDate": "2021-01-01",
-                    "endDate": "2025-01-01"
-                },
-                "datesRangeException": {
-                    "startDate": "2022-01-01",
-                    "endDate": "2024-01-01"
-                }
-            },
-            {
-                "link": {
-                    "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/device-admin/time-condition/fa7e8585-f5a2-4a7a-ac01-7ae622c7d7ca",
+                    "href": "https://10.48.190.181/api/v1/policy/device-admin/time-condition/c4087e78-687f-42c5-8158-0ceb51104813",
                     "type": "application/json"
                 },
                 "conditionType": "TimeAndDateCondition",
                 "isNegate": false,
                 "name": "MIN_TIME",
-                "id": "fa7e8585-f5a2-4a7a-ac01-7ae622c7d7ca",
+                "id": "c4087e78-687f-42c5-8158-0ceb51104813",
                 "description": null,
                 "hoursRange": {
                     "startTime": "00:00",
@@ -3536,13 +3610,13 @@
             {
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/device-admin/time-condition/49792516-c280-445c-bd1b-87dca98d0dcc",
+                    "href": "https://10.48.190.181/api/v1/policy/device-admin/time-condition/7f30bc74-0bd6-4999-ab6d-0271f9dfc5c3",
                     "type": "application/json"
                 },
                 "conditionType": "TimeAndDateCondition",
                 "isNegate": false,
-                "name": "MAX_TIME",
-                "id": "49792516-c280-445c-bd1b-87dca98d0dcc",
+                "name": "MAX_TIME_DA",
+                "id": "7f30bc74-0bd6-4999-ab6d-0271f9dfc5c3",
                 "description": "My time condition",
                 "hoursRange": {
                     "startTime": "08:00",
@@ -3572,13 +3646,49 @@
             {
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/device-admin/time-condition/2c28e0b0-331d-4cc0-9b97-b89815cb562f",
+                    "href": "https://10.48.190.181/api/v1/policy/device-admin/time-condition/e45c504f-5d5c-4446-b6ad-8fd0144b7fd2",
+                    "type": "application/json"
+                },
+                "conditionType": "TimeAndDateCondition",
+                "isNegate": false,
+                "name": "MAX_TIME",
+                "id": "e45c504f-5d5c-4446-b6ad-8fd0144b7fd2",
+                "description": "My time condition",
+                "hoursRange": {
+                    "startTime": "08:00",
+                    "endTime": "18:00"
+                },
+                "hoursRangeException": {
+                    "startTime": "10:00",
+                    "endTime": "12:00"
+                },
+                "weekDays": [
+                    "Tuesday",
+                    "Monday"
+                ],
+                "weekDaysException": [
+                    "Wednesday",
+                    "Thursday"
+                ],
+                "datesRange": {
+                    "startDate": "2021-01-01",
+                    "endDate": "2025-01-01"
+                },
+                "datesRangeException": {
+                    "startDate": "2022-01-01",
+                    "endDate": "2024-01-01"
+                }
+            },
+            {
+                "link": {
+                    "rel": "self",
+                    "href": "https://10.48.190.181/api/v1/policy/device-admin/time-condition/6bd7da1f-3444-4629-a991-14ef092c1d08",
                     "type": "application/json"
                 },
                 "conditionType": "TimeAndDateCondition",
                 "isNegate": false,
                 "name": "MIN_TIME_DA",
-                "id": "2c28e0b0-331d-4cc0-9b97-b89815cb562f",
+                "id": "6bd7da1f-3444-4629-a991-14ef092c1d08",
                 "description": null,
                 "hoursRange": {
                     "startTime": "00:00",
@@ -3600,9 +3710,9 @@
             }
         ],
         "children": {},
-        "name": "device_admin_time_and_date_condition"
+        "endpoint": "/api/v1/policy/device-admin/time-condition"
     },
-    "/ers/config/authorizationprofile": {
+    "authorization_profile": {
         "items": [
             {
                 "id": "984b81c0-8c01-11e6-996c-525400b48521",
@@ -3716,7 +3826,7 @@
                 }
             },
             {
-                "id": "ff4baf50-fbfa-11ee-8be0-5ebd6f274dc0",
+                "id": "e1841690-fff3-11ee-8be0-5ebd6f274dc0",
                 "name": "MAX_AP",
                 "description": "My description",
                 "advancedAttributes": [
@@ -3768,7 +3878,7 @@
                 "agentlessPosture": true,
                 "serviceTemplate": false,
                 "easywiredSessionCandidate": true,
-                "daclName": "ACL4",
+                "daclName": "MAX_ACL",
                 "voiceDomainPermission": true,
                 "neat": true,
                 "webAuth": true,
@@ -3782,12 +3892,12 @@
                 "ipv6DaclName": "ACL5",
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/authorizationprofile/ff4baf50-fbfa-11ee-8be0-5ebd6f274dc0",
+                    "href": "https://10.48.190.181/ers/config/authorizationprofile/e1841690-fff3-11ee-8be0-5ebd6f274dc0",
                     "type": "application/json"
                 }
             },
             {
-                "id": "fec5b670-fbfa-11ee-8be0-5ebd6f274dc0",
+                "id": "e02d8740-fff3-11ee-8be0-5ebd6f274dc0",
                 "name": "MIN_AP",
                 "description": "",
                 "accessType": "ACCESS_ACCEPT",
@@ -3799,7 +3909,7 @@
                 "profileName": "Cisco",
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/authorizationprofile/fec5b670-fbfa-11ee-8be0-5ebd6f274dc0",
+                    "href": "https://10.48.190.181/ers/config/authorizationprofile/e02d8740-fff3-11ee-8be0-5ebd6f274dc0",
                     "type": "application/json"
                 }
             },
@@ -3948,56 +4058,20 @@
             }
         ],
         "children": {},
-        "name": "authorization_profile"
+        "endpoint": "/ers/config/authorizationprofile"
     },
-    "/api/v1/policy/network-access/time-condition": {
+    "network_access_time_and_date_condition": {
         "items": [
             {
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/network-access/time-condition/14a2bfb0-35bf-45d2-99c6-775e9a935cef",
-                    "type": "application/json"
-                },
-                "conditionType": "TimeAndDateCondition",
-                "isNegate": false,
-                "name": "MAX_TIME_DA",
-                "id": "14a2bfb0-35bf-45d2-99c6-775e9a935cef",
-                "description": "My time condition",
-                "hoursRange": {
-                    "startTime": "08:00",
-                    "endTime": "18:00"
-                },
-                "hoursRangeException": {
-                    "startTime": "10:00",
-                    "endTime": "12:00"
-                },
-                "weekDays": [
-                    "Tuesday",
-                    "Monday"
-                ],
-                "weekDaysException": [
-                    "Wednesday",
-                    "Thursday"
-                ],
-                "datesRange": {
-                    "startDate": "2021-01-01",
-                    "endDate": "2025-01-01"
-                },
-                "datesRangeException": {
-                    "startDate": "2022-01-01",
-                    "endDate": "2024-01-01"
-                }
-            },
-            {
-                "link": {
-                    "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/network-access/time-condition/fa7e8585-f5a2-4a7a-ac01-7ae622c7d7ca",
+                    "href": "https://10.48.190.181/api/v1/policy/network-access/time-condition/c4087e78-687f-42c5-8158-0ceb51104813",
                     "type": "application/json"
                 },
                 "conditionType": "TimeAndDateCondition",
                 "isNegate": false,
                 "name": "MIN_TIME",
-                "id": "fa7e8585-f5a2-4a7a-ac01-7ae622c7d7ca",
+                "id": "c4087e78-687f-42c5-8158-0ceb51104813",
                 "description": null,
                 "hoursRange": {
                     "startTime": "00:00",
@@ -4020,13 +4094,13 @@
             {
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/network-access/time-condition/49792516-c280-445c-bd1b-87dca98d0dcc",
+                    "href": "https://10.48.190.181/api/v1/policy/network-access/time-condition/7f30bc74-0bd6-4999-ab6d-0271f9dfc5c3",
                     "type": "application/json"
                 },
                 "conditionType": "TimeAndDateCondition",
                 "isNegate": false,
-                "name": "MAX_TIME",
-                "id": "49792516-c280-445c-bd1b-87dca98d0dcc",
+                "name": "MAX_TIME_DA",
+                "id": "7f30bc74-0bd6-4999-ab6d-0271f9dfc5c3",
                 "description": "My time condition",
                 "hoursRange": {
                     "startTime": "08:00",
@@ -4056,13 +4130,49 @@
             {
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/network-access/time-condition/2c28e0b0-331d-4cc0-9b97-b89815cb562f",
+                    "href": "https://10.48.190.181/api/v1/policy/network-access/time-condition/e45c504f-5d5c-4446-b6ad-8fd0144b7fd2",
+                    "type": "application/json"
+                },
+                "conditionType": "TimeAndDateCondition",
+                "isNegate": false,
+                "name": "MAX_TIME",
+                "id": "e45c504f-5d5c-4446-b6ad-8fd0144b7fd2",
+                "description": "My time condition",
+                "hoursRange": {
+                    "startTime": "08:00",
+                    "endTime": "18:00"
+                },
+                "hoursRangeException": {
+                    "startTime": "10:00",
+                    "endTime": "12:00"
+                },
+                "weekDays": [
+                    "Tuesday",
+                    "Monday"
+                ],
+                "weekDaysException": [
+                    "Wednesday",
+                    "Thursday"
+                ],
+                "datesRange": {
+                    "startDate": "2021-01-01",
+                    "endDate": "2025-01-01"
+                },
+                "datesRangeException": {
+                    "startDate": "2022-01-01",
+                    "endDate": "2024-01-01"
+                }
+            },
+            {
+                "link": {
+                    "rel": "self",
+                    "href": "https://10.48.190.181/api/v1/policy/network-access/time-condition/6bd7da1f-3444-4629-a991-14ef092c1d08",
                     "type": "application/json"
                 },
                 "conditionType": "TimeAndDateCondition",
                 "isNegate": false,
                 "name": "MIN_TIME_DA",
-                "id": "2c28e0b0-331d-4cc0-9b97-b89815cb562f",
+                "id": "6bd7da1f-3444-4629-a991-14ef092c1d08",
                 "description": null,
                 "hoursRange": {
                     "startTime": "00:00",
@@ -4084,9 +4194,9 @@
             }
         ],
         "children": {},
-        "name": "network_access_time_and_date_condition"
+        "endpoint": "/api/v1/policy/network-access/time-condition"
     },
-    "/ers/config/idstoresequence": {
+    "identity_source_sequence": {
         "items": [
             {
                 "id": "93246270-8c01-11e6-996c-525400b48521",
@@ -4207,7 +4317,7 @@
                 }
             },
             {
-                "id": "f20dcad0-fbfa-11ee-8be0-5ebd6f274dc0",
+                "id": "d2e6a210-fff3-11ee-8be0-5ebd6f274dc0",
                 "name": "TEST_SEQ",
                 "description": "My identity source sequence",
                 "idSeqItem": [
@@ -4224,21 +4334,16 @@
                 "breakOnStoreFail": true,
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/idstoresequence/f20dcad0-fbfa-11ee-8be0-5ebd6f274dc0",
+                    "href": "https://10.48.190.181/ers/config/idstoresequence/d2e6a210-fff3-11ee-8be0-5ebd6f274dc0",
                     "type": "application/json"
                 }
             }
         ],
         "children": {},
-        "name": "identity_source_sequence"
+        "endpoint": "/ers/config/idstoresequence"
     },
-    "/api/v1/repository": {
+    "repository": {
         "items": [
-            {
-                "name": "TEST_DISK",
-                "protocol": "DISK",
-                "path": "/"
-            },
             {
                 "name": "TEST_FTP",
                 "protocol": "SFTP",
@@ -4247,45 +4352,27 @@
                 "enablePki": true,
                 "userName": "user1",
                 "password": null
+            },
+            {
+                "name": "TEST_DISK",
+                "protocol": "DISK",
+                "path": "/"
             }
         ],
         "children": {},
-        "name": "repository"
+        "endpoint": "/api/v1/repository"
     },
-    "/ers/config/activedirectory": {
+    "active_directory_join_point": {
         "items": [],
         "children": {},
-        "name": "active_directory_join_point"
+        "endpoint": "/ers/config/activedirectory"
     },
-    "/ers/config/endpoint": {
+    "endpoint": {
         "items": [
             {
-                "id": "75957940-fb36-11ee-8be0-5ebd6f274dc0",
-                "name": "FF:FF:FF:FF:FF:FF",
-                "description": "Test",
-                "mac": "FF:FF:FF:FF:FF:FF",
-                "profileId": "",
-                "staticProfileAssignment": false,
-                "staticProfileAssignmentDefined": true,
-                "groupId": "aa0e8b20-8bff-11e6-996c-525400b48521",
-                "staticGroupAssignment": false,
-                "staticGroupAssignmentDefined": true,
-                "portalUser": "",
-                "identityStore": "",
-                "identityStoreId": "",
-                "customAttributes": {
-                    "customAttributes": {}
-                },
-                "link": {
-                    "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/endpoint/75957940-fb36-11ee-8be0-5ebd6f274dc0",
-                    "type": "application/json"
-                }
-            },
-            {
-                "id": "8f03aff0-f43d-11ee-8be0-5ebd6f274dc0",
-                "name": "00:50:56:9D:C1:FB",
-                "mac": "00:50:56:9D:C1:FB",
+                "id": "6809bb40-00ba-11ef-8be0-5ebd6f274dc0",
+                "name": "00:50:56:BC:9B:27",
+                "mac": "00:50:56:BC:9B:27",
                 "profileId": "3af39770-8c00-11e6-996c-525400b48521",
                 "staticProfileAssignment": false,
                 "staticProfileAssignmentDefined": true,
@@ -4300,19 +4387,42 @@
                 },
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/endpoint/8f03aff0-f43d-11ee-8be0-5ebd6f274dc0",
+                    "href": "https://10.48.190.181/ers/config/endpoint/6809bb40-00ba-11ef-8be0-5ebd6f274dc0",
+                    "type": "application/json"
+                }
+            },
+            {
+                "id": "d33bee00-fff3-11ee-8be0-5ebd6f274dc0",
+                "name": "FF:FF:FF:FF:FF:00",
+                "description": "My description",
+                "mac": "FF:FF:FF:FF:FF:00",
+                "profileId": "",
+                "staticProfileAssignment": false,
+                "staticProfileAssignmentDefined": true,
+                "groupId": "aa000c30-8bff-11e6-996c-525400b48521",
+                "staticGroupAssignment": true,
+                "staticGroupAssignmentDefined": true,
+                "portalUser": "",
+                "identityStore": "",
+                "identityStoreId": "",
+                "customAttributes": {
+                    "customAttributes": {}
+                },
+                "link": {
+                    "rel": "self",
+                    "href": "https://10.48.190.181/ers/config/endpoint/d33bee00-fff3-11ee-8be0-5ebd6f274dc0",
                     "type": "application/json"
                 }
             }
         ],
         "children": {},
-        "name": "endpoint"
+        "endpoint": "/ers/config/endpoint"
     },
-    "/api/v1/policy/device-admin/policy-set": {
+    "device_admin_policy_set": {
         "items": [
             {
                 "default": false,
-                "id": "4cfa8c58-521b-471a-8968-10b6ced85925",
+                "id": "35d9abeb-36ae-4d07-b9c7-6bf9a53da76d",
                 "name": "MIN_PS_DA",
                 "description": null,
                 "hitCounts": 0,
@@ -4323,20 +4433,20 @@
                     "conditionType": "ConditionReference",
                     "isNegate": false,
                     "name": "MIN_CON_DA",
-                    "id": "b13c0685-e0be-4802-a527-c2a87f6b384d",
+                    "id": "ec46893a-83d6-4b8f-afd1-15aebc045510",
                     "description": null
                 },
                 "serviceName": "Default Device Admin",
                 "isProxy": false,
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/4cfa8c58-521b-471a-8968-10b6ced85925",
+                    "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/35d9abeb-36ae-4d07-b9c7-6bf9a53da76d",
                     "type": "application/json"
                 }
             },
             {
                 "default": false,
-                "id": "66530e00-86fe-4d18-ad39-523a8f1a817d",
+                "id": "63046a30-5ed5-4d0a-8bea-ac968e27c26b",
                 "name": "MAX_PS_DA",
                 "description": "My policy set",
                 "hitCounts": 0,
@@ -4367,7 +4477,7 @@
                                     "conditionType": "ConditionReference",
                                     "isNegate": false,
                                     "name": "MIN_CON_DA",
-                                    "id": "b13c0685-e0be-4802-a527-c2a87f6b384d",
+                                    "id": "ec46893a-83d6-4b8f-afd1-15aebc045510",
                                     "description": null
                                 }
                             ]
@@ -4377,7 +4487,7 @@
                             "conditionType": "ConditionReference",
                             "isNegate": false,
                             "name": "MIN_CON_DA",
-                            "id": "b13c0685-e0be-4802-a527-c2a87f6b384d",
+                            "id": "ec46893a-83d6-4b8f-afd1-15aebc045510",
                             "description": null
                         }
                     ]
@@ -4386,13 +4496,13 @@
                 "isProxy": false,
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/66530e00-86fe-4d18-ad39-523a8f1a817d",
+                    "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/63046a30-5ed5-4d0a-8bea-ac968e27c26b",
                     "type": "application/json"
                 }
             },
             {
                 "default": false,
-                "id": "10e37e7c-65aa-4241-801e-f39f1223f34a",
+                "id": "7338ad0d-50f0-4a3d-8485-d92609aa070f",
                 "name": "MIN_PS_DA_RANK_2",
                 "description": null,
                 "hitCounts": 0,
@@ -4403,14 +4513,14 @@
                     "conditionType": "ConditionReference",
                     "isNegate": false,
                     "name": "MIN_CON_DA",
-                    "id": "b13c0685-e0be-4802-a527-c2a87f6b384d",
+                    "id": "ec46893a-83d6-4b8f-afd1-15aebc045510",
                     "description": null
                 },
                 "serviceName": "Default Device Admin",
                 "isProxy": false,
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/10e37e7c-65aa-4241-801e-f39f1223f34a",
+                    "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/7338ad0d-50f0-4a3d-8485-d92609aa070f",
                     "type": "application/json"
                 }
             },
@@ -4433,482 +4543,67 @@
             }
         ],
         "children": {
-            "authentication": [
-                {
-                    "rule": {
-                        "default": true,
-                        "id": "bc14783b-3e73-4b9a-b5a6-26c3308d7d4d",
-                        "name": "Default",
-                        "hitCounts": 0,
-                        "rank": 0,
-                        "state": "enabled",
-                        "condition": null
-                    },
-                    "identitySourceName": "All_User_ID_Stores",
-                    "ifAuthFail": "REJECT",
-                    "ifUserNotFound": "REJECT",
-                    "ifProcessFail": "DROP",
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/4cfa8c58-521b-471a-8968-10b6ced85925/authentication/bc14783b-3e73-4b9a-b5a6-26c3308d7d4d",
-                        "type": "application/json"
-                    }
-                },
-                {
-                    "rule": {
-                        "default": false,
-                        "id": "c0befaa0-c090-4331-9177-64a26c8f4973",
-                        "name": "MIN_AUTH_DA",
-                        "hitCounts": 0,
-                        "rank": 0,
-                        "state": "enabled",
-                        "condition": {
-                            "link": null,
-                            "conditionType": "ConditionReference",
-                            "isNegate": false,
-                            "name": "EAP-TLS",
-                            "id": "86edcb44-f0a4-483a-88d9-80b5c33baad8",
-                            "description": "Default condition for BYOD flow for any device that has passed the NSP process"
+            "device_admin_authentication_rule": {
+                "items": [
+                    {
+                        "rule": {
+                            "default": true,
+                            "id": "9e425b42-27d1-4cb5-871a-c2f967016189",
+                            "name": "Default",
+                            "hitCounts": 0,
+                            "rank": 0,
+                            "state": "enabled",
+                            "condition": null
+                        },
+                        "identitySourceName": "All_User_ID_Stores",
+                        "ifAuthFail": "REJECT",
+                        "ifUserNotFound": "REJECT",
+                        "ifProcessFail": "DROP",
+                        "link": {
+                            "rel": "self",
+                            "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/35d9abeb-36ae-4d07-b9c7-6bf9a53da76d/authentication/9e425b42-27d1-4cb5-871a-c2f967016189",
+                            "type": "application/json"
                         }
-                    },
-                    "identitySourceName": "Internal Users",
-                    "ifAuthFail": "REJECT",
-                    "ifUserNotFound": "REJECT",
-                    "ifProcessFail": "DROP",
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/66530e00-86fe-4d18-ad39-523a8f1a817d/authentication/c0befaa0-c090-4331-9177-64a26c8f4973",
-                        "type": "application/json"
                     }
-                },
-                {
-                    "rule": {
-                        "default": false,
-                        "id": "771d36b3-7a04-4b19-a21b-9d11649e959e",
-                        "name": "MAX_AUTH_DA",
-                        "hitCounts": 0,
-                        "rank": 1,
-                        "state": "disabled",
-                        "condition": {
-                            "link": null,
-                            "conditionType": "ConditionAndBlock",
-                            "isNegate": false,
-                            "children": [
-                                {
-                                    "link": null,
-                                    "conditionType": "ConditionOrBlock",
-                                    "isNegate": true,
-                                    "children": [
-                                        {
-                                            "link": null,
-                                            "conditionType": "ConditionAttributes",
-                                            "isNegate": false,
-                                            "dictionaryName": "DEVICE",
-                                            "attributeName": "Location",
-                                            "operator": "equals",
-                                            "dictionaryValue": null,
-                                            "attributeValue": "All Locations"
-                                        },
-                                        {
-                                            "link": null,
-                                            "conditionType": "ConditionReference",
-                                            "isNegate": false,
-                                            "name": "EAP-TLS",
-                                            "id": "86edcb44-f0a4-483a-88d9-80b5c33baad8",
-                                            "description": "Default condition for BYOD flow for any device that has passed the NSP process"
-                                        }
-                                    ]
-                                },
-                                {
-                                    "link": null,
-                                    "conditionType": "ConditionReference",
-                                    "isNegate": false,
-                                    "name": "EAP-TLS",
-                                    "id": "86edcb44-f0a4-483a-88d9-80b5c33baad8",
-                                    "description": "Default condition for BYOD flow for any device that has passed the NSP process"
-                                }
-                            ]
+                ],
+                "children": {},
+                "endpoint": "/api/v1/policy/device-admin/policy-set/%v/authentication"
+            },
+            "device_admin_authorization_exception_rule": {
+                "items": [],
+                "children": {},
+                "endpoint": "/api/v1/policy/device-admin/policy-set/%v/exception"
+            },
+            "device_admin_authorization_rule": {
+                "items": [
+                    {
+                        "rule": {
+                            "default": true,
+                            "id": "9da794e6-6c7a-4972-827d-71e0c6cadc20",
+                            "name": "Default",
+                            "hitCounts": 0,
+                            "rank": 0,
+                            "state": "enabled",
+                            "condition": null
+                        },
+                        "commands": [
+                            "DenyAllCommands"
+                        ],
+                        "profile": "Deny All Shell Profile",
+                        "link": {
+                            "rel": "self",
+                            "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/35d9abeb-36ae-4d07-b9c7-6bf9a53da76d/authorization/9da794e6-6c7a-4972-827d-71e0c6cadc20",
+                            "type": "application/json"
                         }
-                    },
-                    "identitySourceName": "Internal Endpoints",
-                    "ifAuthFail": "REJECT",
-                    "ifUserNotFound": "CONTINUE",
-                    "ifProcessFail": "DROP",
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/66530e00-86fe-4d18-ad39-523a8f1a817d/authentication/771d36b3-7a04-4b19-a21b-9d11649e959e",
-                        "type": "application/json"
                     }
-                },
-                {
-                    "rule": {
-                        "default": true,
-                        "id": "f7c9d60d-1080-470b-be0e-7da031675c70",
-                        "name": "Default",
-                        "hitCounts": 0,
-                        "rank": 2,
-                        "state": "enabled",
-                        "condition": null
-                    },
-                    "identitySourceName": "All_User_ID_Stores",
-                    "ifAuthFail": "REJECT",
-                    "ifUserNotFound": "REJECT",
-                    "ifProcessFail": "DROP",
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/66530e00-86fe-4d18-ad39-523a8f1a817d/authentication/f7c9d60d-1080-470b-be0e-7da031675c70",
-                        "type": "application/json"
-                    }
-                },
-                {
-                    "rule": {
-                        "default": true,
-                        "id": "886bd3b0-8df0-4dc5-a5cd-062ecfe74678",
-                        "name": "Default",
-                        "hitCounts": 0,
-                        "rank": 0,
-                        "state": "enabled",
-                        "condition": null
-                    },
-                    "identitySourceName": "All_User_ID_Stores",
-                    "ifAuthFail": "REJECT",
-                    "ifUserNotFound": "REJECT",
-                    "ifProcessFail": "DROP",
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/10e37e7c-65aa-4241-801e-f39f1223f34a/authentication/886bd3b0-8df0-4dc5-a5cd-062ecfe74678",
-                        "type": "application/json"
-                    }
-                },
-                {
-                    "rule": {
-                        "default": true,
-                        "id": "d3125124-3e0a-4ed5-8a22-f48a87bf43af",
-                        "name": "Default",
-                        "hitCounts": 0,
-                        "rank": 0,
-                        "state": "enabled",
-                        "condition": null
-                    },
-                    "identitySourceName": "All_User_ID_Stores",
-                    "ifAuthFail": "REJECT",
-                    "ifUserNotFound": "REJECT",
-                    "ifProcessFail": "DROP",
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/71897c40-4b24-40e5-932f-4102cd56fc16/authentication/d3125124-3e0a-4ed5-8a22-f48a87bf43af",
-                        "type": "application/json"
-                    }
-                }
-            ],
-            "exception": [
-                {
-                    "rule": {
-                        "default": false,
-                        "id": "216d6b4a-22ad-4b12-b9d1-e1ee4aa55805",
-                        "name": "MIN_AUTHZ_EX_DA",
-                        "hitCounts": 0,
-                        "rank": 0,
-                        "state": "enabled",
-                        "condition": {
-                            "link": null,
-                            "conditionType": "ConditionReference",
-                            "isNegate": false,
-                            "name": "EAP-TLS",
-                            "id": "86edcb44-f0a4-483a-88d9-80b5c33baad8",
-                            "description": "Default condition for BYOD flow for any device that has passed the NSP process"
-                        }
-                    },
-                    "commands": [],
-                    "profile": "MIN_TP",
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/66530e00-86fe-4d18-ad39-523a8f1a817d/exception/216d6b4a-22ad-4b12-b9d1-e1ee4aa55805",
-                        "type": "application/json"
-                    }
-                },
-                {
-                    "rule": {
-                        "default": false,
-                        "id": "63f815ad-d937-4101-8081-7938c894e64e",
-                        "name": "MAX_AUTHZ_EX_DA",
-                        "hitCounts": 0,
-                        "rank": 1,
-                        "state": "disabled",
-                        "condition": {
-                            "link": null,
-                            "conditionType": "ConditionAndBlock",
-                            "isNegate": false,
-                            "children": [
-                                {
-                                    "link": null,
-                                    "conditionType": "ConditionOrBlock",
-                                    "isNegate": true,
-                                    "children": [
-                                        {
-                                            "link": null,
-                                            "conditionType": "ConditionAttributes",
-                                            "isNegate": false,
-                                            "dictionaryName": "DEVICE",
-                                            "attributeName": "Location",
-                                            "operator": "equals",
-                                            "dictionaryValue": null,
-                                            "attributeValue": "All Locations"
-                                        },
-                                        {
-                                            "link": null,
-                                            "conditionType": "ConditionReference",
-                                            "isNegate": false,
-                                            "name": "EAP-TLS",
-                                            "id": "86edcb44-f0a4-483a-88d9-80b5c33baad8",
-                                            "description": "Default condition for BYOD flow for any device that has passed the NSP process"
-                                        }
-                                    ]
-                                },
-                                {
-                                    "link": null,
-                                    "conditionType": "ConditionReference",
-                                    "isNegate": false,
-                                    "name": "EAP-TLS",
-                                    "id": "86edcb44-f0a4-483a-88d9-80b5c33baad8",
-                                    "description": "Default condition for BYOD flow for any device that has passed the NSP process"
-                                }
-                            ]
-                        }
-                    },
-                    "commands": [
-                        "MAX_TCS",
-                        "MIN_TCS"
-                    ],
-                    "profile": "MIN_TP",
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/66530e00-86fe-4d18-ad39-523a8f1a817d/exception/63f815ad-d937-4101-8081-7938c894e64e",
-                        "type": "application/json"
-                    }
-                },
-                {
-                    "rule": {
-                        "default": false,
-                        "id": "4fa5da7a-82b8-4e4b-b532-42dfac4a71ec",
-                        "name": "MIN_AUTHZ_EX_DA_RANK_2",
-                        "hitCounts": 0,
-                        "rank": 2,
-                        "state": "enabled",
-                        "condition": {
-                            "link": null,
-                            "conditionType": "ConditionReference",
-                            "isNegate": false,
-                            "name": "EAP-TLS",
-                            "id": "86edcb44-f0a4-483a-88d9-80b5c33baad8",
-                            "description": "Default condition for BYOD flow for any device that has passed the NSP process"
-                        }
-                    },
-                    "commands": [],
-                    "profile": "MIN_TP",
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/66530e00-86fe-4d18-ad39-523a8f1a817d/exception/4fa5da7a-82b8-4e4b-b532-42dfac4a71ec",
-                        "type": "application/json"
-                    }
-                }
-            ],
-            "authorization": [
-                {
-                    "rule": {
-                        "default": true,
-                        "id": "4d7eca1c-5d8a-4c1d-a452-781900c274f7",
-                        "name": "Default",
-                        "hitCounts": 0,
-                        "rank": 0,
-                        "state": "enabled",
-                        "condition": null
-                    },
-                    "commands": [
-                        "DenyAllCommands"
-                    ],
-                    "profile": "Deny All Shell Profile",
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/4cfa8c58-521b-471a-8968-10b6ced85925/authorization/4d7eca1c-5d8a-4c1d-a452-781900c274f7",
-                        "type": "application/json"
-                    }
-                },
-                {
-                    "rule": {
-                        "default": false,
-                        "id": "760c62b5-7748-4b03-9032-e8e210612cd0",
-                        "name": "MIN_AUTHZ_DA",
-                        "hitCounts": 0,
-                        "rank": 0,
-                        "state": "enabled",
-                        "condition": {
-                            "link": null,
-                            "conditionType": "ConditionReference",
-                            "isNegate": false,
-                            "name": "EAP-TLS",
-                            "id": "86edcb44-f0a4-483a-88d9-80b5c33baad8",
-                            "description": "Default condition for BYOD flow for any device that has passed the NSP process"
-                        }
-                    },
-                    "commands": [],
-                    "profile": "MIN_TP",
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/66530e00-86fe-4d18-ad39-523a8f1a817d/authorization/760c62b5-7748-4b03-9032-e8e210612cd0",
-                        "type": "application/json"
-                    }
-                },
-                {
-                    "rule": {
-                        "default": false,
-                        "id": "f9ed1815-0ec5-4b9c-b6fc-aa3e17b66265",
-                        "name": "MAX_AUTHZ_DA",
-                        "hitCounts": 0,
-                        "rank": 1,
-                        "state": "disabled",
-                        "condition": {
-                            "link": null,
-                            "conditionType": "ConditionAndBlock",
-                            "isNegate": false,
-                            "children": [
-                                {
-                                    "link": null,
-                                    "conditionType": "ConditionOrBlock",
-                                    "isNegate": true,
-                                    "children": [
-                                        {
-                                            "link": null,
-                                            "conditionType": "ConditionAttributes",
-                                            "isNegate": false,
-                                            "dictionaryName": "DEVICE",
-                                            "attributeName": "Location",
-                                            "operator": "equals",
-                                            "dictionaryValue": null,
-                                            "attributeValue": "All Locations"
-                                        },
-                                        {
-                                            "link": null,
-                                            "conditionType": "ConditionReference",
-                                            "isNegate": false,
-                                            "name": "EAP-TLS",
-                                            "id": "86edcb44-f0a4-483a-88d9-80b5c33baad8",
-                                            "description": "Default condition for BYOD flow for any device that has passed the NSP process"
-                                        }
-                                    ]
-                                },
-                                {
-                                    "link": null,
-                                    "conditionType": "ConditionReference",
-                                    "isNegate": false,
-                                    "name": "EAP-TLS",
-                                    "id": "86edcb44-f0a4-483a-88d9-80b5c33baad8",
-                                    "description": "Default condition for BYOD flow for any device that has passed the NSP process"
-                                }
-                            ]
-                        }
-                    },
-                    "commands": [
-                        "MAX_TCS",
-                        "MIN_TCS"
-                    ],
-                    "profile": "MIN_TP",
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/66530e00-86fe-4d18-ad39-523a8f1a817d/authorization/f9ed1815-0ec5-4b9c-b6fc-aa3e17b66265",
-                        "type": "application/json"
-                    }
-                },
-                {
-                    "rule": {
-                        "default": false,
-                        "id": "de96e86f-f61f-4876-937c-58c803ee5ca7",
-                        "name": "MIN_AUTHZ_DA_RANK_2",
-                        "hitCounts": 0,
-                        "rank": 2,
-                        "state": "enabled",
-                        "condition": {
-                            "link": null,
-                            "conditionType": "ConditionReference",
-                            "isNegate": false,
-                            "name": "EAP-TLS",
-                            "id": "86edcb44-f0a4-483a-88d9-80b5c33baad8",
-                            "description": "Default condition for BYOD flow for any device that has passed the NSP process"
-                        }
-                    },
-                    "commands": [],
-                    "profile": "MIN_TP",
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/66530e00-86fe-4d18-ad39-523a8f1a817d/authorization/de96e86f-f61f-4876-937c-58c803ee5ca7",
-                        "type": "application/json"
-                    }
-                },
-                {
-                    "rule": {
-                        "default": true,
-                        "id": "8bdeaf5b-ed27-4e86-8918-11e83949ff04",
-                        "name": "Default",
-                        "hitCounts": 0,
-                        "rank": 3,
-                        "state": "enabled",
-                        "condition": null
-                    },
-                    "commands": [
-                        "DenyAllCommands"
-                    ],
-                    "profile": "Deny All Shell Profile",
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/66530e00-86fe-4d18-ad39-523a8f1a817d/authorization/8bdeaf5b-ed27-4e86-8918-11e83949ff04",
-                        "type": "application/json"
-                    }
-                },
-                {
-                    "rule": {
-                        "default": true,
-                        "id": "3d4c58fa-cf7e-4d1b-a6f9-5c7f5cb915f1",
-                        "name": "Default",
-                        "hitCounts": 0,
-                        "rank": 0,
-                        "state": "enabled",
-                        "condition": null
-                    },
-                    "commands": [
-                        "DenyAllCommands"
-                    ],
-                    "profile": "Deny All Shell Profile",
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/10e37e7c-65aa-4241-801e-f39f1223f34a/authorization/3d4c58fa-cf7e-4d1b-a6f9-5c7f5cb915f1",
-                        "type": "application/json"
-                    }
-                },
-                {
-                    "rule": {
-                        "default": true,
-                        "id": "01ff4e6f-fe30-4b93-adbb-b3973a4b7ffe",
-                        "name": "Default",
-                        "hitCounts": 0,
-                        "rank": 0,
-                        "state": "enabled",
-                        "condition": null
-                    },
-                    "commands": [
-                        "DenyAllCommands"
-                    ],
-                    "profile": "Deny All Shell Profile",
-                    "link": {
-                        "rel": "self",
-                        "href": "https://10.48.190.181/api/v1/policy/device-admin/policy-set/71897c40-4b24-40e5-932f-4102cd56fc16/authorization/01ff4e6f-fe30-4b93-adbb-b3973a4b7ffe",
-                        "type": "application/json"
-                    }
-                }
-            ]
+                ],
+                "children": {},
+                "endpoint": "/api/v1/policy/device-admin/policy-set/%v/authorization"
+            }
         },
-        "name": "device_admin_policy_set"
+        "endpoint": "/api/v1/policy/device-admin/policy-set"
     },
-    "/ers/config/tacacscommandsets": {
+    "tacacs_command_set": {
         "items": [
             {
                 "id": "7f1fa6b0-e12e-11ee-a78c-92cf53c911d1",
@@ -4925,7 +4620,7 @@
                 }
             },
             {
-                "id": "f1747100-fbfa-11ee-8be0-5ebd6f274dc0",
+                "id": "d1973eb0-fff3-11ee-8be0-5ebd6f274dc0",
                 "name": "MAX_TCS",
                 "description": "My Tacacs command set",
                 "permitUnmatched": true,
@@ -4945,12 +4640,12 @@
                 },
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/tacacscommandsets/f1747100-fbfa-11ee-8be0-5ebd6f274dc0",
+                    "href": "https://10.48.190.181/ers/config/tacacscommandsets/d1973eb0-fff3-11ee-8be0-5ebd6f274dc0",
                     "type": "application/json"
                 }
             },
             {
-                "id": "f182c8e0-fbfa-11ee-8be0-5ebd6f274dc0",
+                "id": "d20c95c0-fff3-11ee-8be0-5ebd6f274dc0",
                 "name": "MIN_TCS",
                 "description": "",
                 "permitUnmatched": false,
@@ -4959,56 +4654,56 @@
                 },
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/tacacscommandsets/f182c8e0-fbfa-11ee-8be0-5ebd6f274dc0",
+                    "href": "https://10.48.190.181/ers/config/tacacscommandsets/d20c95c0-fff3-11ee-8be0-5ebd6f274dc0",
                     "type": "application/json"
                 }
             }
         ],
         "children": {},
-        "name": "tacacs_command_set"
+        "endpoint": "/ers/config/tacacscommandsets"
     },
-    "/ers/config/sgmapping": {
+    "trustsec_ip_to_sgt_mapping": {
         "items": [
             {
-                "id": "4cc1d678-bb72-4fdd-bc53-418643b6ce31",
-                "name": "1.2.3.4/32",
-                "sgt": "6253fa24-5e69-4941-8285-3640f7d9ae06",
-                "deployType": "ALL",
-                "hostIp": "1.2.3.4/32",
-                "link": {
-                    "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/sgmapping/4cc1d678-bb72-4fdd-bc53-418643b6ce31",
-                    "type": "application/json"
-                }
-            },
-            {
-                "id": "bf01ecc7-7412-4a83-aae3-ea11f2d37bff",
+                "id": "270fbb69-053f-4f51-99b0-dedaef3eddb3",
                 "name": "host1.cisco.com",
-                "sgt": "90cb1750-c754-4e15-ac95-7aeafce3fca1",
+                "sgt": "fc665031-c29b-4c8f-9373-130228afeb05",
                 "deployType": "ALL",
                 "hostName": "host1.cisco.com",
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/sgmapping/bf01ecc7-7412-4a83-aae3-ea11f2d37bff",
+                    "href": "https://10.48.190.181/ers/config/sgmapping/270fbb69-053f-4f51-99b0-dedaef3eddb3",
                     "type": "application/json"
                 }
             },
             {
-                "id": "a07900ff-ea4e-4938-9581-7b972bd08c52",
-                "name": "map.cisco.com",
-                "hostName": "map.cisco.com",
-                "mappingGroup": "ffd83ea1-da9e-473f-8db0-a0c40e22f011",
+                "id": "aac9f182-7719-48e4-92f8-1394b9d920fa",
+                "name": "1.2.3.4/32",
+                "sgt": "51a39249-6dca-40ce-a383-eaf55d564f49",
+                "deployType": "ALL",
+                "hostIp": "1.2.3.4/32",
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/sgmapping/a07900ff-ea4e-4938-9581-7b972bd08c52",
+                    "href": "https://10.48.190.181/ers/config/sgmapping/aac9f182-7719-48e4-92f8-1394b9d920fa",
+                    "type": "application/json"
+                }
+            },
+            {
+                "id": "979fd545-c3c6-4f21-88be-2fe968412dc1",
+                "name": "map.cisco.com",
+                "hostName": "map.cisco.com",
+                "mappingGroup": "fd143bfb-1dd1-4488-a63c-4c13c112ca03",
+                "link": {
+                    "rel": "self",
+                    "href": "https://10.48.190.181/ers/config/sgmapping/979fd545-c3c6-4f21-88be-2fe968412dc1",
                     "type": "application/json"
                 }
             }
         ],
         "children": {},
-        "name": "trustsec_ip_to_sgt_mapping"
+        "endpoint": "/ers/config/sgmapping"
     },
-    "/ers/config/identitygroup": {
+    "user_identity_group": {
         "items": [
             {
                 "id": "a176c430-8c01-11e6-996c-525400b48521",
@@ -5088,24 +4783,24 @@
                 }
             },
             {
-                "id": "f172ea60-fbfa-11ee-8be0-5ebd6f274dc0",
+                "id": "d24028e0-fff3-11ee-8be0-5ebd6f274dc0",
                 "name": "MAX_UIG",
                 "description": "My description",
                 "parent": "NAC Group:NAC:IdentityGroups:User Identity Groups",
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/identitygroup/f172ea60-fbfa-11ee-8be0-5ebd6f274dc0",
+                    "href": "https://10.48.190.181/ers/config/identitygroup/d24028e0-fff3-11ee-8be0-5ebd6f274dc0",
                     "type": "application/json"
                 }
             },
             {
-                "id": "f1840160-fbfa-11ee-8be0-5ebd6f274dc0",
+                "id": "d248db70-fff3-11ee-8be0-5ebd6f274dc0",
                 "name": "MIN_UIG",
                 "description": "",
                 "parent": "NAC Group:NAC:IdentityGroups:User Identity Groups",
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/identitygroup/f1840160-fbfa-11ee-8be0-5ebd6f274dc0",
+                    "href": "https://10.48.190.181/ers/config/identitygroup/d248db70-fff3-11ee-8be0-5ebd6f274dc0",
                     "type": "application/json"
                 }
             },
@@ -5122,9 +4817,9 @@
             }
         ],
         "children": {},
-        "name": "user_identity_group"
+        "endpoint": "/ers/config/identitygroup"
     },
-    "/ers/config/egressmatrixcell": {
+    "trustsec_egress_matrix_cell": {
         "items": [
             {
                 "id": "92c1a900-8c01-11e6-996c-525400b48521",
@@ -5144,10 +4839,10 @@
                 }
             },
             {
-                "id": "f2276d52-fbfa-11ee-8be0-5ebd6f274dc0",
+                "id": "d33cd861-fff3-11ee-8be0-5ebd6f274dc0",
                 "name": "SGT101-SGT102",
-                "sourceSgtId": "6253fa24-5e69-4941-8285-3640f7d9ae06",
-                "destinationSgtId": "c62225e3-1f99-4e61-ace8-976a477fa3f4",
+                "sourceSgtId": "51a39249-6dca-40ce-a383-eaf55d564f49",
+                "destinationSgtId": "f9ac2a73-db90-4628-9eef-4f0315d54171",
                 "matrixCellStatus": "ENABLED",
                 "defaultRule": "PERMIT_IP",
                 "sgacls": [
@@ -5155,15 +4850,15 @@
                 ],
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/egressmatrixcell/f2276d52-fbfa-11ee-8be0-5ebd6f274dc0",
+                    "href": "https://10.48.190.181/ers/config/egressmatrixcell/d33cd861-fff3-11ee-8be0-5ebd6f274dc0",
                     "type": "application/json"
                 }
             },
             {
-                "id": "f2276d53-fbfa-11ee-8be0-5ebd6f274dc0",
+                "id": "d346ea80-fff3-11ee-8be0-5ebd6f274dc0",
                 "name": "SGT102-SGT103",
-                "sourceSgtId": "c62225e3-1f99-4e61-ace8-976a477fa3f4",
-                "destinationSgtId": "90cb1750-c754-4e15-ac95-7aeafce3fca1",
+                "sourceSgtId": "f9ac2a73-db90-4628-9eef-4f0315d54171",
+                "destinationSgtId": "fc665031-c29b-4c8f-9373-130228afeb05",
                 "matrixCellStatus": "MONITOR",
                 "defaultRule": "DENY_IP",
                 "sgacls": [
@@ -5171,15 +4866,15 @@
                 ],
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/egressmatrixcell/f2276d53-fbfa-11ee-8be0-5ebd6f274dc0",
+                    "href": "https://10.48.190.181/ers/config/egressmatrixcell/d346ea80-fff3-11ee-8be0-5ebd6f274dc0",
                     "type": "application/json"
                 }
             }
         ],
         "children": {},
-        "name": "trustsec_egress_matrix_cell"
+        "endpoint": "/ers/config/egressmatrixcell"
     },
-    "/api/v1/policy/device-admin/condition": {
+    "device_admin_condition": {
         "items": [
             {
                 "link": {
@@ -5252,13 +4947,42 @@
             {
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/device-admin/condition/14a2bfb0-35bf-45d2-99c6-775e9a935cef",
+                    "href": "https://10.48.190.181/api/v1/policy/device-admin/condition/c4087e78-687f-42c5-8158-0ceb51104813",
+                    "type": "application/json"
+                },
+                "conditionType": "TimeAndDateCondition",
+                "isNegate": false,
+                "name": "MIN_TIME",
+                "id": "c4087e78-687f-42c5-8158-0ceb51104813",
+                "description": null,
+                "hoursRange": {
+                    "startTime": "00:00",
+                    "endTime": "23:59"
+                },
+                "hoursRangeException": null,
+                "weekDays": [
+                    "Sunday",
+                    "Monday",
+                    "Tuesday",
+                    "Wednesday",
+                    "Thursday",
+                    "Friday",
+                    "Saturday"
+                ],
+                "weekDaysException": [],
+                "datesRange": null,
+                "datesRangeException": null
+            },
+            {
+                "link": {
+                    "rel": "self",
+                    "href": "https://10.48.190.181/api/v1/policy/device-admin/condition/7f30bc74-0bd6-4999-ab6d-0271f9dfc5c3",
                     "type": "application/json"
                 },
                 "conditionType": "TimeAndDateCondition",
                 "isNegate": false,
                 "name": "MAX_TIME_DA",
-                "id": "14a2bfb0-35bf-45d2-99c6-775e9a935cef",
+                "id": "7f30bc74-0bd6-4999-ab6d-0271f9dfc5c3",
                 "description": "My time condition",
                 "hoursRange": {
                     "startTime": "08:00",
@@ -5288,7 +5012,7 @@
             {
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/device-admin/condition/850e54c1-373a-435d-a792-c76d3218c19c",
+                    "href": "https://10.48.190.181/api/v1/policy/device-admin/condition/e7b53a42-ac3d-4828-a6f0-c11e72da71be",
                     "type": "application/json"
                 },
                 "conditionType": "LibraryConditionAndBlock",
@@ -5329,65 +5053,19 @@
                     }
                 ],
                 "name": "MAX_CON_DA",
-                "id": "850e54c1-373a-435d-a792-c76d3218c19c",
+                "id": "e7b53a42-ac3d-4828-a6f0-c11e72da71be",
                 "description": "My condition"
             },
             {
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/device-admin/condition/fa7e8585-f5a2-4a7a-ac01-7ae622c7d7ca",
-                    "type": "application/json"
-                },
-                "conditionType": "TimeAndDateCondition",
-                "isNegate": false,
-                "name": "MIN_TIME",
-                "id": "fa7e8585-f5a2-4a7a-ac01-7ae622c7d7ca",
-                "description": null,
-                "hoursRange": {
-                    "startTime": "00:00",
-                    "endTime": "23:59"
-                },
-                "hoursRangeException": null,
-                "weekDays": [
-                    "Sunday",
-                    "Monday",
-                    "Tuesday",
-                    "Wednesday",
-                    "Thursday",
-                    "Friday",
-                    "Saturday"
-                ],
-                "weekDaysException": [],
-                "datesRange": null,
-                "datesRangeException": null
-            },
-            {
-                "link": {
-                    "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/device-admin/condition/b13c0685-e0be-4802-a527-c2a87f6b384d",
-                    "type": "application/json"
-                },
-                "conditionType": "LibraryConditionAttributes",
-                "isNegate": false,
-                "dictionaryName": "TACACS",
-                "attributeName": "User",
-                "operator": "equals",
-                "dictionaryValue": null,
-                "attributeValue": "User1",
-                "name": "MIN_CON_DA",
-                "id": "b13c0685-e0be-4802-a527-c2a87f6b384d",
-                "description": null
-            },
-            {
-                "link": {
-                    "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/device-admin/condition/49792516-c280-445c-bd1b-87dca98d0dcc",
+                    "href": "https://10.48.190.181/api/v1/policy/device-admin/condition/e45c504f-5d5c-4446-b6ad-8fd0144b7fd2",
                     "type": "application/json"
                 },
                 "conditionType": "TimeAndDateCondition",
                 "isNegate": false,
                 "name": "MAX_TIME",
-                "id": "49792516-c280-445c-bd1b-87dca98d0dcc",
+                "id": "e45c504f-5d5c-4446-b6ad-8fd0144b7fd2",
                 "description": "My time condition",
                 "hoursRange": {
                     "startTime": "08:00",
@@ -5417,13 +5095,13 @@
             {
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/device-admin/condition/2c28e0b0-331d-4cc0-9b97-b89815cb562f",
+                    "href": "https://10.48.190.181/api/v1/policy/device-admin/condition/6bd7da1f-3444-4629-a991-14ef092c1d08",
                     "type": "application/json"
                 },
                 "conditionType": "TimeAndDateCondition",
                 "isNegate": false,
                 "name": "MIN_TIME_DA",
-                "id": "2c28e0b0-331d-4cc0-9b97-b89815cb562f",
+                "id": "6bd7da1f-3444-4629-a991-14ef092c1d08",
                 "description": null,
                 "hoursRange": {
                     "startTime": "00:00",
@@ -5442,12 +5120,29 @@
                 "weekDaysException": [],
                 "datesRange": null,
                 "datesRangeException": null
+            },
+            {
+                "link": {
+                    "rel": "self",
+                    "href": "https://10.48.190.181/api/v1/policy/device-admin/condition/ec46893a-83d6-4b8f-afd1-15aebc045510",
+                    "type": "application/json"
+                },
+                "conditionType": "LibraryConditionAttributes",
+                "isNegate": false,
+                "dictionaryName": "TACACS",
+                "attributeName": "User",
+                "operator": "equals",
+                "dictionaryValue": null,
+                "attributeValue": "User1",
+                "name": "MIN_CON_DA",
+                "id": "ec46893a-83d6-4b8f-afd1-15aebc045510",
+                "description": null
             }
         ],
         "children": {},
-        "name": "device_admin_condition"
+        "endpoint": "/api/v1/policy/device-admin/condition"
     },
-    "/ers/config/downloadableacl": {
+    "downloadable_acl": {
         "items": [
             {
                 "id": "9825aa40-8c01-11e6-996c-525400b48521",
@@ -5474,26 +5169,26 @@
                 }
             },
             {
-                "id": "f1c43eb0-fbfa-11ee-8be0-5ebd6f274dc0",
+                "id": "d18bf410-fff3-11ee-8be0-5ebd6f274dc0",
                 "name": "MAX_ACL",
                 "description": "My dacl",
                 "dacl": "permit ip any any",
                 "daclType": "IP_AGNOSTIC",
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/downloadableacl/f1c43eb0-fbfa-11ee-8be0-5ebd6f274dc0",
+                    "href": "https://10.48.190.181/ers/config/downloadableacl/d18bf410-fff3-11ee-8be0-5ebd6f274dc0",
                     "type": "application/json"
                 }
             },
             {
-                "id": "f1b375d0-fbfa-11ee-8be0-5ebd6f274dc0",
+                "id": "d18c1b20-fff3-11ee-8be0-5ebd6f274dc0",
                 "name": "MIN_ACL",
                 "description": "",
                 "dacl": "permit ip any any",
                 "daclType": "IPV4",
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/downloadableacl/f1b375d0-fbfa-11ee-8be0-5ebd6f274dc0",
+                    "href": "https://10.48.190.181/ers/config/downloadableacl/d18c1b20-fff3-11ee-8be0-5ebd6f274dc0",
                     "type": "application/json"
                 }
             },
@@ -5523,14 +5218,14 @@
             }
         ],
         "children": {},
-        "name": "downloadable_acl"
+        "endpoint": "/ers/config/downloadableacl"
     },
-    "/api/v1/policy/network-access/policy-set/global-exception": {
+    "network_access_authorization_global_exception_rule": {
         "items": [
             {
                 "rule": {
                     "default": false,
-                    "id": "7e2c16fd-5a86-43c8-b6f9-1211505a4f7e",
+                    "id": "84ee435c-c074-4fb2-8e8b-2267ff1f1a18",
                     "name": "MIN_AUTHZ_GLOBAL_EX",
                     "hitCounts": 0,
                     "rank": 0,
@@ -5550,14 +5245,14 @@
                 "securityGroup": null,
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/global-exception/7e2c16fd-5a86-43c8-b6f9-1211505a4f7e",
+                    "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/global-exception/84ee435c-c074-4fb2-8e8b-2267ff1f1a18",
                     "type": "application/json"
                 }
             },
             {
                 "rule": {
                     "default": false,
-                    "id": "3f076e9c-16f2-440b-bbf0-a6ca55903cfa",
+                    "id": "b5669406-74cb-4dbf-baa6-904afeab9ff4",
                     "name": "MAX_AUTHZ_GLOBAL_EX",
                     "hitCounts": 0,
                     "rank": 1,
@@ -5609,14 +5304,14 @@
                 "securityGroup": "BYOD",
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/global-exception/3f076e9c-16f2-440b-bbf0-a6ca55903cfa",
+                    "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/global-exception/b5669406-74cb-4dbf-baa6-904afeab9ff4",
                     "type": "application/json"
                 }
             },
             {
                 "rule": {
                     "default": false,
-                    "id": "f786b9a2-00d1-4ecd-842e-dd30996de502",
+                    "id": "a1b709a1-b861-4002-965c-6d65e7d95fee",
                     "name": "MIN_AUTHZ_GLOBAL_EX_RANK_2",
                     "hitCounts": 0,
                     "rank": 2,
@@ -5636,18 +5331,18 @@
                 "securityGroup": null,
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/global-exception/f786b9a2-00d1-4ecd-842e-dd30996de502",
+                    "href": "https://10.48.190.181/api/v1/policy/network-access/policy-set/global-exception/a1b709a1-b861-4002-965c-6d65e7d95fee",
                     "type": "application/json"
                 }
             }
         ],
         "children": {},
-        "name": "network_access_authorization_global_exception_rule"
+        "endpoint": "/api/v1/policy/network-access/policy-set/global-exception"
     },
-    "/ers/config/internaluser": {
+    "internal_user": {
         "items": [
             {
-                "id": "3079372a-a2b3-4643-97a6-db4bdd6de7b9",
+                "id": "ecf21b29-6fc8-4e1e-862b-3a2a04c72d00",
                 "name": "MAX_USER",
                 "description": "My description",
                 "enabled": false,
@@ -5657,7 +5352,7 @@
                 "firstName": "Max",
                 "lastName": "User",
                 "changePassword": false,
-                "identityGroups": "f172ea60-fbfa-11ee-8be0-5ebd6f274dc0",
+                "identityGroups": "d24028e0-fff3-11ee-8be0-5ebd6f274dc0",
                 "passwordNeverExpires": true,
                 "expiryDateEnabled": false,
                 "expiryDate": "",
@@ -5666,12 +5361,12 @@
                 "passwordIDStore": "Internal Users",
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/internaluser/3079372a-a2b3-4643-97a6-db4bdd6de7b9",
+                    "href": "https://10.48.190.181/ers/config/internaluser/ecf21b29-6fc8-4e1e-862b-3a2a04c72d00",
                     "type": "application/json"
                 }
             },
             {
-                "id": "88b697a9-3d98-4514-900b-d2a02c7a8b75",
+                "id": "966bf29f-f0ca-443a-8db6-c5cdb6de38e7",
                 "name": "MIN_USER",
                 "description": "",
                 "enabled": true,
@@ -5682,7 +5377,7 @@
                 "lastName": "",
                 "changePassword": true,
                 "passwordNeverExpires": false,
-                "daysForPasswordExpiration": 60,
+                "daysForPasswordExpiration": 53,
                 "expiryDateEnabled": false,
                 "expiryDate": "",
                 "enablePassword": "*******",
@@ -5690,7 +5385,7 @@
                 "passwordIDStore": "Internal Users",
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/internaluser/88b697a9-3d98-4514-900b-d2a02c7a8b75",
+                    "href": "https://10.48.190.181/ers/config/internaluser/966bf29f-f0ca-443a-8db6-c5cdb6de38e7",
                     "type": "application/json"
                 }
             },
@@ -5707,7 +5402,7 @@
                 "changePassword": false,
                 "identityGroups": "a1bb2030-8c01-11e6-996c-525400b48521,9f048bb0-8c01-11e6-996c-525400b48521",
                 "passwordNeverExpires": false,
-                "daysForPasswordExpiration": 32,
+                "daysForPasswordExpiration": 19,
                 "expiryDateEnabled": false,
                 "expiryDate": "",
                 "customAttributes": {},
@@ -5720,12 +5415,12 @@
             }
         ],
         "children": {},
-        "name": "internal_user"
+        "endpoint": "/ers/config/internaluser"
     },
-    "/ers/config/networkdevice": {
+    "network_device": {
         "items": [
             {
-                "id": "26b91190-fbfb-11ee-8be0-5ebd6f274dc0",
+                "id": "e3b46410-fff3-11ee-8be0-5ebd6f274dc0",
                 "name": "MAX_DEV",
                 "description": "My description",
                 "modelName": "ABC",
@@ -5754,7 +5449,7 @@
                         "sgaDeviceId": "MAX_DEV",
                         "sgaDevicePassword": "Cisco123",
                         "restApiUsername": "dev1",
-                        "restApiPassword": "itkc/WkBrqJ1/AsOg91X5Umb8GCBlf1My25VqplY/P4="
+                        "restApiPassword": "1h4F6HZgXdTTp9SnfPSm1mrw+S7ggyJOroVtq0lmKsw="
                     },
                     "sgaNotificationAndUpdates": {
                         "downlaodEnvironmentDataEveryXSeconds": 10000,
@@ -5783,7 +5478,7 @@
                 "dtlsDnsName": "cisco.com",
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/networkdevice/26b91190-fbfb-11ee-8be0-5ebd6f274dc0",
+                    "href": "https://10.48.190.181/ers/config/networkdevice/e3b46410-fff3-11ee-8be0-5ebd6f274dc0",
                     "type": "application/json"
                 },
                 "NetworkDeviceIPList": [
@@ -5805,7 +5500,7 @@
                 ]
             },
             {
-                "id": "01ae3060-fbfb-11ee-8be0-5ebd6f274dc0",
+                "id": "e32c6f60-fff3-11ee-8be0-5ebd6f274dc0",
                 "name": "MIN_DEV",
                 "description": "",
                 "authenticationSettings": {
@@ -5817,7 +5512,7 @@
                 "coaPort": 1700,
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/networkdevice/01ae3060-fbfb-11ee-8be0-5ebd6f274dc0",
+                    "href": "https://10.48.190.181/ers/config/networkdevice/e32c6f60-fff3-11ee-8be0-5ebd6f274dc0",
                     "type": "application/json"
                 },
                 "NetworkDeviceIPList": [
@@ -5835,37 +5530,37 @@
             }
         ],
         "children": {},
-        "name": "network_device"
+        "endpoint": "/ers/config/networkdevice"
     },
-    "/ers/config/sgmappinggroup": {
+    "trustsec_ip_to_sgt_mapping_group": {
         "items": [
             {
-                "id": "ffd83ea1-da9e-473f-8db0-a0c40e22f011",
+                "id": "fd143bfb-1dd1-4488-a63c-4c13c112ca03",
                 "name": "MAX_MAP_GROUP",
-                "sgt": "c62225e3-1f99-4e61-ace8-976a477fa3f4",
+                "sgt": "f9ac2a73-db90-4628-9eef-4f0315d54171",
                 "deployType": "ALL",
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/sgmappinggroup/ffd83ea1-da9e-473f-8db0-a0c40e22f011",
+                    "href": "https://10.48.190.181/ers/config/sgmappinggroup/fd143bfb-1dd1-4488-a63c-4c13c112ca03",
                     "type": "application/json"
                 }
             },
             {
-                "id": "eaf8f6e0-dffc-4108-8a6e-efcab8d34cb9",
+                "id": "3935e9f9-2c35-4338-a995-322dbde50d6f",
                 "name": "MIN_MAP_GROUP",
-                "sgt": "90cb1750-c754-4e15-ac95-7aeafce3fca1",
+                "sgt": "fc665031-c29b-4c8f-9373-130228afeb05",
                 "deployType": "ALL",
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/sgmappinggroup/eaf8f6e0-dffc-4108-8a6e-efcab8d34cb9",
+                    "href": "https://10.48.190.181/ers/config/sgmappinggroup/3935e9f9-2c35-4338-a995-322dbde50d6f",
                     "type": "application/json"
                 }
             }
         ],
         "children": {},
-        "name": "trustsec_ip_to_sgt_mapping_group"
+        "endpoint": "/ers/config/sgmappinggroup"
     },
-    "/ers/config/tacacsprofile": {
+    "tacacs_profile": {
         "items": [
             {
                 "id": "7f1baf10-e12e-11ee-a78c-92cf53c911d1",
@@ -5894,7 +5589,7 @@
                 }
             },
             {
-                "id": "f1d3a800-fbfa-11ee-8be0-5ebd6f274dc0",
+                "id": "d22ca0e0-fff3-11ee-8be0-5ebd6f274dc0",
                 "name": "MAX_TP",
                 "description": "My Tacacs profile",
                 "sessionAttributes": {
@@ -5913,12 +5608,12 @@
                 },
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/tacacsprofile/f1d3a800-fbfa-11ee-8be0-5ebd6f274dc0",
+                    "href": "https://10.48.190.181/ers/config/tacacsprofile/d22ca0e0-fff3-11ee-8be0-5ebd6f274dc0",
                     "type": "application/json"
                 }
             },
             {
-                "id": "f1c0e350-fbfa-11ee-8be0-5ebd6f274dc0",
+                "id": "d1f0a950-fff3-11ee-8be0-5ebd6f274dc0",
                 "name": "MIN_TP",
                 "description": "",
                 "sessionAttributes": {
@@ -5926,7 +5621,7 @@
                 },
                 "link": {
                     "rel": "self",
-                    "href": "https://10.48.190.181/ers/config/tacacsprofile/f1c0e350-fbfa-11ee-8be0-5ebd6f274dc0",
+                    "href": "https://10.48.190.181/ers/config/tacacsprofile/d1f0a950-fff3-11ee-8be0-5ebd6f274dc0",
                     "type": "application/json"
                 }
             },
@@ -5970,6 +5665,6 @@
             }
         ],
         "children": {},
-        "name": "tacacs_profile"
+        "endpoint": "/ers/config/tacacsprofile"
     }
 }
