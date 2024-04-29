@@ -99,13 +99,7 @@ class CiscoClientSDWAN(CiscoClient):
 
         # Iterate through the endpoints excluding the ones which has %i and %v in endpoint['endpoint']
         for endpoint in endpoints:
-            endpoint_dict = {
-                endpoint["name"]: {
-                    "items": [],
-                    "children": {},
-                    "endpoint": endpoint["endpoint"],
-                }
-            }
+            endpoint_dict = CiscoClient.create_endpoint_dict(endpoint)
 
             # device templates
             if endpoint["name"] == "cli_device_template":

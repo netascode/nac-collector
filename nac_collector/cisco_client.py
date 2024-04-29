@@ -185,3 +185,27 @@ class CiscoClient(ABC):
         with open(f"{solution}.json", "w", encoding="utf-8") as f:
             json.dump(final_dict, f, indent=4)
         self.logger.info("Data written to %s.json", solution)
+
+    @staticmethod
+    def create_endpoint_dict(endpoint):
+        """
+        Creates a dictionary for a given endpoint.
+
+        The dictionary contains the endpoint's name as the key, and a dictionary as the value.
+        The value dictionary contains "items" and "children" as empty lists and dictionaries,
+        respectively, and "endpoint" as the endpoint's endpoint.
+
+        Args:
+            endpoint (dict): The endpoint to create a dictionary for. It should contain "name"
+                and "endpoint" keys.
+
+        Returns:
+            dict: A dictionary with the endpoint's name as the key and a dictionary as the value.
+        """
+        return {
+            endpoint["name"]: {
+                "items": [],
+                "children": {},
+                "endpoint": endpoint["endpoint"],
+            }
+        }

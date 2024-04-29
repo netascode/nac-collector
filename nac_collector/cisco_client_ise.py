@@ -105,13 +105,7 @@ class CiscoClientISE(CiscoClient):
         # Iterate through the endpoints
         for endpoint in endpoints:
             if all(x not in endpoint["endpoint"] for x in ["%v", "%i"]):
-                endpoint_dict = {
-                    endpoint["name"]: {
-                        "items": [],
-                        "children": {},
-                        "endpoint": endpoint["endpoint"],
-                    }
-                }
+                endpoint_dict = CiscoClient.create_endpoint_dict(endpoint)
 
                 endpoint_dict[endpoint["name"]]["endpoint"] = endpoint["endpoint"]
                 response = self.get_request(self.base_url + endpoint["endpoint"])
