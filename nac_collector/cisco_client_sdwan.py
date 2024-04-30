@@ -93,19 +93,14 @@ class CiscoClientSDWAN(CiscoClient):
         # Initialize an empty dictionary
         final_dict = {}
 
-        # Initialize an empty list for endpoint feature templates
-        # endpoints_feature_templates = []
-        endpoints_with_errors = []
-
         # Iterate through the endpoints
         for endpoint in endpoints:
             endpoint_dict = CiscoClient.create_endpoint_dict(endpoint)
+            print(endpoint)
 
-            if all(x not in endpoint["endpoint"] for x in ["%v", "%i", "/v1/feature-profile/"]):
+            if all(x not in endpoint["endpoint"] for x in ["%v", "%i", "/v1/feature-profile/", "/template/device/"]):
                 endpoint_dict = CiscoClient.create_endpoint_dict(endpoint)
-
                 endpoint_dict[endpoint["name"]]["endpoint"] = endpoint["endpoint"]
-
                 response = self.get_request(self.base_url + endpoint["endpoint"])
 
                 # Get the JSON content of the response
@@ -118,64 +113,20 @@ class CiscoClientSDWAN(CiscoClient):
 
                 # Save results to dictionary
                 final_dict.update(endpoint_dict)
-
                 self.log_response(endpoint, response)
 
             # feature profiles
             elif "/v1/feature-profile/" in endpoint["endpoint"]:
-                print(endpoint["name"], endpoint["endpoint"])
                 endpoint_dict = self.get_feature_profiles(endpoint, endpoint_dict)
                 final_dict.update(endpoint_dict)
             # device templates
             elif endpoint["name"] == "cli_device_template":
                 endpoint_dict = self.get_device_templates(endpoint, endpoint_dict)
+                final_dict.update(endpoint_dict)
             # for feature templates and device templates
             elif "%i" in endpoint["endpoint"]:
                 endpoint_dict = self.get_feature_templates(endpoint, endpoint_dict)
-                # Save results to dictionary
                 final_dict.update(endpoint_dict)
-
-        # Iterate through the endpoints with errors
-        for endpoint in endpoints_with_errors:
-            # Resolve children
-            if "%v" in endpoint:
-                parent_endpoint = endpoint.split("/%v")[0]
-
-                # Check if final_dict[parent_endpoint] exists
-                if parent_endpoint in final_dict:
-                    # Initialize an empty list for parent endpoint ids
-                    parent_endpoint_ids = []
-
-                    # Iterate over the items in final_dict[parent_endpoint]['items']
-                    for item in final_dict[parent_endpoint]["items"]:
-                        # Add the item's id to the list
-                        parent_endpoint_ids.append(item["id"])
-
-                    # Iterate over the parent endpoint ids
-                    for id_ in parent_endpoint_ids:
-                        # Replace '%v' in the endpoint with the id
-                        new_endpoint = endpoint.replace("%v", str(id_))
-
-                        # Send a GET request to the new endpoint
-                        response = self.get_request(self.base_url + new_endpoint)
-
-                        if response.status_code == 200:
-                            # Get the JSON content of the response
-                            data = response.json()
-
-                            if isinstance(data.get("response"), list):
-                                # Get the children endpoint name (e.g., 'authentication', 'authorization')
-                                children_endpoint_name = endpoint.split("/%v/")[1]
-
-                                # Check if the children endpoint name already exists in the 'children' dictionary
-                                if children_endpoint_name not in final_dict[parent_endpoint]["children"]:
-                                    # If not, create a new list for it
-                                    final_dict[parent_endpoint]["children"][children_endpoint_name] = []
-
-                                # Add the data to the list
-                                final_dict[parent_endpoint]["children"][children_endpoint_name].extend(data["response"])
-
-                        self.log_response(endpoint, response)
 
             # resolve feature templates
             elif "%i" in endpoint:
@@ -193,7 +144,9 @@ class CiscoClientSDWAN(CiscoClient):
                     final_dict.update(endpoint_dict)
 
                     self.log_response(endpoint, response)
-
+            else:
+                print("5")
+                input("ACCCCC")
         return final_dict
 
     def get_device_templates(self, endpoint, endpoint_dict):
