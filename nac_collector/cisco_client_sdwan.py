@@ -101,7 +101,7 @@ class CiscoClientSDWAN(CiscoClient):
         for endpoint in endpoints:
             endpoint_dict = CiscoClient.create_endpoint_dict(endpoint)
 
-            if all(x not in endpoint["endpoint"] for x in ["%v", "%i"]):
+            if all(x not in endpoint["endpoint"] for x in ["%v", "%i", "/v1/feature-profile/"]):
                 endpoint_dict = CiscoClient.create_endpoint_dict(endpoint)
 
                 endpoint_dict[endpoint["name"]]["endpoint"] = endpoint["endpoint"]
@@ -121,36 +121,14 @@ class CiscoClientSDWAN(CiscoClient):
 
                 self.log_response(endpoint, response)
 
+            # feature profiles
+            elif "/v1/feature-profile/" in endpoint["endpoint"]:
+                print(endpoint["name"], endpoint["endpoint"])
+                endpoint_dict = self.get_feature_profiles(endpoint, endpoint_dict)
+                final_dict.update(endpoint_dict)
             # device templates
             elif endpoint["name"] == "cli_device_template":
-                response = self.get_request(self.base_url + endpoint["endpoint"])
-
-                for item in response.json()["data"]:
-                    if item["devicesAttached"] != 0:
-                        device_template_endpoint = endpoint["endpoint"] + "config/attached/" + str(item["templateId"])
-                        response = self.get_request(
-                            self.base_url + device_template_endpoint,
-                        )
-                        attached_uuids = [device["uuid"] for device in response.json()["data"]]
-                        data = {
-                            "templateId": str(item["templateId"]),
-                            "deviceIds": attached_uuids,
-                            "isEdited": False,
-                            "isMasterEdited": False,
-                        }
-
-                        response = self.post_request(
-                            self.base_url + "/template/device/config/input/",
-                            json.dumps(data),
-                        )
-
-                        data = response.json()
-                        endpoint_dict[endpoint["name"]]["items"].extend(data["data"])
-                        # Save results to dictionary
-                        final_dict.update(endpoint_dict)
-
-                        self.log_response(endpoint, response)
-
+                endpoint_dict = self.get_device_templates(endpoint, endpoint_dict)
             # for feature templates and device templates
             elif "%i" in endpoint["endpoint"]:
                 endpoint_dict = self.get_feature_templates(endpoint, endpoint_dict)
@@ -218,6 +196,42 @@ class CiscoClientSDWAN(CiscoClient):
 
         return final_dict
 
+    def get_device_templates(self, endpoint, endpoint_dict):
+        """
+        Process CLI device templates.
+
+        Args:
+            endpoint (dict): The endpoint to process.
+            endpoint_dict (dict): The dictionary to append items to.
+            final_dict (dict): The final dictionary to update.
+        """
+        response = self.get_request(self.base_url + endpoint["endpoint"])
+
+        for item in response.json()["data"]:
+            if item["devicesAttached"] != 0:
+                device_template_endpoint = endpoint["endpoint"] + "config/attached/" + str(item["templateId"])
+                response = self.get_request(
+                    self.base_url + device_template_endpoint,
+                )
+                attached_uuids = [device["uuid"] for device in response.json()["data"]]
+                data = {
+                    "templateId": str(item["templateId"]),
+                    "deviceIds": attached_uuids,
+                    "isEdited": False,
+                    "isMasterEdited": False,
+                }
+
+                response = self.post_request(
+                    self.base_url + "/template/device/config/input/",
+                    json.dumps(data),
+                )
+
+                data = response.json()
+                endpoint_dict[endpoint["name"]]["items"].extend(data["data"])
+                self.log_response(endpoint, response)
+
+        return endpoint_dict
+
     def get_feature_templates(self, endpoint, endpoint_dict):
         """
         Process feature templates and feature device templates
@@ -235,10 +249,9 @@ class CiscoClientSDWAN(CiscoClient):
         for item in response.json()["data"]:
             template_endpoint = new_endpoint + "/object/" + str(item["templateId"])
             response = self.get_request(self.base_url + template_endpoint)
-            if response.status_code == 200:
-                # Get the JSON content of the response
-                data = response.json()
-                endpoint_dict[endpoint["name"]]["items"].append(data)
+
+            data = response.json()
+            endpoint_dict[endpoint["name"]]["items"].append(data)
 
             self.log_response(template_endpoint, response)
 
@@ -253,19 +266,28 @@ class CiscoClientSDWAN(CiscoClient):
             endpoint_dict (dict): The dictionary to append items to.
 
         Returns:
-            enpdoint_dict: The updated endpoint_dict with the processed templates.
+            enpdoint_dict: The updated endpoint_dict with the processed profiles.
 
         """
-        new_endpoint = endpoint["endpoint"].replace("/object/%i", "")  # Replace '/object/%i' with ''
-        response = self.get_request(self.base_url + new_endpoint)
-        for item in response.json()["data"]:
-            template_endpoint = new_endpoint + "/object/" + str(item["templateId"])
-            response = self.get_request(self.base_url + template_endpoint)
-            if response.status_code == 200:
-                # Get the JSON content of the response
-                data = response.json()
-                endpoint_dict[endpoint["name"]]["items"].append(data)
+        response = self.get_request(self.base_url + endpoint["endpoint"])
 
-            self.log_response(template_endpoint, response)
+        try:
+            data_loop = response.json()
+        except AttributeError:
+            data_loop = []
+        for item in data_loop:
+            profile_endpoint = endpoint["endpoint"] + str(item["profileId"])
+            response = self.get_request(self.base_url + profile_endpoint)
+
+            for k, v in response.json().items():
+                if k == "associatedProfileParcels":
+                    for parcel in v:
+                        parcel_id = parcel["parcelId"]
+                        parcel_type = parcel["parcelType"]
+                        new_endpoint = profile_endpoint + "/" + parcel_type + "/" + parcel_id
+                        response = self.get_request(self.base_url + new_endpoint)
+                        self.log_response(new_endpoint, response)
+                        data = response.json()
+                        endpoint_dict[endpoint["name"]]["items"].append(data)
 
         return endpoint_dict
