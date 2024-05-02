@@ -114,7 +114,9 @@ def cli(
         )
 
         # Authenticate
-        client.authenticate()
+        if not client.authenticate():
+            print("Authentication failed. Exiting...")
+            return
 
         endpoints_yaml_file = f"endpoints_{solution.lower()}.yaml"
         final_dict = client.get_from_endpoints(endpoints_yaml_file)
@@ -132,7 +134,9 @@ def cli(
         )
 
         # Authenticate
-        client.authenticate()
+        if not client.authenticate():
+            print("Authentication failed. Exiting...")
+            return
 
         endpoints_yaml_file = f"endpoints_{solution.lower()}.yaml"
         final_dict = client.get_from_endpoints(endpoints_yaml_file)

@@ -35,6 +35,9 @@ class CiscoClientSDWAN(CiscoClient):
     def authenticate(self):
         """
         Perform token-based authentication.
+
+        Returns:
+            bool: True if authentication is successful, False otherwise.
         """
 
         auth_url = f"{self.base_url}{self.SDWAN_AUTH_ENDPOINT}"
@@ -67,12 +70,13 @@ class CiscoClientSDWAN(CiscoClient):
                 }
             )
             self.base_url = self.base_url + "/dataservice"
+            return True
 
-        else:
-            logger.error(
-                "Authentication failed with status code: %s",
-                response.status_code,
-            )
+        logger.error(
+            "Authentication failed with status code: %s",
+            response.status_code,
+        )
+        return False
 
     def get_from_endpoints(self, endpoints_yaml_file):
         """
@@ -231,7 +235,8 @@ class CiscoClientSDWAN(CiscoClient):
         for item in data_loop:
             profile_endpoint = endpoint["endpoint"] + str(item["profileId"])
             response = self.get_request(self.base_url + profile_endpoint)
-
+            print(profile_endpoint)
+            input("SSS")
             for k, v in response.json().items():
                 if k == "associatedProfileParcels":
                     for parcel in v:

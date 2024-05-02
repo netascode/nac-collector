@@ -110,7 +110,11 @@ class CiscoClient(ABC):
                 return response
             else:
                 # If the status code is neither 429 nor 200, log an error and continue to the next iteration
-                self.logger.error("GET %s returned an unexpected status code: %s", url, response.status_code)
+                self.logger.error(
+                    "GET %s returned an unexpected status code: %s",
+                    url,
+                    response.status_code,
+                )
                 response = []
         # If the status code is 429 after max_retries attempts,
         # or if no successful response was received, return the last response
@@ -140,14 +144,22 @@ class CiscoClient(ABC):
                 self.retry_after = int(
                     response.headers.get("Retry-After", self.retry_after)
                 )  # Default to retry_after if 'Retry-After' header is not present
-                self.logger.info("POST %s rate limited. Retrying in %s seconds.", url, self.retry_after)
+                self.logger.info(
+                    "POST %s rate limited. Retrying in %s seconds.",
+                    url,
+                    self.retry_after,
+                )
                 time.sleep(self.retry_after)
             elif response.status_code == 200:
                 # If the status code is 200 (OK), return the response
                 return response
             else:
                 # If the status code is neither 429 nor 200, log an error and continue to the next iteration
-                self.logger.error("GET %s returned an unexpected status code: %s", url, response.status_code)
+                self.logger.error(
+                    "GET %s returned an unexpected status code: %s",
+                    url,
+                    response.status_code,
+                )
 
         # If the status code is 429 after max_retries attempts,
         # or if no successful response was received, return the last response
@@ -200,12 +212,6 @@ class CiscoClient(ABC):
                 and "endpoint" keys.
 
         Returns:
-            dict: A dictionary with the endpoint's name as the key and a dictionary as the value.
+            dict: A dictionary with the endpoint's name as the key and a empty list as the value.
         """
-        return {
-            endpoint["name"]: {
-                "items": [],
-                "children": {},
-                "endpoint": endpoint["endpoint"],
-            }
-        }
+        return {endpoint["name"]: []}
