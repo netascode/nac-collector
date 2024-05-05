@@ -109,7 +109,6 @@ class CiscoClientISE(CiscoClient):
             if all(x not in endpoint["endpoint"] for x in ["%v", "%i"]):
                 endpoint_dict = CiscoClient.create_endpoint_dict(endpoint)
 
-                #                endpoint_dict[endpoint["name"]]["endpoint"] = endpoint["endpoint"]
                 response = self.get_request(self.base_url + endpoint["endpoint"])
 
                 # Get the JSON content of the response
@@ -229,7 +228,8 @@ class CiscoClientISE(CiscoClient):
 
         return ers_data
 
-    def get_id_value(self, i):
+    @staticmethod
+    def get_id_value(i):
         """
         Attempts to get the 'id' or 'name' value from a dictionary.
 

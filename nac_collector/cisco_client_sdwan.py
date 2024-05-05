@@ -100,24 +100,39 @@ class CiscoClientSDWAN(CiscoClient):
         # Iterate through the endpoints
         for endpoint in endpoints:
             endpoint_dict = CiscoClient.create_endpoint_dict(endpoint)
-            print(endpoint)
 
             if all(x not in endpoint["endpoint"] for x in ["%v", "%i", "/v1/feature-profile/", "/template/device/"]):
-                endpoint_dict = CiscoClient.create_endpoint_dict(endpoint)
-                endpoint_dict[endpoint["name"]]["endpoint"] = endpoint["endpoint"]
                 response = self.get_request(self.base_url + endpoint["endpoint"])
 
                 # Get the JSON content of the response
                 data = response.json()
 
                 if isinstance(data, list):
-                    endpoint_dict[endpoint["name"]]["items"] = data
+                    for i in data:
+                        endpoint_dict[endpoint["name"]].append(
+                            {
+                                "data": i,
+                                "endpoint": endpoint["endpoint"] + "/" + self.get_id_value(i),
+                            }
+                        )
                 elif data.get("data"):
-                    endpoint_dict[endpoint["name"]]["items"] = data["data"]
+                    if isinstance(data["data"], list):
+                        for i in data["data"]:
+                            try:
+                                endpoint_dict[endpoint["name"]].append(
+                                    {
+                                        "data": i,
+                                        "endpoint": endpoint["endpoint"] + "/" + self.get_id_value(i),
+                                    }
+                                )
+                            except TypeError:
+                                endpoint_dict[endpoint["name"]].append({"data": i, "endpoint": endpoint["endpoint"]})
+                    else:
+                        endpoint_dict[endpoint["name"]].append({"data": data["data"], "endpoint": endpoint["endpoint"]})
 
                 # Save results to dictionary
                 final_dict.update(endpoint_dict)
-                self.log_response(endpoint, response)
+                self.log_response(endpoint["endpoint"], response)
 
             # feature profiles
             elif "/v1/feature-profile/" in endpoint["endpoint"]:
@@ -184,7 +199,20 @@ class CiscoClientSDWAN(CiscoClient):
                 )
 
                 data = response.json()
-                endpoint_dict[endpoint["name"]]["items"].extend(data["data"])
+                if isinstance(data["data"], list):
+                    for i in data["data"]:
+                        try:
+                            endpoint_dict[endpoint["name"]].append(
+                                {
+                                    "data": i,
+                                    "endpoint": endpoint["endpoint"].split("/%i")[0] + "/" + self.get_id_value(i),
+                                }
+                            )
+                        except TypeError:
+                            endpoint_dict[endpoint["name"]].append({"data": i, "endpoint": endpoint["endpoint"]})
+                else:
+                    endpoint_dict[endpoint["name"]].append({"data": data["data"], "endpoint": endpoint["endpoint"]})
+
                 self.log_response(endpoint, response)
 
         return endpoint_dict
@@ -208,7 +236,15 @@ class CiscoClientSDWAN(CiscoClient):
             response = self.get_request(self.base_url + template_endpoint)
 
             data = response.json()
-            endpoint_dict[endpoint["name"]]["items"].append(data)
+            try:
+                endpoint_dict[endpoint["name"]].append(
+                    {
+                        "data": data,
+                        "endpoint": endpoint["endpoint"].split("/%i")[0] + "/" + self.get_id_value(data),
+                    }
+                )
+            except TypeError:
+                endpoint_dict[endpoint["name"]].append({"data": data, "endpoint": endpoint["endpoint"]})
 
             self.log_response(template_endpoint, response)
 
@@ -235,8 +271,7 @@ class CiscoClientSDWAN(CiscoClient):
         for item in data_loop:
             profile_endpoint = endpoint["endpoint"] + str(item["profileId"])
             response = self.get_request(self.base_url + profile_endpoint)
-            print(profile_endpoint)
-            input("SSS")
+
             for k, v in response.json().items():
                 if k == "associatedProfileParcels":
                     for parcel in v:
@@ -246,6 +281,31 @@ class CiscoClientSDWAN(CiscoClient):
                         response = self.get_request(self.base_url + new_endpoint)
                         self.log_response(new_endpoint, response)
                         data = response.json()
-                        endpoint_dict[endpoint["name"]]["items"].append(data)
+
+                        # endpoint_dict[endpoint["name"]]["items"].append(data)
+                        endpoint_dict[endpoint["name"]].append(
+                            {"data": data, "endpoint": new_endpoint + "/" + self.get_id_value(data)}
+                        )
 
         return endpoint_dict
+
+    @staticmethod
+    def get_id_value(i):
+        """
+        Attempts to get the 'id', 'parcelId', 'name', 'policyId' 'deviceId' or 'definitionId' value from a dictionary.
+
+        Args:
+            i (dict): The dictionary to get the 'id' or 'name' value from.
+
+        Returns:
+            str or None: The value if it exists, None otherwise.
+        """
+        keys = ["id", "definitionId", "parcelId", "policyId", "templateId", "deviceId", "name"]
+
+        for key in keys:
+            try:
+                return i[key]
+            except KeyError:
+                continue
+
+        return None
