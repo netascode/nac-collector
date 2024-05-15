@@ -9,6 +9,8 @@ import click
 
 from nac_collector.cisco_client_sdwan import CiscoClientSDWAN
 from nac_collector.cisco_client_ise import CiscoClientISE
+from nac_collector.cisco_client_ndo import CiscoClientNDO
+
 from nac_collector.github_repo_wrapper import GithubRepoWrapper
 from nac_collector.constants import (
     GIT_TMP,
@@ -22,9 +24,9 @@ from nac_collector.constants import (
 @click.option(
     "--solution",
     "-s",
-    type=click.Choice(["SDWAN", "ISE"], case_sensitive=False),
+    type=click.Choice(["SDWAN", "ISE", "NDO"], case_sensitive=False),
     required=True,
-    help="Solutions supported [SDWAN, ISE]",
+    help="Solutions supported [SDWAN, ISE, NDO]",
 )
 @click.option(
     "--username",
@@ -138,6 +140,23 @@ def cli(
         final_dict = client.get_from_endpoints(endpoints_yaml_file)
         client.write_to_json(final_dict, f"{solution.lower()}")
 
+    elif solution == "NDO":
+        client = CiscoClientNDO(
+            username=username,
+            password=password,
+            base_url=url,
+            max_retries=MAX_RETRIES,
+            retry_after=RETRY_AFTER,
+            timeout=TIMEOUT,
+            ssl_verify=False,
+        )
+
+        # Authenticate
+        client.authenticate()
+
+        endpoints_yaml_file = f"endpoints_{solution.lower()}.yaml"
+        final_dict = client.get_from_endpoints(endpoints_yaml_file)
+        client.write_to_json(final_dict, f"{solution.lower()}")
     else:
         pass
 
