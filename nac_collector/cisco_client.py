@@ -150,8 +150,8 @@ class CiscoClient(ABC):
                     self.retry_after,
                 )
                 time.sleep(self.retry_after)
-            elif response.status_code == 200:
-                # If the status code is 200 (OK), return the response
+            elif 200 <= response.status_code < 300:
+                # If the status code is 2XX (success), return the response
                 return response
             else:
                 # If the status code is neither 429 nor 200, log an error and continue to the next iteration
