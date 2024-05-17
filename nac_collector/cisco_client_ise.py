@@ -137,7 +137,7 @@ class CiscoClientISE(CiscoClient):
                         )
                 # Check if response is empty list
                 elif data.get("response") == []:
-                    endpoint_dict[endpoint["name"]]["items"] = data["response"]
+                    endpoint_dict[endpoint["name"]].append({"data": {}, "endpoint": endpoint["endpoint"]})
 
                 # Save results to dictionary
                 final_dict.update(endpoint_dict)
@@ -154,15 +154,17 @@ class CiscoClientISE(CiscoClient):
             # Iterate over the dictionary
             for _, value in final_dict.items():
                 index = 0
-                # Iterate over the items in final_dict[parent_endpoint]['items']
+                # Iterate over the items in final_dict[parent_endpoint]
                 for item in value:
                     if parent_endpoint == "/".join(item.get("endpoint").split("/")[:-1]):
                         # Initialize an empty list for parent endpoint ids
                         parent_endpoint_ids = []
 
                         # Add the item's id to the list
-                        parent_endpoint_ids.append(item["data"]["id"])
-
+                        try:
+                            parent_endpoint_ids.append(item["data"]["id"])
+                        except KeyError:
+                            continue
                         # Iterate over the parent endpoint ids
                         for id_ in parent_endpoint_ids:
                             # Replace '%v' in the endpoint with the id
