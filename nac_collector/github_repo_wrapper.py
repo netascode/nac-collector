@@ -1,6 +1,7 @@
+import logging
 import os
 import shutil
-import logging
+
 from git import Repo
 from ruamel.yaml import YAML
 
@@ -49,7 +50,9 @@ class GithubRepoWrapper:
             shutil.rmtree(self.clone_dir)
 
         # Log a message before cloning the repository
-        self.logger.info("Cloning repository from %s to %s", self.repo_url, self.clone_dir)
+        self.logger.info(
+            "Cloning repository from %s to %s", self.repo_url, self.clone_dir
+        )
 
         # Clone the repository
         Repo.clone_from(self.repo_url, self.clone_dir)
