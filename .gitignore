@@ -1,4 +1,6 @@
-nac_collector/__pycache__
+__pycache__/
+*.py[cod]
+*$py.class
 *.yaml
 *.json
 tmp/

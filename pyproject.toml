@@ -15,6 +15,9 @@ ruamel-yaml = "^0.18.6"
 [tool.poetry.scripts]
 nac-collector = "nac_collector.main:cli"
 
+[tool.poetry.group.test.dependencies]
+pytest = "^8.2.1"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

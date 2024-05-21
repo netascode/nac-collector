@@ -1,13 +1,13 @@
-from .base import CiscoClient
-from .ise import CiscoClientISE
-from .ndo import CiscoClientNDO
-from .sdwan import CiscoClientSDWAN
-
 from nac_collector.constants import (
     MAX_RETRIES,
     RETRY_AFTER,
     TIMEOUT,
 )
+
+from .base import CiscoClient
+from .ise import CiscoClientISE
+from .ndo import CiscoClientNDO
+from .sdwan import CiscoClientSDWAN
 
 def make_client(
         solution: str,
@@ -70,4 +70,3 @@ def make_client(
         raise LookupError(f"Unknown solution '{solution}'")
 
     return client
-
