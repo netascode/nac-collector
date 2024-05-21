@@ -79,3 +79,16 @@ If you installed the project with pip, you can run the script directly from the 
 ```sh
 nac-collector -s ISE -v --git-provider
 ```
+
+## Tests
+
+To run tests, firt install depedencies with test group included
+
+```sh
+poetry install --with test
+```
+
+The you can run test by simply running
+```sh
+poetry run pytest
+```
