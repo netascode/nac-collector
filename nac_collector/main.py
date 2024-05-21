@@ -4,9 +4,11 @@ It handles the authentication and data collection processes.
 """
 
 import logging
+import sys
 import time
 import click
 
+from nac_collector.cisco_client import CiscoClient
 from nac_collector.cisco_client_sdwan import CiscoClientSDWAN
 from nac_collector.cisco_client_ise import CiscoClientISE
 from nac_collector.cisco_client_ndo import CiscoClientNDO
@@ -19,6 +21,7 @@ from nac_collector.constants import (
     TIMEOUT,
 )
 
+logger = logging.getLogger(__name__)
 
 @click.command()
 @click.option(
@@ -103,7 +106,33 @@ def cli(
             solution=solution.lower(),
         )
         wrapper.get_definitions()
+    try:
+        client = make_client(solution, username, password, url)
+    except LookupError as exc:
+        logger.error(str(exc))
+        sys.exit()
 
+    # Authenticate
+    if not client.authenticate():
+        logger.error("Authentication failed. Exiting...")
+        return
+
+    endpoints_yaml_file = f"endpoints_{solution.lower()}.yaml"
+    final_dict = client.get_from_endpoints(endpoints_yaml_file)
+    text = client.dump_string(final_dict, f"{solution.lower()}")
+
+    with open(f"{solution}.json", "w", encoding="utf-8") as f:
+        f.write(text)
+        logger.info(f"Data written to {solution}.json")
+
+    # Record the stop time
+    stop_time = time.time()
+
+    # Calculate the total execution time
+    total_time = stop_time - start_time
+    logger.info(f"Total execution time: {total_time:.2f} seconds")
+
+def make_client(solution: str, username: str, password: str, url: str) -> CiscoClient:
     if solution == "SDWAN":
         client = CiscoClientSDWAN(
             username=username,
@@ -115,15 +144,6 @@ def cli(
             ssl_verify=False,
         )
 
-        # Authenticate
-        if not client.authenticate():
-            print("Authentication failed. Exiting...")
-            return
-
-        endpoints_yaml_file = f"endpoints_{solution.lower()}.yaml"
-        final_dict = client.get_from_endpoints(endpoints_yaml_file)
-        client.write_to_json(final_dict, f"{solution.lower()}")
-
     elif solution == "ISE":
         client = CiscoClientISE(
             username=username,
@@ -134,16 +154,6 @@ def cli(
             timeout=TIMEOUT,
             ssl_verify=False,
         )
-
-        # Authenticate
-        if not client.authenticate():
-            print("Authentication failed. Exiting...")
-            return
-
-        endpoints_yaml_file = f"endpoints_{solution.lower()}.yaml"
-        final_dict = client.get_from_endpoints(endpoints_yaml_file)
-        client.write_to_json(final_dict, f"{solution.lower()}")
-
     elif solution == "NDO":
         client = CiscoClientNDO(
             username=username,
@@ -154,22 +164,10 @@ def cli(
             timeout=TIMEOUT,
             ssl_verify=False,
         )
-
-        # Authenticate
-        client.authenticate()
-
-        endpoints_yaml_file = f"endpoints_{solution.lower()}.yaml"
-        final_dict = client.get_from_endpoints(endpoints_yaml_file)
-        client.write_to_json(final_dict, f"{solution.lower()}")
     else:
-        pass
+        raise LookupError(f"Unknown solution '{solution}'")
 
-    # Record the stop time
-    stop_time = time.time()
-
-    # Calculate the total execution time
-    total_time = stop_time - start_time
-    print(f"Total execution time: {total_time:.2f} seconds")
+    return client
 
 
 if __name__ == "__main__":

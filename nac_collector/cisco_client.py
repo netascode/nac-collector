@@ -186,7 +186,7 @@ class CiscoClient(ABC):
                 response.status_code,
             )
 
-    def write_to_json(self, final_dict, solution):
+    def dump_string(self, final_dict, solution):
         """
         Writes the final dictionary to a JSON file.
 
@@ -194,9 +194,7 @@ class CiscoClient(ABC):
             final_dict (dict): The final dictionary to write to the file.
             solution (str): The solution name to use as the filename.
         """
-        with open(f"{solution}.json", "w", encoding="utf-8") as f:
-            json.dump(final_dict, f, indent=4)
-        self.logger.info("Data written to %s.json", solution)
+        return json.dumps(final_dict, indent=4)
 
     @staticmethod
     def create_endpoint_dict(endpoint):
