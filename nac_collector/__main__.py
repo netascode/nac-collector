@@ -4,5 +4,4 @@
 
 import nac_collector.main
 
-if __name__ == "__main__":
-    nac_collector.main.cli()
+nac_collector.main.cli()
