@@ -3,7 +3,7 @@ import json
 import requests
 import urllib3
 
-from nac_collector.cisco_client import CiscoClient
+from nac_collector.client.base import CiscoClient
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 

@@ -1,4 +1,4 @@
-from nac_collector.cisco_client import CiscoClient
+from nac_collector.client.base import CiscoClient
 import requests
 import logging
 import urllib3

@@ -8,17 +8,11 @@ import sys
 import time
 import click
 
-from nac_collector.cisco_client import CiscoClient
-from nac_collector.cisco_client_sdwan import CiscoClientSDWAN
-from nac_collector.cisco_client_ise import CiscoClientISE
-from nac_collector.cisco_client_ndo import CiscoClientNDO
+from nac_collector.client import make_client
 
 from nac_collector.github_repo_wrapper import GithubRepoWrapper
 from nac_collector.constants import (
     GIT_TMP,
-    MAX_RETRIES,
-    RETRY_AFTER,
-    TIMEOUT,
 )
 
 logger = logging.getLogger(__name__)
@@ -131,44 +125,6 @@ def cli(
     # Calculate the total execution time
     total_time = stop_time - start_time
     logger.info(f"Total execution time: {total_time:.2f} seconds")
-
-def make_client(solution: str, username: str, password: str, url: str) -> CiscoClient:
-    if solution == "SDWAN":
-        client = CiscoClientSDWAN(
-            username=username,
-            password=password,
-            base_url=url,
-            max_retries=MAX_RETRIES,
-            retry_after=RETRY_AFTER,
-            timeout=TIMEOUT,
-            ssl_verify=False,
-        )
-
-    elif solution == "ISE":
-        client = CiscoClientISE(
-            username=username,
-            password=password,
-            base_url=url,
-            max_retries=MAX_RETRIES,
-            retry_after=RETRY_AFTER,
-            timeout=TIMEOUT,
-            ssl_verify=False,
-        )
-    elif solution == "NDO":
-        client = CiscoClientNDO(
-            username=username,
-            password=password,
-            base_url=url,
-            max_retries=MAX_RETRIES,
-            retry_after=RETRY_AFTER,
-            timeout=TIMEOUT,
-            ssl_verify=False,
-        )
-    else:
-        raise LookupError(f"Unknown solution '{solution}'")
-
-    return client
-
 
 if __name__ == "__main__":
     cli()  # pylint: disable=no-value-for-parameter
