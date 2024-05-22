@@ -1,7 +1,9 @@
-from nac_collector.cisco_client import CiscoClient
-import requests
 import logging
+
+import requests
 import urllib3
+
+from nac_collector.cisco_client import CiscoClient
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -45,7 +47,7 @@ class CiscoClientNDO(CiscoClient):
 
         if response.status_code != requests.codes.ok:
             logger.error(
-                f"Authentication failed with status code: %s",
+                "Authentication failed with status code: %s",
                 response.status_code,
             )
             return
@@ -56,9 +58,8 @@ class CiscoClientNDO(CiscoClient):
 
         final_dict = {}
 
-
         for endpoint in endpoints:
-            if all(x not in endpoint.get("endpoint",{}) for x in ["%v", "%i"]):
+            if all(x not in endpoint.get("endpoint", {}) for x in ["%v", "%i"]):
                 endpoint_dict = CiscoClient.create_endpoint_dict(endpoint)
                 response = self.get_request(self.base_url + endpoint["endpoint"])
 
@@ -70,5 +71,5 @@ class CiscoClientNDO(CiscoClient):
                     endpoint_dict[endpoint["name"]]["items"] = data[endpoint["name"]]
 
                 final_dict.update(endpoint_dict)
-        
+
         return final_dict

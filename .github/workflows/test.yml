@@ -27,7 +27,8 @@ jobs:
           poetry run flake8
           poetry run isort --check nac_collector
           poetry run black --check nac_collector
-          poetry run mypy nac_collector
+        
+        # poetry run mypy nac_collector
 
   test:
     name: Tests

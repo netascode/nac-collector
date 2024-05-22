@@ -148,7 +148,9 @@ class CiscoClientISE(CiscoClient):
                         )
                 # Check if response is empty list
                 elif data.get("response") == []:
-                    endpoint_dict[endpoint["name"]].append({"data": {}, "endpoint": endpoint["endpoint"]})
+                    endpoint_dict[endpoint["name"]].append(
+                        {"data": {}, "endpoint": endpoint["endpoint"]}
+                    )
 
                 # Save results to dictionary
                 final_dict.update(endpoint_dict)
