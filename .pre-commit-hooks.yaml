@@ -1,7 +1,0 @@
-- id: nac-collector
-  name: NAC Collector
-  description: descripton
-  entry: nac-collector
-  language: python
-  types: [file, yaml]
-  exclude: (^\..+\.ya?ml$)|(^.*\/\.[^\/]+\.ya?ml$) # exclude hidden files and folders
