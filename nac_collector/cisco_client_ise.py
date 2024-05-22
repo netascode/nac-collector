@@ -1,4 +1,5 @@
 import logging
+
 import requests
 import urllib3
 
@@ -33,7 +34,9 @@ class CiscoClientISE(CiscoClient):
         timeout,
         ssl_verify,
     ):
-        super().__init__(username, password, base_url, max_retries, retry_after, timeout, ssl_verify)
+        super().__init__(
+            username, password, base_url, max_retries, retry_after, timeout, ssl_verify
+        )
 
     def authenticate(self):
         """
@@ -73,7 +76,9 @@ class CiscoClientISE(CiscoClient):
                 self.session = requests.Session()
                 self.session.auth = (self.username, self.password)
                 self.session.headers.update(headers)
-                self.session.headers.update({"Content-Type": "application/json", "Accept": "application/json"})
+                self.session.headers.update(
+                    {"Content-Type": "application/json", "Accept": "application/json"}
+                )
                 return True
 
             logger.error(
@@ -115,14 +120,18 @@ class CiscoClientISE(CiscoClient):
                 data = response.json()
                 # License API returns a list of dictionaries
                 if isinstance(data, list):
-                    endpoint_dict[endpoint["name"]].append({"data": data, "endpoint": endpoint["endpoint"]})
+                    endpoint_dict[endpoint["name"]].append(
+                        {"data": data, "endpoint": endpoint["endpoint"]}
+                    )
 
                 elif data.get("response"):
                     for i in data.get("response"):
                         endpoint_dict[endpoint["name"]].append(
                             {
                                 "data": i,
-                                "endpoint": endpoint["endpoint"] + "/" + self.get_id_value(i),
+                                "endpoint": endpoint["endpoint"]
+                                + "/"
+                                + self.get_id_value(i),
                             }
                         )
                 # Pagination for ERS API results
@@ -132,7 +141,9 @@ class CiscoClientISE(CiscoClient):
                         endpoint_dict[endpoint["name"]].append(
                             {
                                 "data": i,
-                                "endpoint": endpoint["endpoint"] + "/" + self.get_id_value(i),
+                                "endpoint": endpoint["endpoint"]
+                                + "/"
+                                + self.get_id_value(i),
                             }
                         )
                 # Check if response is empty list
@@ -156,7 +167,9 @@ class CiscoClientISE(CiscoClient):
                 index = 0
                 # Iterate over the items in final_dict[parent_endpoint]
                 for item in value:
-                    if parent_endpoint == "/".join(item.get("endpoint").split("/")[:-1]):
+                    if parent_endpoint == "/".join(
+                        item.get("endpoint").split("/")[:-1]
+                    ):
                         # Initialize an empty list for parent endpoint ids
                         parent_endpoint_ids = []
 
@@ -188,7 +201,9 @@ class CiscoClientISE(CiscoClient):
                                     value[index]["children"][endpoint["name"]].append(
                                         {
                                             "data": i,
-                                            "endpoint": new_endpoint + "/" + self.get_id_value(i),
+                                            "endpoint": new_endpoint
+                                            + "/"
+                                            + self.get_id_value(i),
                                         }
                                     )
                             self.log_response(new_endpoint, response)

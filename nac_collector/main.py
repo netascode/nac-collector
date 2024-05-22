@@ -5,19 +5,14 @@ It handles the authentication and data collection processes.
 
 import logging
 import time
+
 import click
 
-from nac_collector.cisco_client_sdwan import CiscoClientSDWAN
 from nac_collector.cisco_client_ise import CiscoClientISE
 from nac_collector.cisco_client_ndo import CiscoClientNDO
-
+from nac_collector.cisco_client_sdwan import CiscoClientSDWAN
+from nac_collector.constants import GIT_TMP, MAX_RETRIES, RETRY_AFTER, TIMEOUT
 from nac_collector.github_repo_wrapper import GithubRepoWrapper
-from nac_collector.constants import (
-    GIT_TMP,
-    MAX_RETRIES,
-    RETRY_AFTER,
-    TIMEOUT,
-)
 
 
 @click.command()

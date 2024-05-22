@@ -1,10 +1,11 @@
-import time
-import logging
-import json
 from abc import ABC, abstractmethod
+import json
+import logging
+import time
+
 import requests
-import urllib3
 from ruamel.yaml import YAML
+import urllib3
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -89,9 +90,13 @@ class CiscoClient(ABC):
         for _ in range(self.max_retries):
             try:
                 # Send a GET request to the URL
-                response = self.session.get(url, verify=self.ssl_verify, timeout=self.timeout)
+                response = self.session.get(
+                    url, verify=self.ssl_verify, timeout=self.timeout
+                )
             except requests.exceptions.Timeout:
-                self.logger.error("GET %s timed out after %s seconds.", url, self.timeout)
+                self.logger.error(
+                    "GET %s timed out after %s seconds.", url, self.timeout
+                )
                 continue
 
             if response.status_code == 429:
@@ -134,9 +139,13 @@ class CiscoClient(ABC):
         for _ in range(self.max_retries):
             try:
                 # Send a POST request to the URL
-                response = self.session.post(url, data=data, verify=self.ssl_verify, timeout=self.timeout)
+                response = self.session.post(
+                    url, data=data, verify=self.ssl_verify, timeout=self.timeout
+                )
             except requests.exceptions.Timeout:
-                self.logger.error("POST %s timed out after %s seconds.", url, self.timeout)
+                self.logger.error(
+                    "POST %s timed out after %s seconds.", url, self.timeout
+                )
                 continue
 
             if response.status_code == 429:
