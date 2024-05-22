@@ -1,0 +1,88 @@
+name: Tests
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Python Setup
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Lint Checks
+        run: |
+          pip install poetry
+          poetry install
+          poetry run flake8
+          poetry run isort --check nac_collector
+          poetry run black --check nac_collector
+          poetry run mypy nac_collector
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        python:
+          - '3.8'
+          - '3.9'
+          - '3.10'
+          - '3.11'
+          - '3.12'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Python Setup
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Test
+        run: |
+          pip install poetry
+          poetry install
+          poetry run pytest
+
+  notification:
+    name: Notification
+    if: always() && github.event_name != 'pull_request'
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check Job Success
+        run: |
+          if [ ${{ needs.lint.result }} == 'success' ] && [ ${{ needs.test.result }} == 'success' ]; then
+            echo "All jobs succeeded"
+            echo "jobSuccess=success" >> $GITHUB_ENV
+          else
+            echo "Not all jobs succeeded"
+            echo "jobSuccess=fail" >> $GITHUB_ENV
+          fi
+        id: print_status
+        
+      - name: Webex Notification
+        if: always()
+        uses: qsnyder/action-wxt@master
+        env:
+          TOKEN: ${{ secrets.WEBEX_TOKEN }}
+          ROOMID: ${{ secrets.WEBEX_ROOM_ID }}
+          MESSAGE: |
+            [**[${{ env.jobSuccess }}] ${{ github.repository }} #${{ github.run_number }}**](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            * Commit: [${{ github.event.head_commit.message }}](${{ github.event.head_commit.url }})[${{ github.event.pull_request.title }}](${{ github.event.pull_request.html_url }})
+            * Author: ${{ github.event.sender.login }}
+            * Branch: ${{ github.ref }} ${{ github.head_ref }}
+            * Event: ${{ github.event_name }}
