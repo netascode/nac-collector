@@ -82,7 +82,7 @@ nac-collector -s ISE -v --git-provider
 
 ## Tests
 
-To run tests, firt install depedencies with test group included
+To run tests, first install depedencies with test group included
 
 ```sh
 poetry install --with test
