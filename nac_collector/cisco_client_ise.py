@@ -125,7 +125,10 @@ class CiscoClientISE(CiscoClient):
                     )
 
                 elif data.get("response"):
+                    
                     for i in data.get("response"):
+                        if endpoint['name'] =='device_admin_condition':
+                            i = self.update_description_null_to_empty_str(i)
                         endpoint_dict[endpoint["name"]].append(
                             {
                                 "data": i,
@@ -137,7 +140,16 @@ class CiscoClientISE(CiscoClient):
                 # Pagination for ERS API results
                 elif data.get("SearchResult"):
                     ers_data = self.process_ers_api_results(data)
+
+                    # if endpoint['name'] == 'internal_user':
+                    #     user_identity_groups_id_to_name = self.get_user_identity_groups_id_to_name(ers_data)
                     for i in ers_data:
+                        if endpoint['name'] == 'internal_user':
+                            user_identity_groups_id_to_name = self.get_user_identity_groups_id_to_name(i)
+                            i = self.add_user_identity_groups_names_to_json(i, user_identity_groups_id_to_name)
+                        elif endpoint['name'] == 'endpoint_identity_group':
+                            endpoint_identity_group_parent_id_to_name = self.get_endpoint_identity_group_parent_id_to_name(i)
+                            i = self.add_endpoint_identity_group_parent_id_to_json(i, endpoint_identity_group_parent_id_to_name)
                         endpoint_dict[endpoint["name"]].append(
                             {
                                 "data": i,
@@ -270,3 +282,44 @@ class CiscoClientISE(CiscoClient):
                     id_value = None
 
         return id_value
+    
+    def update_description_null_to_empty_str(self, data):
+        if 'description' in data and data['description'] == None:
+            data['description'] = ''
+        return data
+    
+    def add_user_identity_groups_names_to_json(self, data, user_identity_groups_id_to_name):
+        if 'identityGroups' in data :
+            data['identityGroups'] = user_identity_groups_id_to_name
+        return data
+    
+    def add_endpoint_identity_group_parent_id_to_json(self, data, endpoint_identity_group_parent_id_to_name):
+        if 'parentId' in data :
+            data['parentId'] = endpoint_identity_group_parent_id_to_name
+        return data
+    
+    def get_user_identity_groups_id_to_name(self, data):
+        user_identity_groups_ids = data.get('identityGroups', [])
+        user_identity_groups_names = []
+        if user_identity_groups_ids:
+            user_identity_groups_ids = user_identity_groups_ids.split(",")
+            for user_identity_groups_id in user_identity_groups_ids:
+                url = f'/ers/config/identitygroup/{user_identity_groups_id}'
+                response = self.get_request(self.base_url + url)
+                # Get the JSON content of the response
+                identitygroup_data = response.json()
+                user_identity_groups_names.append(identitygroup_data['IdentityGroup']['name'])
+        return user_identity_groups_names
+
+    def get_endpoint_identity_group_parent_id_to_name(self, data):
+        parentId = data.get('parentId', None)
+        if parentId:
+            url = f'/ers/config/endpointgroup/{parentId}'
+            response = self.get_request(self.base_url + url)
+                # Get the JSON content of the response
+            endpoint_identity_parent_group = response.json()
+            return endpoint_identity_parent_group['EndPointGroup']['name']
+        else:
+            return None
+        
+

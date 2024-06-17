@@ -298,16 +298,28 @@ class CiscoClientSDWAN(CiscoClient):
             enpdoint_dict: The updated endpoint_dict with the processed profiles.
 
         """
-        response = self.get_request(self.base_url + endpoint["endpoint"])
+        if not '%v' in endpoint["endpoint"]:
+            response = self.get_request(self.base_url + endpoint["endpoint"])
+        else:
+            response = self.get_request(self.base_url + endpoint["endpoint"].split("/%v")[0])
 
         try:
             data_loop = response.json()
         except AttributeError:
             data_loop = []
         for item in data_loop:
-            profile_endpoint = endpoint["endpoint"] + str(item["profileId"])
+            if not '%v' in endpoint["endpoint"]:
+                profile_endpoint = endpoint["endpoint"] + str(item["profileId"])
+            else:
+                profile_endpoint = endpoint["endpoint"].replace("%v", str(item["profileId"]))
             response = self.get_request(self.base_url + profile_endpoint)
-
+            profile_data = {
+                    "data": response.json(),
+                    "endpoint": profile_endpoint,
+                    'children': []
+                }
+            endpoint_dict[endpoint["name"]].append(profile_data)
+            profile_index = endpoint_dict[endpoint["name"]].index(profile_data)
             for k, v in response.json().items():
                 if k == "associatedProfileParcels":
                     for parcel in v:
@@ -321,13 +333,17 @@ class CiscoClientSDWAN(CiscoClient):
                         data = response.json()
 
                         # endpoint_dict[endpoint["name"]]["items"].append(data)
-                        endpoint_dict[endpoint["name"]].append(
+                        endpoint_dict[endpoint["name"]][profile_index]['children'].append(
                             {
                                 "data": data,
                                 "endpoint": new_endpoint
                                 + "/"
                                 + self.get_id_value(data),
                             }
+                        )
+                elif '%v' in endpoint["endpoint"] and k == 'data':
+                    endpoint_dict[endpoint["name"]].append(
+                            {"data": v, "endpoint": profile_endpoint}
                         )
 
         return endpoint_dict
