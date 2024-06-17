@@ -336,9 +336,9 @@ class CiscoClientSDWAN(CiscoClient):
                         endpoint_dict[endpoint["name"]][profile_index]['children'].append(
                             {
                                 "data": data,
-                                "endpoint": new_endpoint
-                                + "/"
-                                + self.get_id_value(data),
+                                "endpoint": new_endpoint,
+                                # + "/"
+                                # + self.get_id_value(data),
                             }
                         )
                 elif '%v' in endpoint["endpoint"] and k == 'data':
