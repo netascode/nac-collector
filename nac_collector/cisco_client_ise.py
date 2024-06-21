@@ -129,6 +129,8 @@ class CiscoClientISE(CiscoClient):
                     for i in data.get("response"):
                         if endpoint['name'] =='device_admin_condition':
                             i = self.update_description_null_to_empty_str(i)
+                        if endpoint['name'] =='device_admin_condition':
+                            i = self.update_description_null_to_empty_str(i)
                         endpoint_dict[endpoint["name"]].append(
                             {
                                 "data": i,
@@ -150,6 +152,13 @@ class CiscoClientISE(CiscoClient):
                         elif endpoint['name'] == 'endpoint_identity_group':
                             endpoint_identity_group_parent_id_to_name = self.get_endpoint_identity_group_parent_id_to_name(i)
                             i = self.add_endpoint_identity_group_parent_id_to_json(i, endpoint_identity_group_parent_id_to_name)
+                        elif endpoint['name'] == 'identity_source_sequence':
+                            identity_sources = []
+                            if 'idSeqItem' in i:
+                                for idSeqItem in i.get('idSeqItem', []):
+                                    if 'idstore' in idSeqItem:
+                                        identity_sources.append(idSeqItem.get('idstore', ))
+                                i['idSeqItem'] = identity_sources
                         endpoint_dict[endpoint["name"]].append(
                             {
                                 "data": i,
