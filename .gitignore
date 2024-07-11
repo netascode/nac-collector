@@ -1,5 +1,7 @@
-*.json
-*.yaml
+/*.json
+/endpoints*.yaml
+!**/*.json
+!**/endpoints*.yaml
 tmp/
 .envrc
 .DS_Store

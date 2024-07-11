@@ -1,0 +1,8 @@
+- endpoint: /api/endpoint_1
+  name: endpoint_1
+- endpoint: /api/endpoint_1/%v/ch_endpoint_1
+  name: ch_endpoint_1
+- endpoint: /api/endpoint_1/%v/ch_endpoint_2
+  name: ch_endpoint_2
+- endpoint: /api/endpoint_2
+  name: endpoint_2
