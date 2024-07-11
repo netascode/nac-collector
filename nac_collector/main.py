@@ -59,6 +59,16 @@ from nac_collector.github_repo_wrapper import GithubRepoWrapper
     is_flag=True,
     help="Generate endpoint.yaml automatically using provider github repo",
 )
+@click.option(
+    "--endpoints-file",
+    "-e",
+    type=str,
+    default=None,
+    help="Path to the endpoints YAML file",
+)
+@click.option(
+    "--output", "-o", type=str, default=None, help="Path to the output json file"
+)
 def cli(
     solution: str,
     username: str,
@@ -66,6 +76,8 @@ def cli(
     url: str,
     verbose: bool,
     git_provider: bool,
+    endpoints_file: str,
+    output: str,
 ) -> None:
     """
     Command Line Interface (CLI) function for the application.
@@ -77,6 +89,9 @@ def cli(
         url (str): The URL of the server to connect to.
         verbose (bool): If True, detailed output will be printed to the console.
         git_provider (bool): If True, the solution will be fetched from a Git provider.
+        endpoints_file (str): Path to the endpoints YAML file.
+        output (str): Path to the output json file.
+
 
     Returns:
         None
@@ -99,6 +114,9 @@ def cli(
         )
         wrapper.get_definitions()
 
+    endpoints_yaml_file = endpoints_file or f"endpoints_{solution.lower()}.yaml"
+    output_file = output or f"{solution.lower()}.json"
+
     if solution == "SDWAN":
         client = CiscoClientSDWAN(
             username=username,
@@ -115,9 +133,8 @@ def cli(
             print("Authentication failed. Exiting...")
             return
 
-        endpoints_yaml_file = f"endpoints_{solution.lower()}.yaml"
         final_dict = client.get_from_endpoints(endpoints_yaml_file)
-        client.write_to_json(final_dict, f"{solution.lower()}")
+        client.write_to_json(final_dict, output_file)
 
     elif solution == "ISE":
         client = CiscoClientISE(
@@ -135,9 +152,8 @@ def cli(
             print("Authentication failed. Exiting...")
             return
 
-        endpoints_yaml_file = f"endpoints_{solution.lower()}.yaml"
         final_dict = client.get_from_endpoints(endpoints_yaml_file)
-        client.write_to_json(final_dict, f"{solution.lower()}")
+        client.write_to_json(final_dict, output_file)
 
     elif solution == "NDO":
         client = CiscoClientNDO(
@@ -153,9 +169,8 @@ def cli(
         # Authenticate
         client.authenticate()
 
-        endpoints_yaml_file = f"endpoints_{solution.lower()}.yaml"
         final_dict = client.get_from_endpoints(endpoints_yaml_file)
-        client.write_to_json(final_dict, f"{solution.lower()}")
+        client.write_to_json(final_dict, output_file)
     else:
         pass
 

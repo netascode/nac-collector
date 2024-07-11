@@ -1,13 +1,16 @@
 import logging
 
+import click
 import requests
 import urllib3
 
 from nac_collector.cisco_client import CiscoClient
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
 logger = logging.getLogger("main")
+
+# Suppress urllib3 warnings
+logging.getLogger("urllib3").setLevel(logging.ERROR)
 
 
 class CiscoClientISE(CiscoClient):
@@ -98,6 +101,7 @@ class CiscoClientISE(CiscoClient):
         Returns:
             dict: The final dictionary containing the data retrieved from the endpoints.
         """
+
         # Load endpoints from the YAML file
         logger.info("Loading endpoints from %s", endpoints_yaml_file)
         with open(endpoints_yaml_file, "r", encoding="utf-8") as f:
@@ -109,108 +113,123 @@ class CiscoClientISE(CiscoClient):
         # Initialize an empty list for endpoint with children (%v in endpoint['endpoint'])
         children_endpoints = []
 
-        # Iterate through the endpoints
-        for endpoint in endpoints:
-            if all(x not in endpoint["endpoint"] for x in ["%v", "%i"]):
-                endpoint_dict = CiscoClient.create_endpoint_dict(endpoint)
+        # Iterate over all endpoints
+        with click.progressbar(endpoints, label="Processing endpoints") as endpoint_bar:
+            for endpoint in endpoint_bar:
+                logger.info("Processing endpoint: %s", endpoint)
 
-                response = self.get_request(self.base_url + endpoint["endpoint"])
+                if all(x not in endpoint["endpoint"] for x in ["%v", "%i"]):
+                    endpoint_dict = CiscoClient.create_endpoint_dict(endpoint)
 
-                # Get the JSON content of the response
-                data = response.json()
-                # License API returns a list of dictionaries
-                if isinstance(data, list):
-                    endpoint_dict[endpoint["name"]].append(
-                        {"data": data, "endpoint": endpoint["endpoint"]}
-                    )
+                    data = self.fetch_data(endpoint["endpoint"])
 
-                elif data.get("response"):
-                    for i in data.get("response"):
+                    if data is None:
                         endpoint_dict[endpoint["name"]].append(
-                            {
-                                "data": i,
-                                "endpoint": endpoint["endpoint"]
-                                + "/"
-                                + self.get_id_value(i),
-                            }
+                            {"data": {}, "endpoint": endpoint["endpoint"]}
                         )
-                # Pagination for ERS API results
-                elif data.get("SearchResult"):
-                    ers_data = self.process_ers_api_results(data)
-                    for i in ers_data:
+
+                    # License API returns a list of dictionaries
+                    elif isinstance(data, list):
                         endpoint_dict[endpoint["name"]].append(
-                            {
-                                "data": i,
-                                "endpoint": endpoint["endpoint"]
-                                + "/"
-                                + self.get_id_value(i),
-                            }
+                            {"data": data, "endpoint": endpoint["endpoint"]}
                         )
-                # Check if response is empty list
-                elif data.get("response") == []:
-                    endpoint_dict[endpoint["name"]].append(
-                        {"data": {}, "endpoint": endpoint["endpoint"]}
-                    )
 
-                # Save results to dictionary
-                final_dict.update(endpoint_dict)
+                    elif data.get("response"):
+                        for i in data.get("response"):
+                            endpoint_dict[endpoint["name"]].append(
+                                {
+                                    "data": i,
+                                    "endpoint": endpoint["endpoint"]
+                                    + "/"
+                                    + self.get_id_value(i),
+                                }
+                            )
+                    # Pagination for ERS API results
+                    elif data.get("SearchResult"):
 
-                self.log_response(endpoint["endpoint"], response)
+                        ers_data = self.process_ers_api_results(data)
 
-            elif "%v" in endpoint["endpoint"]:
-                children_endpoints.append(endpoint)
+                        for i in ers_data:
+                            endpoint_dict[endpoint["name"]].append(
+                                {
+                                    "data": i,
+                                    "endpoint": endpoint["endpoint"]
+                                    + "/"
+                                    + self.get_id_value(i),
+                                }
+                            )
 
-        # Iterate through the children endpoints
-        for endpoint in children_endpoints:
-            parent_endpoint = endpoint["endpoint"].split("/%v")[0]
+                    # Save results to dictionary
+                    final_dict.update(endpoint_dict)
 
-            # Iterate over the dictionary
-            for _, value in final_dict.items():
-                index = 0
-                # Iterate over the items in final_dict[parent_endpoint]
-                for item in value:
-                    if parent_endpoint == "/".join(
-                        item.get("endpoint").split("/")[:-1]
-                    ):
-                        # Initialize an empty list for parent endpoint ids
-                        parent_endpoint_ids = []
+                elif "%v" in endpoint["endpoint"]:
+                    children_endpoints.append(endpoint)
 
-                        # Add the item's id to the list
-                        try:
-                            parent_endpoint_ids.append(item["data"]["id"])
-                        except KeyError:
-                            continue
-                        # Iterate over the parent endpoint ids
-                        for id_ in parent_endpoint_ids:
-                            # Replace '%v' in the endpoint with the id
-                            new_endpoint = endpoint["endpoint"].replace("%v", str(id_))
-                            # Send a GET request to the new endpoint
-                            response = self.get_request(self.base_url + new_endpoint)
-                            # Get the JSON content of the response
-                            data = response.json()
+        # Iterate over all children endpoints
+        with click.progressbar(
+            children_endpoints, label="Processing children endpoints"
+        ) as children_endpoint_bar:
+            for endpoint in children_endpoint_bar:
+                logger.info("Processing children endpoint: %s", endpoint)
 
-                            if data.get("response"):
-                                for i in data.get("response"):
-                                    # Check if the key exists
-                                    if "children" not in value[index]:
-                                        # If the key doesn't exist, create it and initialize it as an empty list
-                                        value[index]["children"] = {}
-                                    # Check if the key exists
-                                    if endpoint["name"] not in value[index]["children"]:
-                                        # If the key doesn't exist, create it and initialize it as an empty list
-                                        value[index]["children"][endpoint["name"]] = []
+                parent_endpoint = endpoint["endpoint"].split("/%v")[0]
 
-                                    value[index]["children"][endpoint["name"]].append(
-                                        {
-                                            "data": i,
-                                            "endpoint": new_endpoint
-                                            + "/"
-                                            + self.get_id_value(i),
-                                        }
-                                    )
-                            self.log_response(new_endpoint, response)
+                # Iterate over the dictionary
+                for _, value in final_dict.items():
+                    index = 0
+                    # Iterate over the items in final_dict[parent_endpoint]
+                    for item in value:
+                        if parent_endpoint == "/".join(
+                            item.get("endpoint").split("/")[:-1]
+                        ):
+                            # Initialize an empty list for parent endpoint ids
+                            parent_endpoint_ids = []
 
-                    index += 1
+                            # Add the item's id to the list
+                            try:
+                                parent_endpoint_ids.append(item["data"]["id"])
+                            except KeyError:
+                                continue
+                            # Iterate over the parent endpoint ids
+                            for id_ in parent_endpoint_ids:
+                                # Replace '%v' in the endpoint with the id
+                                new_endpoint = endpoint["endpoint"].replace(
+                                    "%v", str(id_)
+                                )
+
+                                data = self.fetch_data(new_endpoint)
+
+                                # Get the JSON content of the response
+                                if data is None:
+                                    continue
+                                elif data.get("response"):
+                                    for i in data.get("response"):
+                                        # Check if the key exists
+                                        if "children" not in value[index]:
+                                            # If the key doesn't exist, create it and initialize it as an empty list
+                                            value[index]["children"] = {}
+                                        # Check if the key exists
+                                        if (
+                                            endpoint["name"]
+                                            not in value[index]["children"]
+                                        ):
+                                            # If the key doesn't exist, create it and initialize it as an empty list
+                                            value[index]["children"][
+                                                endpoint["name"]
+                                            ] = []
+
+                                        value[index]["children"][
+                                            endpoint["name"]
+                                        ].append(
+                                            {
+                                                "data": i,
+                                                "endpoint": new_endpoint
+                                                + "/"
+                                                + self.get_id_value(i),
+                                            }
+                                        )
+
+                        index += 1
         return final_dict
 
     def process_ers_api_results(self, data):
@@ -252,7 +271,7 @@ class CiscoClientISE(CiscoClient):
         """
         Attempts to get the 'id' or 'name' value from a dictionary.
 
-        Args:
+        Parameters:
             i (dict): The dictionary to get the 'id' or 'name' value from.
 
         Returns:
