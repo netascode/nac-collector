@@ -1,5 +1,7 @@
-nac_collector/__pycache__
-*.json
+/*.json
+/endpoints*.yaml
+!**/*.json
+!**/endpoints*.yaml
 tmp/
 .envrc
 .DS_Store
@@ -7,3 +9,4 @@ tmp/
 
 # pyenv
 .python-version
+__pycache__/

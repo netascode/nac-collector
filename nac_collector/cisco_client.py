@@ -93,6 +93,7 @@ class CiscoClient(ABC):
                 response = self.session.get(
                     url, verify=self.ssl_verify, timeout=self.timeout
                 )
+
             except requests.exceptions.Timeout:
                 self.logger.error(
                     "GET %s timed out after %s seconds.", url, self.timeout
@@ -178,7 +179,7 @@ class CiscoClient(ABC):
         """
         Logs the response from a GET request.
 
-        Args:
+        Parameters:
             endpoint (str): The endpoint the request was sent to.
             response (Response): The response from the request.
         """
@@ -195,17 +196,48 @@ class CiscoClient(ABC):
                 response.status_code,
             )
 
-    def write_to_json(self, final_dict, solution):
+    def fetch_data(self, endpoint):
+        """
+        Fetch data from a specified endpoint.
+
+        Parameters:
+            endpoint (str): Endpoint URL.
+
+        Returns:
+            data (dict): The JSON content of the response or None if an error occurred.
+        """
+        # Make the request to the given endpoint
+        response = self.get_request(self.base_url + endpoint)
+        if response:
+            try:
+                # Get the JSON content of the response
+                data = response.json()
+                self.logger.info(
+                    "GET %s succeeded with status code %s",
+                    endpoint,
+                    response.status_code,
+                )
+                return data
+            except ValueError:
+                self.logger.error(
+                    "Failed to decode JSON from response for endpoint: %s", endpoint
+                )
+                return None
+        else:
+            self.logger.error("No valid response received for endpoint: %s", endpoint)
+            return None
+
+    def write_to_json(self, final_dict, output):
         """
         Writes the final dictionary to a JSON file.
 
-        Args:
+        Parameters:
             final_dict (dict): The final dictionary to write to the file.
-            solution (str): The solution name to use as the filename.
+            output (str): Filename
         """
-        with open(f"{solution}.json", "w", encoding="utf-8") as f:
+        with open(output, "w", encoding="utf-8") as f:
             json.dump(final_dict, f, indent=4)
-        self.logger.info("Data written to %s.json", solution)
+        self.logger.info("Data written to %s", output)
 
     @staticmethod
     def create_endpoint_dict(endpoint):
@@ -216,7 +248,7 @@ class CiscoClient(ABC):
         The value dictionary contains "items" and "children" as empty lists and dictionaries,
         respectively, and "endpoint" as the endpoint's endpoint.
 
-        Args:
+        Parameters:
             endpoint (dict): The endpoint to create a dictionary for. It should contain "name"
                 and "endpoint" keys.
 

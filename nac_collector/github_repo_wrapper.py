@@ -2,6 +2,7 @@ import logging
 import os
 import shutil
 
+import click
 from git import Repo
 from ruamel.yaml import YAML
 
@@ -84,45 +85,51 @@ class GithubRepoWrapper:
         self.logger.info("Inspecting YAML files in %s", definitions_dir)
         endpoints = []
         endpoints_dict = []
-        for root, _, files in os.walk(definitions_dir):
-            for file in files:
-                if file.endswith(".yaml"):
-                    with open(os.path.join(root, file), "r", encoding="utf-8") as f:
-                        data = self.yaml.load(f)
-                        if "rest_endpoint" in data:
-                            self.logger.info(
-                                "Found rest_endpoint: %s in file: %s",
-                                data["rest_endpoint"],
-                                file,
-                            )
-                            endpoints.append(data["rest_endpoint"])
-                            # for SDWAN feature_device_templates
-                            if file.split(".yaml")[0] == "feature_device_template":
-                                endpoints_dict.append(
-                                    {
-                                        "name": file.split(".yaml")[0],
-                                        "endpoint": "/template/device/object/%i",
-                                    }
-                                )
-                            else:
-                                endpoints_dict.append(
-                                    {
-                                        "name": file.split(".yaml")[0],
-                                        "endpoint": data["rest_endpoint"],
-                                    }
-                                )
 
-                # for SDWAN feature_templates
-                if root.endswith("feature_templates"):
-                    self.logger.debug("Found feature_templates directory")
-                    endpoints.append("/template/feature/object/%i")
-                    endpoints_dict.append(
-                        {
-                            "name": "feature_templates",
-                            "endpoint": "/template/feature/object/%i",
-                        }
-                    )
-                    break
+        for root, _, files in os.walk(definitions_dir):
+            # Iterate over all endpoints
+            with click.progressbar(
+                files, label="Processing terraform provider definitions"
+            ) as files_bar:
+                for file in files_bar:
+
+                    if file.endswith(".yaml"):
+                        with open(os.path.join(root, file), "r", encoding="utf-8") as f:
+                            data = self.yaml.load(f)
+                            if "rest_endpoint" in data:
+                                self.logger.info(
+                                    "Found rest_endpoint: %s in file: %s",
+                                    data["rest_endpoint"],
+                                    file,
+                                )
+                                endpoints.append(data["rest_endpoint"])
+                                # for SDWAN feature_device_templates
+                                if file.split(".yaml")[0] == "feature_device_template":
+                                    endpoints_dict.append(
+                                        {
+                                            "name": file.split(".yaml")[0],
+                                            "endpoint": "/template/device/object/%i",
+                                        }
+                                    )
+                                else:
+                                    endpoints_dict.append(
+                                        {
+                                            "name": file.split(".yaml")[0],
+                                            "endpoint": data["rest_endpoint"],
+                                        }
+                                    )
+
+                    # for SDWAN feature_templates
+                    if root.endswith("feature_templates"):
+                        self.logger.debug("Found feature_templates directory")
+                        endpoints.append("/template/feature/object/%i")
+                        endpoints_dict.append(
+                            {
+                                "name": "feature_templates",
+                                "endpoint": "/template/feature/object/%i",
+                            }
+                        )
+                        break
 
         # Save endpoints to a YAML file
         filename = f"endpoints_{self.solution}.yaml"
