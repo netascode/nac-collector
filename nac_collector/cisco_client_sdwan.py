@@ -110,7 +110,7 @@ class CiscoClientSDWAN(CiscoClient):
 
             if all(
                 x not in endpoint["endpoint"]
-                for x in ["%v", "%i", "/v1/feature-profile/", "/template/device/"]
+                for x in ["%v", "%i", "/v1/feature-profile/", "/template/device/", "/template/policy/definition"]
             ):
                 response = self.get_request(self.base_url + endpoint["endpoint"])
 
@@ -159,6 +159,10 @@ class CiscoClientSDWAN(CiscoClient):
             # device templates
             elif endpoint["name"] == "cli_device_template":
                 endpoint_dict = self.get_device_templates(endpoint, endpoint_dict)
+                final_dict.update(endpoint_dict)
+            # policy definitions
+            elif "/template/policy/definition" in endpoint["endpoint"]:
+                endpoint_dict = self.get_policy_definitions(endpoint, endpoint_dict)
                 final_dict.update(endpoint_dict)
             # for feature templates and device templates
             elif "%i" in endpoint["endpoint"]:
@@ -244,6 +248,41 @@ class CiscoClientSDWAN(CiscoClient):
                     )
 
                 self.log_response(endpoint, response)
+
+        return endpoint_dict
+
+    def get_policy_definitions(self, endpoint, endpoint_dict):
+        """
+        Process policy definitions
+
+        Args:
+            endpoint (dict): The endpoint to process.
+            endpoint_dict (dict): The dictionary to append items to.
+
+        Returns:
+            enpdoint_dict: The updated endpoint_dict with the processed policy definitions.
+
+        """
+        response = self.get_request(self.base_url + endpoint["endpoint"])
+
+        for item in response.json()["data"]:
+            new_endpoint = endpoint["endpoint"] + item["definitionId"]
+            response = self.get_request(self.base_url + new_endpoint)
+
+            data = response.json()
+            try:
+                endpoint_dict[endpoint["name"]].append(
+                    {
+                        "data": data,
+                        "endpoint": new_endpoint,
+                    }
+                )
+            except TypeError:
+                endpoint_dict[endpoint["name"]].append(
+                    {"data": data, "endpoint": endpoint["endpoint"]}
+                )
+
+            self.log_response(new_endpoint, response)
 
         return endpoint_dict
 
