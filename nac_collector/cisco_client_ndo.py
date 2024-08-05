@@ -11,7 +11,6 @@ logger = logging.getLogger("main")
 
 
 class CiscoClientNDO(CiscoClient):
-
     NDO_AUTH_ENDPOINT = "/login"
     SOLUTION = "ndo"
 
@@ -30,7 +29,6 @@ class CiscoClientNDO(CiscoClient):
         )
 
     def authenticate(self):
-
         auth_url = f"{self.base_url}{self.NDO_AUTH_ENDPOINT}"
 
         data = {

@@ -146,7 +146,6 @@ class CiscoClientISE(CiscoClient):
                             )
                     # Pagination for ERS API results
                     elif data.get("SearchResult"):
-
                         ers_data = self.process_ers_api_results(data)
 
                         for i in ers_data:

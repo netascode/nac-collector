@@ -92,7 +92,6 @@ class GithubRepoWrapper:
                 files, label="Processing terraform provider definitions"
             ) as files_bar:
                 for file in files_bar:
-
                     if file.endswith(".yaml"):
                         with open(os.path.join(root, file), "r", encoding="utf-8") as f:
                             data = self.yaml.load(f)
