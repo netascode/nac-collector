@@ -266,7 +266,10 @@ class CiscoClientSDWAN(CiscoClient):
         response = self.get_request(self.base_url + endpoint["endpoint"])
 
         for item in response.json()["data"]:
-            new_endpoint = endpoint["endpoint"] + item["definitionId"]
+            if "definitionId" in item.keys():
+                new_endpoint = endpoint["endpoint"] + item["definitionId"]
+            else:
+                new_endpoint = endpoint["endpoint"] + "definition/" + item["policyId"]
             response = self.get_request(self.base_url + new_endpoint)
 
             data = response.json()
