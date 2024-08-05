@@ -6,6 +6,7 @@ tmp/
 .envrc
 .DS_Store
 .pylintrc
+.vscode
 
 # pyenv
 .python-version
