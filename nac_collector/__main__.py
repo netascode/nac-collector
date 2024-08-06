@@ -2,7 +2,7 @@
 
 # Copyright: (c) 2024, Daniel Schmidt <danischm@cisco.com>
 
-import nac_collector.main
+import nac_collector.cli.main
 
 if __name__ == "__main__":
-    nac_collector.main.cli()
+    nac_collector.cli.main.main()

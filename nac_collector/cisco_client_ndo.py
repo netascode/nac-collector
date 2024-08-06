@@ -48,7 +48,8 @@ class CiscoClientNDO(CiscoClient):
                 "Authentication failed with status code: %s",
                 response.status_code,
             )
-            return
+            return True
+        return False
 
     def get_from_endpoints(self, endpoints_yaml_file):
         with open(endpoints_yaml_file, "r", encoding="utf-8") as f:
