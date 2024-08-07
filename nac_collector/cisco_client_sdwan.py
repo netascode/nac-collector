@@ -110,7 +110,7 @@ class CiscoClientSDWAN(CiscoClient):
 
             if all(
                 x not in endpoint["endpoint"]
-                for x in ["%v", "%i", "/v1/feature-profile/", "/template/device/", "/template/policy/definition", "/template/policy/vedge"]
+                for x in ["%v", "%i", "/v1/feature-profile/", "/template/device/", "/template/policy/definition", "/template/policy/vedge", "/template/policy/security"]
             ):
                 response = self.get_request(self.base_url + endpoint["endpoint"])
 
@@ -161,7 +161,7 @@ class CiscoClientSDWAN(CiscoClient):
                 endpoint_dict = self.get_device_templates(endpoint, endpoint_dict)
                 final_dict.update(endpoint_dict)
             # policy definitions
-            elif "/template/policy/definition" in endpoint["endpoint"] or "/template/policy/vedge" in endpoint["endpoint"]:
+            elif "/template/policy/definition" in endpoint["endpoint"] or "/template/policy/vedge" in endpoint["endpoint"] or "/template/policy/security" in endpoint["endpoint"]:
                 endpoint_dict = self.get_policy_definitions(endpoint, endpoint_dict)
                 final_dict.update(endpoint_dict)
             # for feature templates and device templates
