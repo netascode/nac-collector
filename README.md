@@ -47,13 +47,13 @@ If you installed with `poetry install` command:
 - with env variables
 
 ```sh
-poetry run nac-collector -s SDWAN -v --git-provider
+poetry run nac-collector -s SDWAN -v DEBUG --git-provider
 ```
 
 - without env variables
 
 ```sh
-poetry run nac-collector -s SDWAN --username USERNAME --password PASSWORD --url URL -v --git-provider
+poetry run nac-collector -s SDWAN --username USERNAME --password PASSWORD --url URL -v DEBUG --git-provider
 ```
 
 If you installed the project with pip, you can run the script directly from the command line:
@@ -75,11 +75,11 @@ poetry run nac-collector -s ISE -v --git-provider
 - without env variables
 
 ```sh
-poetry run nac-collector -s ISE --username USERNAME --password PASSWORD --url URL -v --git-provider
+poetry run nac-collector -s ISE --username USERNAME --password PASSWORD --url URL -v DEBUG --git-provider
 ```
 
 If you installed the project with pip, you can run the script directly from the command line:
 
 ```sh
-nac-collector -s ISE -v --git-provider
+nac-collector -s ISE -v DEBUG --git-provider
 ```

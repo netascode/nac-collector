@@ -1,0 +1,18 @@
+- name: device_admin_policy_set
+  endpoint: /api/v1/policy/device-admin/policy-set
+  children:
+  - name: device_admin_authentication_rule
+    endpoint: /authentication
+  - name: device_admin_authorization_exception_rule
+    endpoint: /exception
+  - name: device_admin_authorization_rule
+    endpoint: /authorization
+- name: network_access_policy_set
+  endpoint: /api/v1/policy/network-access/policy-set
+  children:
+  - name: network_access_authentication_rule
+    endpoint: /authentication
+  - name: network_access_authorization_exception_rule
+    endpoint: /exception
+  - name: network_access_authorization_rule
+    endpoint: /authorization
