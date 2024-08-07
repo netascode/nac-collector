@@ -15,7 +15,7 @@
                             "name": "ch_name_1",
                             "description": "ch_name_1_description"
                         },
-                        "endpoint": "/api/endpoint_1/id_1/ch_endpoint_1/ch_id_1"
+                        "endpoint": "/ch_endpoint_1/ch_id_1"
                     },
                     {
                         "data": {
@@ -23,7 +23,7 @@
                             "name": "ch_name_2",
                             "description": "ch_name_2_description"
                         },
-                        "endpoint": "/api/endpoint_1/id_1/ch_endpoint_1/ch_id_2"
+                        "endpoint": "/ch_endpoint_1/ch_id_2"
                     }
                 ],
                 "ch_endpoint_2": [
@@ -33,7 +33,7 @@
                             "name": "ch_name_3",
                             "description": "ch_name_3_description"
                         },
-                        "endpoint": "/api/endpoint_1/id_1/ch_endpoint_2/ch_id_3"
+                        "endpoint": "/ch_endpoint_2/ch_id_3"
                     },
                     {
                         "data": {
@@ -41,7 +41,7 @@
                             "name": "ch_name_4",
                             "description": "ch_name_4_description"
                         },
-                        "endpoint": "/api/endpoint_1/id_1/ch_endpoint_2/ch_id_4"
+                        "endpoint": "/ch_endpoint_2/ch_id_4"
                     }
                 ]
             }
