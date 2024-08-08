@@ -66,13 +66,6 @@ from nac_collector.constants import (
     help="Generate endpoint.yaml automatically using provider github repo",
 )
 @click.option(
-    "--domain",
-    "-d",
-    type=str,
-    required=False,
-    default="DefaultAuth"
-)
-@click.option(
     "--mapping_path",
     "-m",
     type=str,
@@ -82,7 +75,6 @@ def cli(
     solution: str,
     username: str,
     password: str,
-    domain: str,
     url: str,
     verbose: bool,
     git_provider: bool,
@@ -164,7 +156,6 @@ def cli(
         client = CiscoClientNDO(
             username=username,
             password=password,
-            domain=domain,
             base_url=url,
             max_retries=MAX_RETRIES,
             retry_after=RETRY_AFTER,

@@ -2,11 +2,11 @@ from nac_collector.cisco_client import CiscoClient
 import requests
 import logging
 import urllib3
-from nac_collector.utils import merge_dict_list
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 logger = logging.getLogger("main")
+
 
 class CiscoClientNDO(CiscoClient):
 
@@ -17,7 +17,6 @@ class CiscoClientNDO(CiscoClient):
         self,
         username,
         password,
-        domain,
         base_url,
         max_retries,
         retry_after,
@@ -25,8 +24,8 @@ class CiscoClientNDO(CiscoClient):
         ssl_verify,
         mapping_path,
     ):
-        self.domain = domain
         self.mapping_path = mapping_path
+        self.domain = "DefaultAuth"
         super().__init__(
             username, password, base_url, max_retries, retry_after, timeout, ssl_verify
         )
@@ -34,6 +33,12 @@ class CiscoClientNDO(CiscoClient):
     def authenticate(self):
 
         auth_url = f"{self.base_url}{self.NDO_AUTH_ENDPOINT}"
+
+        login_details = self.username.split("/")
+
+        if len(login_details) > 1:
+            self.username = login_details[1]
+            self.domain = login_details[0]
 
         data = {
             "userName": self.username,
@@ -62,23 +67,22 @@ class CiscoClientNDO(CiscoClient):
             endpoints = [
                 {'endpoint': '/mso/api/v1/tenants', 'name': 'tenants'}, 
                 {'endpoint': '/mso/api/v1/schemas', 'name': 'schemas'}, 
-                {'endpoint': '/mso/api/v1/schemas/sites', 'name': 'site_details'}, 
-                {'endpoint': '/mso/api/v2/users', 'name': 'users'}, 
-                {'endpoint': '/mso/api/v2/sites/fabric-connectivity', 'name': 'fabric_connectivity'}, 
-                {'endpoint': '/mso/api/v1/templates/summaries', 'name': 'template_summary'}, 
-                {'endpoint': '/mso/api/v1/templates/%v', 'name': 'templates'}, 
-                {'endpoint': '/mso/api/v1/platform/version', 'name': 'version'}, 
-                {'endpoint': '/mso/api/v1/platform/systemConfig', 'name': 'system_configs'}, 
-                {'endpoint': '/mso/api/v1/platform/remote-locations', 'name': 'remote_locations'}
+                {'endpoint': '/mso/api/v1/schemas/sites', 'name': 'site_details'}, # noqa
+                {'endpoint': '/mso/api/v2/users', 'name': 'users'},
+                {'endpoint': '/mso/api/v2/sites/fabric-connectivity', 'name': 'fabric_connectivity'}, # noqa
+                {'endpoint': '/mso/api/v1/templates/summaries', 'name': 'template_summary'}, # noqa
+                {'endpoint': '/mso/api/v1/templates/%v', 'name': 'templates'},
+                {'endpoint': '/mso/api/v1/platform/version', 'name': 'version'}, # noqa
+                {'endpoint': '/mso/api/v1/platform/systemConfig', 'name': 'system_configs'}, # noqa
+                {'endpoint': '/mso/api/v1/platform/remote-locations', 'name': 'remote_locations'} # noqa
                 ]
         final_dict = {}
 
-
         for endpoint in endpoints:
-            if all(x not in endpoint.get("endpoint",{}) for x in ["%v", "%i"]):
+            if all(x not in endpoint.get("endpoint", {}) for x in ["%v", "%i"]): # noqa
 
                 endpoint_dict = CiscoClient.create_endpoint_dict(endpoint)
-                response = self.get_request(self.base_url + endpoint["endpoint"])
+                response = self.get_request(self.base_url + endpoint["endpoint"]) # noqa
 
                 data = response.json()
                 key = endpoint["name"]
@@ -94,19 +98,19 @@ class CiscoClientNDO(CiscoClient):
 
             else:
                 parent_endpoint = ""
-                parent_path = "/".join(endpoint.get("endpoint").split("/")[:-1])
+                parent_path = "/".join(endpoint.get("endpoint").split("/")[:-1]) # noqa
                 for e in endpoints:
                     if parent_path in e.get("endpoint") and e != endpoint:
                         parent_endpoint = e
                         break
-                if parent_endpoint and parent_endpoint.get("name") in final_dict:
+                if parent_endpoint and parent_endpoint.get("name") in final_dict: # noqa
                     endpoint_dict = CiscoClient.create_endpoint_dict(endpoint)
-                    
+
                     r = []
 
                     for tmpl in final_dict[parent_endpoint["name"]]:
-                        reponse = self.get_request(self.base_url + endpoint["endpoint"].replace("%v",tmpl.get("templateId")))
-                        
+                        reponse = self.get_request(self.base_url + endpoint["endpoint"].replace("%v",tmpl.get("templateId"))) # noqa
+
                         data = reponse.json()
                         r.append(data)
 
@@ -115,6 +119,4 @@ class CiscoClientNDO(CiscoClient):
                             endpoint["name"]: r
                         }
                     )
-
-        
         return final_dict
