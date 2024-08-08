@@ -23,9 +23,7 @@ class CiscoClientNDO(CiscoClient):
         retry_after,
         timeout,
         ssl_verify,
-        mapping_path,
     ):
-        self.mapping_path = mapping_path
         self.domain = "DefaultAuth"
         super().__init__(
             username, password, base_url, max_retries, retry_after, timeout, ssl_verify
@@ -57,11 +55,11 @@ class CiscoClientNDO(CiscoClient):
                 "Authentication failed with status code: %s",
                 response.status_code,
             )
-            return True
-        return False
+            return False
+        return True
 
     def get_from_endpoints(self, endpoints_yaml_file):
-        if self.mapping_path:
+        if endpoints_yaml_file:
             with open(endpoints_yaml_file, "r", encoding="utf-8") as f:
                 endpoints = self.yaml.load(f)
         else:

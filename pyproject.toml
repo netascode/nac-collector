@@ -11,6 +11,7 @@ gitpython = "^3.1.42"
 python = "^3.8"
 requests = "^2.31.0"
 ruamel-yaml = "^0.18.6"
+errorhandler = "^2.0.1"
 
 [tool.poetry.scripts]
 nac-collector = "nac_collector.cli.main:main"
