@@ -64,24 +64,35 @@ class CiscoClientNDO(CiscoClient):
                 endpoints = self.yaml.load(f)
         else:
             endpoints = [
-                {'endpoint': '/mso/api/v1/tenants', 'name': 'tenants'}, 
-                {'endpoint': '/mso/api/v1/schemas', 'name': 'schemas'}, 
-                {'endpoint': '/mso/api/v1/schemas/sites', 'name': 'site_details'}, # noqa
-                {'endpoint': '/mso/api/v2/users', 'name': 'users'},
-                {'endpoint': '/mso/api/v2/sites/fabric-connectivity', 'name': 'fabric_connectivity'}, # noqa
-                {'endpoint': '/mso/api/v1/templates/summaries', 'name': 'template_summary'}, # noqa
-                {'endpoint': '/mso/api/v1/templates/%v', 'name': 'templates'},
-                {'endpoint': '/mso/api/v1/platform/version', 'name': 'version'}, # noqa
-                {'endpoint': '/mso/api/v1/platform/systemConfig', 'name': 'system_configs'}, # noqa
-                {'endpoint': '/mso/api/v1/platform/remote-locations', 'name': 'remote_locations'} # noqa
-                ]
+                {"endpoint": "/mso/api/v1/tenants", "name": "tenants"},
+                {"endpoint": "/mso/api/v1/schemas", "name": "schemas"},
+                {"endpoint": "/mso/api/v1/schemas/sites", "name": "site_details"},
+                {"endpoint": "/mso/api/v2/users", "name": "users"},
+                {
+                    "endpoint": "/mso/api/v2/sites/fabric-connectivity",
+                    "name": "fabric_connectivity",
+                },
+                {
+                    "endpoint": "/mso/api/v1/templates/summaries",
+                    "name": "template_summary",
+                },
+                {"endpoint": "/mso/api/v1/templates/%v", "name": "templates"},
+                {"endpoint": "/mso/api/v1/platform/version", "name": "version"},
+                {
+                    "endpoint": "/mso/api/v1/platform/systemConfig",
+                    "name": "system_configs",
+                },
+                {
+                    "endpoint": "/mso/api/v1/platform/remote-locations",
+                    "name": "remote_locations",
+                },
+            ]
         final_dict = {}
 
         for endpoint in endpoints:
-            if all(x not in endpoint.get("endpoint", {}) for x in ["%v", "%i"]): # noqa
-
+            if all(x not in endpoint.get("endpoint", {}) for x in ["%v", "%i"]):  # noqa
                 endpoint_dict = CiscoClient.create_endpoint_dict(endpoint)
-                response = self.get_request(self.base_url + endpoint["endpoint"]) # noqa
+                response = self.get_request(self.base_url + endpoint["endpoint"])  # noqa
 
                 data = response.json()
                 key = endpoint["name"]
@@ -97,25 +108,24 @@ class CiscoClientNDO(CiscoClient):
 
             else:
                 parent_endpoint = ""
-                parent_path = "/".join(endpoint.get("endpoint").split("/")[:-1]) # noqa
+                parent_path = "/".join(endpoint.get("endpoint").split("/")[:-1])  # noqa
                 for e in endpoints:
                     if parent_path in e.get("endpoint") and e != endpoint:
                         parent_endpoint = e
                         break
-                if parent_endpoint and parent_endpoint.get("name") in final_dict: # noqa
+                if parent_endpoint and parent_endpoint.get("name") in final_dict:  # noqa
                     endpoint_dict = CiscoClient.create_endpoint_dict(endpoint)
 
                     r = []
 
                     for tmpl in final_dict[parent_endpoint["name"]]:
-                        reponse = self.get_request(self.base_url + endpoint["endpoint"].replace("%v",tmpl.get("templateId"))) # noqa
+                        reponse = self.get_request(
+                            self.base_url
+                            + endpoint["endpoint"].replace("%v", tmpl.get("templateId"))
+                        )  # noqa
 
                         data = reponse.json()
                         r.append(data)
 
-                    final_dict.update(
-                        {
-                            endpoint["name"]: r
-                        }
-                    )
+                    final_dict.update({endpoint["name"]: r})
         return final_dict
