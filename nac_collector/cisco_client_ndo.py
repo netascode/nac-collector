@@ -17,12 +17,16 @@ class CiscoClientNDO(CiscoClient):
         self,
         username,
         password,
+        domain,
         base_url,
         max_retries,
         retry_after,
         timeout,
         ssl_verify,
+        mapping_path,
     ):
+        self.domain = domain
+        self.mapping_path = mapping_path
         super().__init__(
             username, password, base_url, max_retries, retry_after, timeout, ssl_verify
         )
@@ -34,7 +38,7 @@ class CiscoClientNDO(CiscoClient):
         data = {
             "userName": self.username,
             "userPasswd": self.password,
-            "domain": "DefaultAuth",
+            "domain": self.domain,
         }
 
         self.session = requests.Session()
@@ -51,9 +55,22 @@ class CiscoClientNDO(CiscoClient):
             return
 
     def get_from_endpoints(self, endpoints_yaml_file):
-        with open(endpoints_yaml_file, "r", encoding="utf-8") as f:
-            endpoints = self.yaml.load(f)
-
+        if self.mapping_path:
+            with open(endpoints_yaml_file, "r", encoding="utf-8") as f:
+                endpoints = self.yaml.load(f)
+        else:
+            endpoints = [
+                {'endpoint': '/mso/api/v1/tenants', 'name': 'tenants'}, 
+                {'endpoint': '/mso/api/v1/schemas', 'name': 'schemas'}, 
+                {'endpoint': '/mso/api/v1/schemas/sites', 'name': 'site_details'}, 
+                {'endpoint': '/mso/api/v2/users', 'name': 'users'}, 
+                {'endpoint': '/mso/api/v2/sites/fabric-connectivity', 'name': 'fabric_connectivity'}, 
+                {'endpoint': '/mso/api/v1/templates/summaries', 'name': 'template_summary'}, 
+                {'endpoint': '/mso/api/v1/templates/%v', 'name': 'templates'}, 
+                {'endpoint': '/mso/api/v1/platform/version', 'name': 'version'}, 
+                {'endpoint': '/mso/api/v1/platform/systemConfig', 'name': 'system_configs'}, 
+                {'endpoint': '/mso/api/v1/platform/remote-locations', 'name': 'remote_locations'}
+                ]
         final_dict = {}
 
 
@@ -64,19 +81,14 @@ class CiscoClientNDO(CiscoClient):
                 response = self.get_request(self.base_url + endpoint["endpoint"])
 
                 data = response.json()
+                key = endpoint["name"]
 
+                if isinstance(data, dict):
+                    next_key = next(iter(data))
+                    if key == next_key:
+                        data = data[next_key]
 
-                if isinstance(data, list):
-                    endpoint_dict[endpoint["name"]] = data
-                elif isinstance(data, dict):
-                    endpoint_dict[endpoint["name"]] = data[endpoint["name"]]
-
-                if endpoint["name"] in final_dict and endpoint["key"]:
-                    for i,v in enumerate(endpoint_dict[endpoint["name"]]):
-                        for i1,v1 in enumerate(final_dict[endpoint["name"]]):
-                            if v.get(endpoint["key"]) == v1.get(endpoint["key"]):
-                                endpoint_dict[endpoint["name"]][i] = merge_dict_list(v1,v)
-                                break
+                endpoint_dict[key] = data if isinstance(data, list) else data
 
                 final_dict.update(endpoint_dict)
 
@@ -97,8 +109,6 @@ class CiscoClientNDO(CiscoClient):
                         
                         data = reponse.json()
                         r.append(data)
-
-                    print(endpoint_dict)
 
                     final_dict.update(
                         {

@@ -3,6 +3,7 @@ This module is the main entry point for the NAC Collector application.
 It handles the authentication and data collection processes.
 """
 
+from email.policy import default
 import logging
 import time
 import click
@@ -64,13 +65,28 @@ from nac_collector.constants import (
     is_flag=True,
     help="Generate endpoint.yaml automatically using provider github repo",
 )
+@click.option(
+    "--domain",
+    "-d",
+    type=str,
+    required=False,
+    default="DefaultAuth"
+)
+@click.option(
+    "--mapping_path",
+    "-m",
+    type=str,
+    required=False
+)
 def cli(
     solution: str,
     username: str,
     password: str,
+    domain: str,
     url: str,
     verbose: bool,
     git_provider: bool,
+    mapping_path: str,
 ) -> None:
     """
     Command Line Interface (CLI) function for the application.
@@ -148,11 +164,13 @@ def cli(
         client = CiscoClientNDO(
             username=username,
             password=password,
+            domain=domain,
             base_url=url,
             max_retries=MAX_RETRIES,
             retry_after=RETRY_AFTER,
             timeout=TIMEOUT,
             ssl_verify=False,
+            mapping_path=mapping_path,
         )
 
         # Authenticate
