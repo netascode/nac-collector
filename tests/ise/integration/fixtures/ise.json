@@ -1,0 +1,76 @@
+{
+    "endpoint_1": [
+        {
+            "data": {
+                "id": "id_1",
+                "name": "name_1",
+                "description": "name_1_description"
+            },
+            "endpoint": "/api/endpoint_1/id_1",
+            "children": {
+                "ch_endpoint_1": [
+                    {
+                        "data": {
+                            "id": "ch_id_1",
+                            "name": "ch_name_1",
+                            "description": "ch_name_1_description"
+                        },
+                        "endpoint": "/ch_endpoint_1/ch_id_1"
+                    },
+                    {
+                        "data": {
+                            "id": "ch_id_2",
+                            "name": "ch_name_2",
+                            "description": "ch_name_2_description"
+                        },
+                        "endpoint": "/ch_endpoint_1/ch_id_2"
+                    }
+                ],
+                "ch_endpoint_2": [
+                    {
+                        "data": {
+                            "id": "ch_id_3",
+                            "name": "ch_name_3",
+                            "description": "ch_name_3_description"
+                        },
+                        "endpoint": "/ch_endpoint_2/ch_id_3"
+                    },
+                    {
+                        "data": {
+                            "id": "ch_id_4",
+                            "name": "ch_name_4",
+                            "description": "ch_name_4_description"
+                        },
+                        "endpoint": "/ch_endpoint_2/ch_id_4"
+                    }
+                ]
+            }
+        }
+    ],
+    "endpoint_2": [
+        {
+            "data": {
+                "id": "id_2",
+                "name": "name_2",
+                "description": "name_2_description"
+            },
+            "endpoint": "/api/endpoint_2/id_2"
+        },
+        {
+            "data": {
+                "id": "id_3",
+                "name": "name_3",
+                "description": "name_3_description"
+            },
+            "endpoint": "/api/endpoint_2/id_3"
+        },
+        {
+            "data": {
+                "id": "id_4",
+                "name": "name_4",
+                "description": "name_4_description"
+            },
+            "endpoint": "/api/endpoint_2/id_4"
+        }
+    ]
+}

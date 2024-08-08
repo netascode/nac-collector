@@ -1,7 +1,9 @@
-from nac_collector.cisco_client import CiscoClient
-import requests
 import logging
+
+import requests
 import urllib3
+
+from nac_collector.cisco_client import CiscoClient
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -9,7 +11,6 @@ logger = logging.getLogger("main")
 
 
 class CiscoClientNDO(CiscoClient):
-
     NDO_AUTH_ENDPOINT = "/login"
     SOLUTION = "ndo"
 
@@ -31,7 +32,6 @@ class CiscoClientNDO(CiscoClient):
         )
 
     def authenticate(self):
-
         auth_url = f"{self.base_url}{self.NDO_AUTH_ENDPOINT}"
 
         login_details = self.username.split("/")
@@ -54,10 +54,11 @@ class CiscoClientNDO(CiscoClient):
 
         if response.status_code != requests.codes.ok:
             logger.error(
-                f"Authentication failed with status code: %s",
+                "Authentication failed with status code: %s",
                 response.status_code,
             )
-            return
+            return True
+        return False
 
     def get_from_endpoints(self, endpoints_yaml_file):
         if self.mapping_path:
