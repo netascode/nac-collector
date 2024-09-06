@@ -232,6 +232,7 @@ class CiscoClientSDWAN(CiscoClient):
                         try:
                             endpoint_dict[endpoint["name"]].append(
                                 {
+                                    "header": data["header"],
                                     "data": i,
                                     "endpoint": endpoint["endpoint"].split("/%i")[0]
                                     + "/"
@@ -240,11 +241,11 @@ class CiscoClientSDWAN(CiscoClient):
                             )
                         except TypeError:
                             endpoint_dict[endpoint["name"]].append(
-                                {"data": i, "endpoint": endpoint["endpoint"]}
+                                {"header": data["header"], "data": i, "endpoint": endpoint["endpoint"]}
                             )
                 else:
                     endpoint_dict[endpoint["name"]].append(
-                        {"data": data["data"], "endpoint": endpoint["endpoint"]}
+                        {"header": data["header"], "data": data["data"], "endpoint": endpoint["endpoint"]}
                     )
 
                 self.log_response(endpoint, response)
