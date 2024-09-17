@@ -299,7 +299,7 @@ class CiscoClientFMC(CiscoClient):
 
     def resolve_domains(self, endpoints: list, domains: list):
         """
-        Replace endpoint containing domain reference '%d' with one per domain.
+        Replace endpoint containing domain reference '{DOMAIN_UUID}' with one per domain.
 
         Parameters:
             endpoints (list): List of endpoints
@@ -312,14 +312,14 @@ class CiscoClientFMC(CiscoClient):
         new_endpoints = []
         for endpoint in endpoints:
             # Endpoint is NOT domain specific
-            if "%d" not in endpoint["endpoint"]:
+            if "{DOMAIN_UUID}" not in endpoint["endpoint"]:
                 new_endpoints.append(copy.deepcopy(endpoint))
                 continue
 
             # Endpoint is domain specific
             base_endpoint = endpoint["endpoint"]
             for domain in domains:
-                endpoint["endpoint"] = base_endpoint.replace("%d", domain)
+                endpoint["endpoint"] = base_endpoint.replace("{DOMAIN_UUID}", domain)
                 new_endpoints.append(copy.deepcopy(endpoint))
 
         return new_endpoints
