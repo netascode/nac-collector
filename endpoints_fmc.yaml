@@ -44,7 +44,9 @@
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/vlangrouptags
 - name: variable_set
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/variablesets
-- name: extended_access_list
+- name: standard_acl
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/standardaccesslists
+- name: extended_acl
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/extendedaccesslists
 - name: file_policy
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/filepolicies
