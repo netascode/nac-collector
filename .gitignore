@@ -1,11 +1,12 @@
 /*.json
 /endpoints*.yaml
-!**/*.json
-!**/endpoints*.yaml
+!examples/*.json
+!examples/endpoints*.yaml
 tmp/
 .envrc
 .DS_Store
 .pylintrc
+.vscode
 
 # pyenv
 .python-version

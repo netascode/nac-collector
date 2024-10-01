@@ -90,6 +90,53 @@ class CiscoClientISE(CiscoClient):
             )
             return False
 
+    def process_endpoint_data(self, endpoint, endpoint_dict, data):
+        """
+        Process the data for a given endpoint and update the endpoint_dict.
+
+        Parameters:
+            endpoint (dict): The endpoint configuration.
+            endpoint_dict (dict): The dictionary to store processed data.
+            data (dict or list): The data fetched from the endpoint.
+
+        Returns:
+            dict: The updated endpoint dictionary with processed data.
+        """
+
+        if data is None:
+            endpoint_dict[endpoint["name"]].append(
+                {"data": {}, "endpoint": endpoint["endpoint"]}
+            )
+
+        # License API returns a list of dictionaries
+        elif isinstance(data, list):
+            endpoint_dict[endpoint["name"]].append(
+                {"data": data, "endpoint": endpoint["endpoint"]}
+            )
+
+        elif data.get("response"):
+            for i in data.get("response"):
+                endpoint_dict[endpoint["name"]].append(
+                    {
+                        "data": i,
+                        "endpoint": endpoint["endpoint"] + "/" + self.get_id_value(i),
+                    }
+                )
+
+        # Pagination for ERS API results
+        elif data.get("SearchResult"):
+            ers_data = self.process_ers_api_results(data)
+
+            for i in ers_data:
+                endpoint_dict[endpoint["name"]].append(
+                    {
+                        "data": i,
+                        "endpoint": endpoint["endpoint"] + "/" + self.get_id_value(i),
+                    }
+                )
+
+        return endpoint_dict  # Return the processed endpoint dictionary
+
     def get_from_endpoints(self, endpoints_yaml_file):
         """
         Retrieve data from a list of endpoints specified in a YAML file and
@@ -116,54 +163,71 @@ class CiscoClientISE(CiscoClient):
         # Iterate over all endpoints
         with click.progressbar(endpoints, label="Processing endpoints") as endpoint_bar:
             for endpoint in endpoint_bar:
-                logger.info("Processing endpoint: %s", endpoint)
+                logger.info("Processing endpoint: %s", endpoint["name"])
 
-                if all(x not in endpoint["endpoint"] for x in ["%v", "%i"]):
-                    endpoint_dict = CiscoClient.create_endpoint_dict(endpoint)
+                endpoint_dict = CiscoClient.create_endpoint_dict(endpoint)
 
-                    data = self.fetch_data(endpoint["endpoint"])
+                data = self.fetch_data(endpoint["endpoint"])
 
-                    if data is None:
-                        endpoint_dict[endpoint["name"]].append(
-                            {"data": {}, "endpoint": endpoint["endpoint"]}
+                # Process the endpoint data and get the updated dictionary
+                endpoint_dict = self.process_endpoint_data(
+                    endpoint, endpoint_dict, data
+                )
+
+                if endpoint.get("children"):
+                    # Create empty list of parent_endpoint_ids
+                    parent_endpoint_ids = []
+
+                    for item in endpoint_dict[endpoint["name"]]:
+                        # Add the item's id to the list
+                        try:
+                            parent_endpoint_ids.append(item["data"]["id"])
+                        except KeyError:
+                            continue
+
+                    for children_endpoint in endpoint["children"]:
+                        logger.info(
+                            "Processing children endpoint: %s",
+                            endpoint["endpoint"]
+                            + "/%v"
+                            + children_endpoint["endpoint"],
                         )
 
-                    # License API returns a list of dictionaries
-                    elif isinstance(data, list):
-                        endpoint_dict[endpoint["name"]].append(
-                            {"data": data, "endpoint": endpoint["endpoint"]}
+                        children_endpoint_dict = CiscoClient.create_endpoint_dict(
+                            children_endpoint
                         )
 
-                    elif data.get("response"):
-                        for i in data.get("response"):
-                            endpoint_dict[endpoint["name"]].append(
-                                {
-                                    "data": i,
-                                    "endpoint": endpoint["endpoint"]
-                                    + "/"
-                                    + self.get_id_value(i),
-                                }
-                            )
-                    # Pagination for ERS API results
-                    elif data.get("SearchResult"):
-
-                        ers_data = self.process_ers_api_results(data)
-
-                        for i in ers_data:
-                            endpoint_dict[endpoint["name"]].append(
-                                {
-                                    "data": i,
-                                    "endpoint": endpoint["endpoint"]
-                                    + "/"
-                                    + self.get_id_value(i),
-                                }
+                        # Iterate over the parent endpoint ids
+                        for id_ in parent_endpoint_ids:
+                            # Replace '%v' in the endpoint with the id
+                            children_joined_endpoint = (
+                                endpoint["endpoint"]
+                                + "/"
+                                + id_
+                                + children_endpoint["endpoint"]
                             )
 
-                    # Save results to dictionary
-                    final_dict.update(endpoint_dict)
+                            data = self.fetch_data(children_joined_endpoint)
 
-                elif "%v" in endpoint["endpoint"]:
-                    children_endpoints.append(endpoint)
+                            # Process the children endpoint data and get the updated dictionary
+                            children_endpoint_dict = self.process_endpoint_data(
+                                children_endpoint, children_endpoint_dict, data
+                            )
+
+                            for index, value in enumerate(
+                                endpoint_dict[endpoint["name"]]
+                            ):
+                                if value.get("data").get("id") == id_:
+                                    endpoint_dict[endpoint["name"]][index].setdefault(
+                                        "children", {}
+                                    )[
+                                        children_endpoint["name"]
+                                    ] = children_endpoint_dict[
+                                        children_endpoint["name"]
+                                    ]
+
+                # Save results to dictionary
+                final_dict.update(endpoint_dict)
 
         # Iterate over all children endpoints
         with click.progressbar(

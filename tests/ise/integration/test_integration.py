@@ -23,7 +23,6 @@ def cisco_client():
 
 
 def test_cisco_client_ise_with_integration(cisco_client, tmpdir):
-
     def mock_get_request(url):
         # Mock responses for specific API endpoints
         mock_responses = {
