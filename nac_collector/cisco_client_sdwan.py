@@ -161,7 +161,7 @@ class CiscoClientSDWAN(CiscoClient):
                 endpoint_dict = self.get_device_templates(endpoint, endpoint_dict)
                 final_dict.update(endpoint_dict)
             # policy definitions
-            elif "/template/policy/definition" in endpoint["endpoint"] or "/template/policy/vedge" in endpoint["endpoint"] or "/template/policy/vsmart" in endpoint["endpoint"] or "/template/policy/security" in endpoint["endpoint"]:
+            elif any(substring in endpoint["endpoint"] for substring in ["/template/policy/definition", "/template/policy/vedge", "/template/policy/vsmart", "/template/policy/security"]):
                 endpoint_dict = self.get_policy_definitions(endpoint, endpoint_dict)
                 final_dict.update(endpoint_dict)
             # for feature templates and device templates
