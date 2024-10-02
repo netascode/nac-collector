@@ -190,8 +190,7 @@ class CiscoClientSDWAN(CiscoClient):
 
                     self.log_response(endpoint, response)
             else:
-                print("5")
-                input("ACCCCC")
+                pass
         return final_dict
 
     def get_device_templates(self, endpoint, endpoint_dict):
