@@ -110,7 +110,16 @@ class CiscoClientSDWAN(CiscoClient):
 
             if all(
                 x not in endpoint["endpoint"]
-                for x in ["%v", "%i", "/v1/feature-profile/", "/template/device/", "/template/policy/definition", "/template/policy/vedge", "/template/policy/vsmart", "/template/policy/security"]
+                for x in [
+                    "%v",
+                    "%i",
+                    "/v1/feature-profile/",
+                    "/template/device/",
+                    "/template/policy/definition",
+                    "/template/policy/vedge",
+                    "/template/policy/vsmart",
+                    "/template/policy/security",
+                ]
             ):
                 response = self.get_request(self.base_url + endpoint["endpoint"])
 
@@ -161,7 +170,15 @@ class CiscoClientSDWAN(CiscoClient):
                 endpoint_dict = self.get_device_templates(endpoint, endpoint_dict)
                 final_dict.update(endpoint_dict)
             # policy definitions
-            elif any(substring in endpoint["endpoint"] for substring in ["/template/policy/definition", "/template/policy/vedge", "/template/policy/vsmart", "/template/policy/security"]):
+            elif any(
+                substring in endpoint["endpoint"]
+                for substring in [
+                    "/template/policy/definition",
+                    "/template/policy/vedge",
+                    "/template/policy/vsmart",
+                    "/template/policy/security",
+                ]
+            ):
                 endpoint_dict = self.get_policy_definitions(endpoint, endpoint_dict)
                 final_dict.update(endpoint_dict)
             # for feature templates and device templates
@@ -240,11 +257,19 @@ class CiscoClientSDWAN(CiscoClient):
                             )
                         except TypeError:
                             endpoint_dict[endpoint["name"]].append(
-                                {"header": data["header"], "data": i, "endpoint": endpoint["endpoint"]}
+                                {
+                                    "header": data["header"],
+                                    "data": i,
+                                    "endpoint": endpoint["endpoint"],
+                                }
                             )
                 else:
                     endpoint_dict[endpoint["name"]].append(
-                        {"header": data["header"], "data": data["data"], "endpoint": endpoint["endpoint"]}
+                        {
+                            "header": data["header"],
+                            "data": data["data"],
+                            "endpoint": endpoint["endpoint"],
+                        }
                     )
 
                 self.log_response(endpoint, response)
