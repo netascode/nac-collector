@@ -110,7 +110,16 @@ class CiscoClientSDWAN(CiscoClient):
 
             if all(
                 x not in endpoint["endpoint"]
-                for x in ["%v", "%i", "/v1/feature-profile/", "/template/device/"]
+                for x in [
+                    "%v",
+                    "%i",
+                    "/v1/feature-profile/",
+                    "/template/device/",
+                    "/template/policy/definition",
+                    "/template/policy/vedge",
+                    "/template/policy/vsmart",
+                    "/template/policy/security",
+                ]
             ):
                 response = self.get_request(self.base_url + endpoint["endpoint"])
 
@@ -160,6 +169,18 @@ class CiscoClientSDWAN(CiscoClient):
             elif endpoint["name"] == "cli_device_template":
                 endpoint_dict = self.get_device_templates(endpoint, endpoint_dict)
                 final_dict.update(endpoint_dict)
+            # policy definitions
+            elif any(
+                substring in endpoint["endpoint"]
+                for substring in [
+                    "/template/policy/definition",
+                    "/template/policy/vedge",
+                    "/template/policy/vsmart",
+                    "/template/policy/security",
+                ]
+            ):
+                endpoint_dict = self.get_policy_definitions(endpoint, endpoint_dict)
+                final_dict.update(endpoint_dict)
             # for feature templates and device templates
             elif "%i" in endpoint["endpoint"]:
                 endpoint_dict = self.get_feature_templates(endpoint, endpoint_dict)
@@ -186,8 +207,7 @@ class CiscoClientSDWAN(CiscoClient):
 
                     self.log_response(endpoint, response)
             else:
-                print("5")
-                input("ACCCCC")
+                pass
         return final_dict
 
     def get_device_templates(self, endpoint, endpoint_dict):
@@ -228,6 +248,7 @@ class CiscoClientSDWAN(CiscoClient):
                         try:
                             endpoint_dict[endpoint["name"]].append(
                                 {
+                                    "header": data["header"],
                                     "data": i,
                                     "endpoint": endpoint["endpoint"].split("/%i")[0]
                                     + "/"
@@ -236,14 +257,60 @@ class CiscoClientSDWAN(CiscoClient):
                             )
                         except TypeError:
                             endpoint_dict[endpoint["name"]].append(
-                                {"data": i, "endpoint": endpoint["endpoint"]}
+                                {
+                                    "header": data["header"],
+                                    "data": i,
+                                    "endpoint": endpoint["endpoint"],
+                                }
                             )
                 else:
                     endpoint_dict[endpoint["name"]].append(
-                        {"data": data["data"], "endpoint": endpoint["endpoint"]}
+                        {
+                            "header": data["header"],
+                            "data": data["data"],
+                            "endpoint": endpoint["endpoint"],
+                        }
                     )
 
                 self.log_response(endpoint, response)
+
+        return endpoint_dict
+
+    def get_policy_definitions(self, endpoint, endpoint_dict):
+        """
+        Process policy definitions
+
+        Args:
+            endpoint (dict): The endpoint to process.
+            endpoint_dict (dict): The dictionary to append items to.
+
+        Returns:
+            enpdoint_dict: The updated endpoint_dict with the processed policy definitions.
+
+        """
+        response = self.get_request(self.base_url + endpoint["endpoint"])
+
+        for item in response.json()["data"]:
+            if "definitionId" in item.keys():
+                new_endpoint = endpoint["endpoint"] + item["definitionId"]
+            else:
+                new_endpoint = endpoint["endpoint"] + "definition/" + item["policyId"]
+            response = self.get_request(self.base_url + new_endpoint)
+
+            data = response.json()
+            try:
+                endpoint_dict[endpoint["name"]].append(
+                    {
+                        "data": data,
+                        "endpoint": new_endpoint,
+                    }
+                )
+            except TypeError:
+                endpoint_dict[endpoint["name"]].append(
+                    {"data": data, "endpoint": endpoint["endpoint"]}
+                )
+
+            self.log_response(new_endpoint, response)
 
         return endpoint_dict
 

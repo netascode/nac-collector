@@ -12,3 +12,5 @@ terraform*
 # pyenv
 .python-version
 __pycache__/
+
+.idea
