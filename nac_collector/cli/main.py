@@ -76,20 +76,12 @@ def main(
 
     configure_logging(verbosity)
 
-    if git_provider and solution.lower() == "fmc":
-        wrapper = GithubRepoWrapper(
-            repo_url=f"https://github.com/netascode/terraform-provider-{solution.lower()}.git",
-            clone_dir=GIT_TMP,
-            solution=solution.lower(),
-        )
-        wrapper.get_definitions()
-    if git_provider and solution.lower() != "fmc":
-        wrapper = GithubRepoWrapper(
-            repo_url=f"https://github.com/CiscoDevNet/terraform-provider-{solution.lower()}.git",
-            clone_dir=GIT_TMP,
-            solution=solution.lower(),
-        )        
-        wrapper.get_definitions()
+    wrapper = GithubRepoWrapper(
+        repo_url=f"https://github.com/CiscoDevNet/terraform-provider-{solution.lower()}.git",
+        clone_dir=GIT_TMP,
+        solution=solution.lower(),
+    )        
+    wrapper.get_definitions()
 
     endpoints_yaml_file = endpoints_file or f"endpoints_{solution.lower()}.yaml"
     output_file = output or f"{solution.lower()}.json"
