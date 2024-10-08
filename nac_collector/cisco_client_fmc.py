@@ -24,9 +24,7 @@ class CiscoClientFMC(CiscoClient):
      - token is used to authenticate subsequent queries
     """
 
-    FMC_AUTH_ENDPOINTS = [
-        "/api/fmc_platform/v1/auth/generatetoken"
-    ]
+    FMC_AUTH_ENDPOINTS = ["/api/fmc_platform/v1/auth/generatetoken"]
     SOLUTION = "fmc"
 
     def __init__(
@@ -77,13 +75,17 @@ class CiscoClientFMC(CiscoClient):
                     {
                         "Content-Type": "application/json",
                         "Accept": "application/json",
-                        "X-auth-access-token": response.headers.get("X-auth-access-token"),
+                        "X-auth-access-token": response.headers.get(
+                            "X-auth-access-token"
+                        ),
                     }
                 )
                 self.x_auth_refresh_token = response.headers.get("X-auth-refresh-token")
 
                 # Save a list of UUIDs of all available domains
-                self.domains = [x["uuid"] for x in json.loads(response.headers.get("DOMAINS"))]
+                self.domains = [
+                    x["uuid"] for x in json.loads(response.headers.get("DOMAINS"))
+                ]
                 return True
 
             logger.error(
@@ -181,7 +183,9 @@ class CiscoClientFMC(CiscoClient):
                         )
 
                         for id_ in parent_endpoint_ids:
-                            children_endpoint_dict = CiscoClient.create_endpoint_dict(children_endpoint)
+                            children_endpoint_dict = CiscoClient.create_endpoint_dict(
+                                children_endpoint
+                            )
 
                             # Replace '%v' in the endpoint with the id
                             children_joined_endpoint = (
@@ -198,7 +202,9 @@ class CiscoClientFMC(CiscoClient):
                                 children_endpoint, children_endpoint_dict, data
                             )
 
-                            for index, value in enumerate(endpoint_dict[endpoint["name"]]):
+                            for index, value in enumerate(
+                                endpoint_dict[endpoint["name"]]
+                            ):
                                 if value.get("data").get("id") == id_:
                                     endpoint_dict[endpoint["name"]][index].setdefault(
                                         "children", {}
@@ -261,11 +267,9 @@ class CiscoClientFMC(CiscoClient):
             return []
 
         if "paging" in output and "next" in output["paging"]:
-            data = {
-                "paging": output["paging"]
-            }
+            data = {"paging": output["paging"]}
             while True:
-                next_url_params = data["paging"]["next"][0].split('?')[1]
+                next_url_params = data["paging"]["next"][0].split("?")[1]
                 data = super().fetch_data(endpoint + "?" + next_url_params)
                 output["items"].extend(data["items"])
                 if "next" not in data["paging"]:
@@ -282,7 +286,9 @@ class CiscoClientFMC(CiscoClient):
         # Filter output by the domain
         # Child domains will include objects from parent domain, which we need to exclude
         filtered = {
-            "items": [x for x in output["items"] if x["metadata"]["domain"]["id"] in endpoint]
+            "items": [
+                x for x in output["items"] if x["metadata"]["domain"]["id"] in endpoint
+            ]
         }
 
         return filtered

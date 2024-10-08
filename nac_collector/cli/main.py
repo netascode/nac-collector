@@ -75,7 +75,7 @@ def main(
     start_time = time.time()
 
     configure_logging(verbosity)
-    
+
     if git_provider:
         wrapper = GithubRepoWrapper(
             repo_url=f"https://github.com/CiscoDevNet/terraform-provider-{solution.lower()}.git",
