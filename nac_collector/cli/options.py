@@ -3,9 +3,9 @@ import click
 solution = click.option(
     "--solution",
     "-s",
-    type=click.Choice(["SDWAN", "ISE", "NDO"], case_sensitive=False),
+    type=click.Choice(["SDWAN", "ISE", "NDO", "FMC"], case_sensitive=False),
     required=True,
-    help="Solutions supported [SDWAN, ISE, NDO]",
+    help="Solutions supported [SDWAN, ISE, NDO, FMC]",
 )
 
 username = click.option(

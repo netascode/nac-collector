@@ -6,6 +6,7 @@ import click
 import errorhandler
 
 import nac_collector
+from nac_collector.cisco_client_fmc import CiscoClientFMC
 from nac_collector.cisco_client_ise import CiscoClientISE
 from nac_collector.cisco_client_ndo import CiscoClientNDO
 from nac_collector.cisco_client_sdwan import CiscoClientSDWAN
@@ -92,6 +93,8 @@ def main(
         cisco_client = CiscoClientISE
     elif solution == "NDO":
         cisco_client = CiscoClientNDO
+    elif solution == "FMC":
+        cisco_client = CiscoClientFMC
 
     if cisco_client:
         client = cisco_client(
