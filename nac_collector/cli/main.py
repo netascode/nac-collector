@@ -75,12 +75,13 @@ def main(
     start_time = time.time()
 
     configure_logging(verbosity)
+    
     if git_provider:
         wrapper = GithubRepoWrapper(
             repo_url=f"https://github.com/CiscoDevNet/terraform-provider-{solution.lower()}.git",
             clone_dir=GIT_TMP,
             solution=solution.lower(),
-        )        
+        )
         wrapper.get_definitions()
 
     endpoints_yaml_file = endpoints_file or f"endpoints_{solution.lower()}.yaml"
