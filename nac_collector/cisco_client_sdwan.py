@@ -250,9 +250,7 @@ class CiscoClientSDWAN(CiscoClient):
                                 {
                                     "header": data["header"],
                                     "data": i,
-                                    "endpoint": endpoint["endpoint"].split("/%i")[0]
-                                    + "/"
-                                    + self.get_id_value(i),
+                                    "endpoint": device_template_endpoint,
                                 }
                             )
                         except TypeError:
@@ -260,7 +258,7 @@ class CiscoClientSDWAN(CiscoClient):
                                 {
                                     "header": data["header"],
                                     "data": i,
-                                    "endpoint": endpoint["endpoint"],
+                                    "endpoint": device_template_endpoint,
                                 }
                             )
                 else:
@@ -268,7 +266,7 @@ class CiscoClientSDWAN(CiscoClient):
                         {
                             "header": data["header"],
                             "data": data["data"],
-                            "endpoint": endpoint["endpoint"],
+                            "endpoint": device_template_endpoint,
                         }
                     )
 
@@ -372,7 +370,7 @@ class CiscoClientSDWAN(CiscoClient):
         except AttributeError:
             data_loop = []
         for item in data_loop:
-            profile_endpoint = endpoint["endpoint"] + str(item["profileId"])
+            profile_endpoint = endpoint["endpoint"] + "/" + str(item["profileId"])
             response = self.get_request(self.base_url + profile_endpoint)
 
             for k, v in response.json().items():
