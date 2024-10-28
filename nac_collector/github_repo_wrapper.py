@@ -95,8 +95,7 @@ class GithubRepoWrapper:
                 files, label="Processing terraform provider definitions"
             ) as files_bar:
                 for file in files_bar:
-                    # Exclude *_update_rank used in ISE from inspecting
-                    if file.endswith(".yaml") and not file.endswith("update_rank.yaml"):
+                    if file.endswith(".yaml"):
                         with open(os.path.join(root, file), "r", encoding="utf-8") as f:
                             data = self.yaml.load(f)
                             if "rest_endpoint" in data:
@@ -180,6 +179,26 @@ class GithubRepoWrapper:
                         "endpoint": base_endpoint,
                         "children": [child_entry],
                     }
+            if "%s" in endpoint:
+                for parent_map_key in parent_map:
+                    children = parent_map[parent_map_key]['children']
+                    to_add = []
+                    for l1_children in children:
+                        if "%s" in l1_children['endpoint']:
+                            base_endpoint, child_path = l1_children['endpoint'].split("%s", 1)
+                            child_entry = {"name": name, "endpoint": child_path}
+                            # Collect all child entries to be added
+                            for child in children:
+                                if base_endpoint.rstrip('/') == child['endpoint'].rstrip('/'):
+                                    value_exists = any(child_entry["endpoint"] in d.values() for d in child.get("children", ''))
+                                    if not value_exists:
+                                        to_add.append((child, child_entry))
+                    # Add all collected child entries
+                    for parent, child_entry in to_add:
+                        if "children" in parent:
+                            parent["children"].append(child_entry)
+                        else:
+                            parent["children"] = [child_entry]
 
         # Now go through endpoints to fill out parent details
         for endpoint_data in endpoints_list:
@@ -194,14 +213,17 @@ class GithubRepoWrapper:
                 parent_map[endpoint]["name"] = name
             else:
                 # This endpoint is not a parent; no children reference it
-                if "%v" not in endpoint:
+                if "%v" not in endpoint and "%s" not in endpoint:
                     # Standalone endpoint, add directly to modified_endpoints
                     modified_endpoints.append(endpoint_data)
+                
 
         # Add all valid parent-child structures to the modified_endpoints list
         for _, parent_data in parent_map.items():
             # Add to modified list only if it has children
             if parent_data["children"]:
+                # Remove the entry of child object with %s
+                parent_data['children'] = [child for child in parent_data['children'] if "%s" not in child.get('endpoint', '')]
                 modified_endpoints.append(parent_data)
 
         # Return the modified endpoints list
