@@ -380,7 +380,6 @@ class CiscoClientSDWAN(CiscoClient):
             for k, v in response.json().items():
                 if k == "associatedProfileParcels":
                     for parcel in v:
-                        parcel_id = parcel["parcelId"]
                         parcel_type = parcel["parcelType"]
                         new_endpoint = (
                             profile_endpoint + "/" + parcel_type
