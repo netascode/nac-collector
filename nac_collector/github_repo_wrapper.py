@@ -181,16 +181,23 @@ class GithubRepoWrapper:
                     }
             if "%s" in endpoint:
                 for parent_map_key in parent_map:
-                    children = parent_map[parent_map_key]['children']
+                    children = parent_map[parent_map_key]["children"]
                     to_add = []
                     for l1_children in children:
-                        if "%s" in l1_children['endpoint']:
-                            base_endpoint, child_path = l1_children['endpoint'].split("%s", 1)
+                        if "%s" in l1_children["endpoint"]:
+                            base_endpoint, child_path = l1_children["endpoint"].split(
+                                "%s", 1
+                            )
                             child_entry = {"name": name, "endpoint": child_path}
                             # Collect all child entries to be added
                             for child in children:
-                                if base_endpoint.rstrip('/') == child['endpoint'].rstrip('/'):
-                                    value_exists = any(child_entry["endpoint"] in d.values() for d in child.get("children", ''))
+                                if base_endpoint.rstrip("/") == child[
+                                    "endpoint"
+                                ].rstrip("/"):
+                                    value_exists = any(
+                                        child_entry["endpoint"] in d.values()
+                                        for d in child.get("children", "")
+                                    )
                                     if not value_exists:
                                         to_add.append((child, child_entry))
                     # Add all collected child entries
@@ -216,14 +223,17 @@ class GithubRepoWrapper:
                 if "%v" not in endpoint and "%s" not in endpoint:
                     # Standalone endpoint, add directly to modified_endpoints
                     modified_endpoints.append(endpoint_data)
-                
 
         # Add all valid parent-child structures to the modified_endpoints list
         for _, parent_data in parent_map.items():
             # Add to modified list only if it has children
             if parent_data["children"]:
                 # Remove the entry of child object with %s
-                parent_data['children'] = [child for child in parent_data['children'] if "%s" not in child.get('endpoint', '')]
+                parent_data["children"] = [
+                    child
+                    for child in parent_data["children"]
+                    if "%s" not in child.get("endpoint", "")
+                ]
                 modified_endpoints.append(parent_data)
 
         # Return the modified endpoints list
