@@ -95,7 +95,7 @@ class GithubRepoWrapper:
                 files, label="Processing terraform provider definitions"
             ) as files_bar:
                 for file in files_bar:
-                    if file.endswith(".yaml"):
+                    if file.endswith(".yaml") and not file.endswith("update_rank.yaml"):
                         with open(os.path.join(root, file), "r", encoding="utf-8") as f:
                             data = self.yaml.load(f)
                             if "rest_endpoint" in data:
