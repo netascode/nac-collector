@@ -389,14 +389,15 @@ class CiscoClientSDWAN(CiscoClient):
                                 self.base_url + new_endpoint + "/" + l1_item["parcelId"]
                             )
                             data = response.json()
-                            l1_children.append(
-                                {
-                                    "data": data,
-                                    "endpoint": new_endpoint
-                                    + "/"
-                                    + self.get_id_value(data),
-                                }
-                            )
+                            if not self.id_exists(l1_children, data["parcelId"]):
+                                l1_children.append(
+                                    {
+                                        "data": data,
+                                        "endpoint": new_endpoint
+                                        + "/"
+                                        + self.get_id_value(data),
+                                    }
+                                )
             endpoint_dict[endpoint["name"]].append(
                 main_entry
                 if not l1_children
@@ -436,6 +437,9 @@ class CiscoClientSDWAN(CiscoClient):
                                             }
                                         )
         return endpoint_dict
+
+    def id_exists(self, l1_children, data_id):
+        return any(child["data"]["parcelId"] == data_id for child in l1_children)
 
     @staticmethod
     def get_id_value(i):
