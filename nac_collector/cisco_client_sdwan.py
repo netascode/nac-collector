@@ -376,70 +376,67 @@ class CiscoClientSDWAN(CiscoClient):
                 "data": response.json(),
                 "endpoint": self.base_url + profile_endpoint,
             }
-            l1_children = []
-            for k, v in response.json().items():
-                if k == "associatedProfileParcels":
-                    for parcel in v:
-                        parcel_type = parcel["parcelType"]
-                        new_endpoint = profile_endpoint + "/" + parcel_type
-                        response = self.get_request(self.base_url + new_endpoint)
-                        for l1_item in response.json()["data"]:
-                            self.log_response(new_endpoint, response)
-                            response = self.get_request(
-                                self.base_url + new_endpoint + "/" + l1_item["parcelId"]
+            children_entries = []
+            associated_parcels = response.json().get("associatedProfileParcels", [])
+            for children_endpoint in endpoint["children"]:
+                children_endpoint_type = children_endpoint["endpoint"]
+                children_endpoint_type = self.strip_backslash(children_endpoint_type)
+                for parcel in associated_parcels:
+                    if parcel["parcelType"] == children_endpoint_type:
+                        children_entries.append(
+                            self.extract_feature_parcel(
+                                profile_endpoint,
+                                "",
+                                children_endpoint.get("children", []),
+                                parcel,
                             )
-                            data = response.json()
-                            if not self.id_exists(l1_children, data["parcelId"]):
-                                l1_children.append(
-                                    {
-                                        "data": data,
-                                        "endpoint": new_endpoint
-                                        + "/"
-                                        + self.get_id_value(data),
-                                    }
-                                )
-            endpoint_dict[endpoint["name"]].append(
-                main_entry
-                if not l1_children
-                else {**main_entry, "children": l1_children}
-            )
+                        )
+            if children_entries:
+                main_entry["children"] = children_entries
+            endpoint_dict[endpoint["name"]].append(main_entry)
 
-            for profile_parcel in endpoint_dict.get(endpoint.get("name"), []):
-                for associatedProfileParcel in profile_parcel.get("data", {}).get(
-                    "associatedProfileParcels", []
-                ):
-                    subparcels = associatedProfileParcel.get("subparcels", [])
-                    if isinstance(subparcels, list) and subparcels:
-                        for subparcel in subparcels:
-                            l2_parcel_type = subparcel.get("parcelType", "")[
-                                len(associatedProfileParcel.get("parcelType", "")) :
-                            ].lstrip("/")
-                            l2_new_endpoint = f"{self.base_url}{endpoint.get('endpoint', '')}/{profile_parcel.get('data', {}).get('profileId', '')}/{associatedProfileParcel.get('parcelType', '')}/{associatedProfileParcel.get('parcelId', '')}/{l2_parcel_type}"
-                            l2_response = self.get_request(l2_new_endpoint)
-                            self.log_response(l2_new_endpoint, l2_response)
-                            for subparcel_item in l2_response.json().get("data", []):
-                                subparcel_endpoint = f"{l2_new_endpoint}/{subparcel_item.get('parcelId', '')}"
-                                subparcel_data = self.get_request(
-                                    subparcel_endpoint
-                                ).json()
-                                for profile_parcel_item in profile_parcel.get(
-                                    "children", []
-                                ):
-                                    if profile_parcel_item.get("data", {}).get(
-                                        "parcelType"
-                                    ) == associatedProfileParcel.get("parcelType"):
-                                        profile_parcel_item.setdefault(
-                                            "children", []
-                                        ).append(
-                                            {
-                                                "data": subparcel_data,
-                                                "endpoint": subparcel_endpoint,
-                                            }
-                                        )
         return endpoint_dict
 
-    def id_exists(self, l1_children, data_id):
-        return any(child["data"]["parcelId"] == data_id for child in l1_children)
+    def extract_feature_parcel(
+        self, upstream_endpoint, upstream_parcel_type, children_endpoints, parcel
+    ):
+        parcel_type = parcel["parcelType"]
+        if parcel_type.startswith(upstream_parcel_type):
+            parcel_type = parcel_type[len(upstream_parcel_type) :].lstrip("/")
+        parcel_id = parcel["parcelId"]
+        new_endpoint = upstream_endpoint + "/" + parcel_type + "/" + parcel_id
+        response = self.get_request(self.base_url + new_endpoint)
+        entry = {
+            "data": response.json(),
+            "endpoint": new_endpoint,
+        }
+        children_entries = []
+        for children_endpoint in children_endpoints:
+            children_endpoint_type = (
+                parcel_type + "/" + self.strip_backslash(children_endpoint["endpoint"])
+            )
+            children_endpoint_type = self.strip_backslash(children_endpoint_type)
+            for subparcel in parcel.get("subparcels", []):
+                if subparcel["parcelType"] == children_endpoint_type:
+                    children_entries.append(
+                        self.extract_feature_parcel(
+                            new_endpoint,
+                            parcel_type,
+                            children_endpoint.get("children", []),
+                            subparcel,
+                        )
+                    )
+        if children_entries:
+            entry["children"] = children_entries
+        return entry
+
+    @staticmethod
+    def strip_backslash(endpoint_string):
+        if endpoint_string.startswith("/"):
+            endpoint_string = endpoint_string[1:]
+        if endpoint_string.endswith("/"):
+            endpoint_string = endpoint_string[:-1]
+        return endpoint_string
 
     @staticmethod
     def get_id_value(i):
