@@ -8,6 +8,7 @@ import errorhandler
 import nac_collector
 from nac_collector.cisco_client_fmc import CiscoClientFMC
 from nac_collector.cisco_client_ise import CiscoClientISE
+from nac_collector.cisco_client_catalystcenter import CiscoClientCATALYSTCENTER
 from nac_collector.cisco_client_ndo import CiscoClientNDO
 from nac_collector.cisco_client_sdwan import CiscoClientSDWAN
 from nac_collector.constants import GIT_TMP, MAX_RETRIES, RETRY_AFTER
@@ -97,6 +98,8 @@ def main(
         cisco_client = CiscoClientNDO
     elif solution == "FMC":
         cisco_client = CiscoClientFMC
+    elif solution == "CATALYSTCENTER":
+        cisco_client = CiscoClientCATALYSTCENTER
 
     if cisco_client:
         client = cisco_client(

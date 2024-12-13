@@ -38,10 +38,7 @@ class GithubRepoWrapper:
         self.logger = logging.getLogger(__name__)
         self.logger.debug("Initializing GithubRepoWrapper")
         self._clone_repo()
-        # Create an instance of the YAML class
-        # elf.yaml = YAML(typ="safe", pure=True)
-        # self.yaml.default_flow_style = False
-        # self.yaml.sort_keys = False
+
         self.yaml = YAML()
         self.yaml.default_flow_style = False  # Use block style
         self.yaml.indent(sequence=2)

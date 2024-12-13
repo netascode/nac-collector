@@ -4,9 +4,11 @@ from nac_collector.constants import TIMEOUT
 solution = click.option(
     "--solution",
     "-s",
-    type=click.Choice(["SDWAN", "ISE", "NDO", "FMC"], case_sensitive=False),
+    type=click.Choice(
+        ["SDWAN", "ISE", "NDO", "FMC", "CATALYSTCENTER"], case_sensitive=False
+    ),
     required=True,
-    help="Solutions supported [SDWAN, ISE, NDO, FMC]",
+    help="Solutions supported [SDWAN, ISE, NDO, FMC, CATALYSTCENTER]",
 )
 
 username = click.option(
