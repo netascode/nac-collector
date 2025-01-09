@@ -192,11 +192,21 @@ class GithubRepoWrapper:
             remaining = endpoint
             while remaining:
                 if "%v" in remaining or "%s" in remaining:
-                    pre, _, post = remaining.partition('%v' if '%v' in remaining else '%s')
+                    pre, _, post = remaining.partition(
+                        "%v" if "%v" in remaining else "%s"
+                    )
                     parts.append(pre.rstrip("/"))
                     remaining = post
                 else:
-                    parts.append(remaining.rstrip("/" if '%v' in endpoint or '%s' in endpoint or '/v1/feature-profile/' in endpoint else ""))
+                    parts.append(
+                        remaining.rstrip(
+                            "/"
+                            if "%v" in endpoint
+                            or "%s" in endpoint
+                            or "/v1/feature-profile/" in endpoint
+                            else ""
+                        )
+                    )
                     break
 
             # Register the endpoint in the hierarchy

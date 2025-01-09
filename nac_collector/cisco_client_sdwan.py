@@ -402,7 +402,7 @@ class CiscoClientSDWAN(CiscoClient):
     ):
         parcel_type = parcel["parcelType"]
         if parcel_type.startswith(upstream_parcel_type):
-            parcel_type = parcel_type[len(upstream_parcel_type):].lstrip("/")
+            parcel_type = parcel_type[len(upstream_parcel_type) :].lstrip("/")
         parcel_id = parcel["parcelId"]
         new_endpoint = upstream_endpoint + "/" + parcel_type + "/" + parcel_id
         response = self.get_request(self.base_url + new_endpoint)
@@ -418,9 +418,14 @@ class CiscoClientSDWAN(CiscoClient):
             children_endpoint_type1 = self.strip_backslash(children_endpoint_type)
             children_endpoint_type2 = self.strip_backslash(children_endpoint_type)
             if children_endpoint_type.startswith(parcel_type):
-                children_endpoint_type2 = children_endpoint_type1[len(parcel_type):].lstrip("/")
+                children_endpoint_type2 = children_endpoint_type1[
+                    len(parcel_type) :
+                ].lstrip("/")
             for subparcel in parcel.get("subparcels", []):
-                if subparcel["parcelType"] in [children_endpoint_type1, children_endpoint_type2]:
+                if subparcel["parcelType"] in [
+                    children_endpoint_type1,
+                    children_endpoint_type2,
+                ]:
                     children_entries.append(
                         self.extract_feature_parcel(
                             new_endpoint,
