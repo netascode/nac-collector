@@ -145,7 +145,7 @@ class GithubRepoWrapper:
     def parent_children(self, endpoints_list):
         """
         Adjusts the endpoints_list list to include parent-child relationships
-        for endpoints containing `%v`. It separates the endpoints into parent and
+        for endpoints containing `%v` and `%s`. It separates the endpoints into parent and
         child entries, modifying the YAML output structure to reflect this hierarchy.
 
         Args:
@@ -157,87 +157,69 @@ class GithubRepoWrapper:
         self.logger.info("Adjusting endpoints for parent-child relationships")
         modified_endpoints = []
 
-        # Dictionary to hold parents and their children
+        # Dictionary to hold parents and their children based on paths
         parent_map = {}
 
-        # First, identify all potential children with '%v'
+        # Function to split endpoint and register it in the hierarchy
+        def register_endpoint(parts, name):
+            current_level = parent_map
+            base_endpoint = parts[0]
+
+            # Register base endpoint
+            if base_endpoint not in current_level:
+                current_level[base_endpoint] = {"names": [], "children": {}}
+            current_level = current_level[base_endpoint]
+
+            # Process each subsequent segment
+            for part in parts[1:]:
+                if part not in current_level["children"]:
+                    current_level["children"][part] = {"names": [], "children": {}}
+                current_level = current_level["children"][part]
+
+            # Add the name to the list of names for this segment
+            # This is to handle a case where there are two endpoint_data
+            # with different name but same endpoint url
+            if name not in current_level["names"]:
+                current_level["names"].append(name)
+
+        # Process each endpoint
         for endpoint_data in endpoints_list:
             endpoint = endpoint_data["endpoint"]
             name = endpoint_data["name"]
 
-            if "%v" in endpoint:
-                base_endpoint, child_path = endpoint.split("/%v", 1)
-                # Identify the base endpoint and treat this entry as a child
-                child_entry = {"name": name, "endpoint": child_path}
-
-                # Add this child to the corresponding parent in parent_map
-                if base_endpoint in parent_map:
-                    parent_map[base_endpoint]["children"].append(child_entry)
+            # Split the endpoint by placeholders and slashes
+            parts = []
+            remaining = endpoint
+            while remaining:
+                if "%v" in remaining or "%s" in remaining:
+                    pre, _, post = remaining.partition('%v' if '%v' in remaining else '%s')
+                    parts.append(pre.rstrip("/"))
+                    remaining = post
                 else:
-                    # If parent doesn't exist, create it
-                    parent_map[base_endpoint] = {
-                        "name": None,  # Parent name to be set later
-                        "endpoint": base_endpoint,
-                        "children": [child_entry],
-                    }
-            if "%s" in endpoint:
-                for parent_map_key in parent_map:
-                    children = parent_map[parent_map_key]["children"]
-                    to_add = []
-                    for l1_children in children:
-                        if "%s" in l1_children["endpoint"]:
-                            base_endpoint, child_path = l1_children["endpoint"].split(
-                                "%s", 1
-                            )
-                            child_entry = {"name": name, "endpoint": child_path}
-                            # Collect all child entries to be added
-                            for child in children:
-                                if base_endpoint.rstrip("/") == child[
-                                    "endpoint"
-                                ].rstrip("/"):
-                                    value_exists = any(
-                                        child_entry["endpoint"] in d.values()
-                                        for d in child.get("children", "")
-                                    )
-                                    if not value_exists:
-                                        to_add.append((child, child_entry))
-                    # Add all collected child entries
-                    for parent, child_entry in to_add:
-                        if "children" in parent:
-                            parent["children"].append(child_entry)
-                        else:
-                            parent["children"] = [child_entry]
+                    parts.append(remaining.rstrip("/" if '%v' in endpoint or '%s' in endpoint or '/v1/feature-profile/' in endpoint else ""))
+                    break
 
-        # Now go through endpoints to fill out parent details
-        for endpoint_data in endpoints_list:
-            endpoint = endpoint_data["endpoint"]
-            name = endpoint_data["name"]
+            # Register the endpoint in the hierarchy
+            register_endpoint(parts, name)
 
-            # Normalize the input path by removing any trailing slashes
-            endpoint = endpoint.rstrip("/")
+        # Convert the hierarchical map to a list format
+        def build_hierarchy(node):
+            """
+            Recursively build the YAML structure from the hierarchical dictionary.
+            """
+            output = []
+            for part, content in node.items():
+                # Create an entry for each name associated with this endpoint
+                for name in content["names"]:
+                    entry = {"name": name, "endpoint": part}
+                    if content["children"]:
+                        entry["children"] = build_hierarchy(content["children"])
+                    output.append(entry)
+            return output
 
-            if endpoint in parent_map:
-                # This is a confirmed parent endpoint
-                parent_map[endpoint]["name"] = name
-            else:
-                # This endpoint is not a parent; no children reference it
-                if "%v" not in endpoint and "%s" not in endpoint:
-                    # Standalone endpoint, add directly to modified_endpoints
-                    modified_endpoints.append(endpoint_data)
+        # Build the final list from the parent_map
+        modified_endpoints = build_hierarchy(parent_map)
 
-        # Add all valid parent-child structures to the modified_endpoints list
-        for _, parent_data in parent_map.items():
-            # Add to modified list only if it has children
-            if parent_data["children"]:
-                # Remove the entry of child object with %s
-                parent_data["children"] = [
-                    child
-                    for child in parent_data["children"]
-                    if "%s" not in child.get("endpoint", "")
-                ]
-                modified_endpoints.append(parent_data)
-
-        # Return the modified endpoints list
         return modified_endpoints
 
     def _delete_repo(self):
