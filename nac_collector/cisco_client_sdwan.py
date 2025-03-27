@@ -378,7 +378,7 @@ class CiscoClientSDWAN(CiscoClient):
             }
             children_entries = []
             associated_parcels = response.json().get("associatedProfileParcels", [])
-            for children_endpoint in endpoint["children"]:
+            for children_endpoint in endpoint.get("children", []):
                 children_endpoint_type = children_endpoint["endpoint"]
                 children_endpoint_type = self.strip_backslash(children_endpoint_type)
                 for parcel in associated_parcels:
