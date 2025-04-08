@@ -113,6 +113,7 @@ class CiscoClientSDWAN(CiscoClient):
                 for x in [
                     "%v",
                     "%i",
+                    "/v1/config-group/",
                     "/v1/feature-profile/",
                     "/template/device/",
                     "/template/policy/definition",
@@ -161,6 +162,10 @@ class CiscoClientSDWAN(CiscoClient):
                 final_dict.update(endpoint_dict)
                 self.log_response(endpoint["endpoint"], response)
 
+            # config groups
+            elif "/v1/config-group/" in endpoint["endpoint"]:
+                endpoint_dict = self.get_config_groups(endpoint, endpoint_dict)
+                final_dict.update(endpoint_dict)
             # feature profiles
             elif "/v1/feature-profile/" in endpoint["endpoint"]:
                 endpoint_dict = self.get_feature_profiles(endpoint, endpoint_dict)
@@ -348,6 +353,59 @@ class CiscoClientSDWAN(CiscoClient):
                 )
 
             self.log_response(template_endpoint, response)
+
+        return endpoint_dict
+
+    def get_config_groups(self, endpoint, endpoint_dict):
+        """
+        Process config groups
+
+        Args:
+            endpoint (dict): The endpoint to process.
+            endpoint_dict (dict): The dictionary to append items to.
+
+        Returns:
+            enpdoint_dict: The updated endpoint_dict with the processed config groups.
+
+        """
+        endpoint_dict["configuration_group_devices"] = []
+        response = self.get_request(self.base_url + endpoint["endpoint"])
+        for item in response.json():
+            config_group_endpoint = endpoint["endpoint"] + self.get_id_value(item)
+            response = self.get_request(self.base_url + config_group_endpoint)
+
+            data = response.json()
+
+            if data.get("solution") == "sdwan":
+                try:
+                    endpoint_dict[endpoint["name"]].append(
+                        {
+                            "data": data,
+                            "endpoint": config_group_endpoint,
+                        }
+                    )
+                except TypeError:
+                    endpoint_dict[endpoint["name"]].append(
+                        {"data": data, "endpoint": endpoint["endpoint"]}
+                    )
+                self.log_response(config_group_endpoint, response)
+
+                # If configuration group has devices assigned, extract devices details to configuration_group_devices
+                if data.get("numberOfDevices") > 0:
+                    config_group_devices_endpoint = (
+                        config_group_endpoint + "/device/variables"
+                    )
+                    response = self.get_request(
+                        self.base_url + config_group_devices_endpoint
+                    )
+                    for device_data in response.json().get("devices", []):
+                        endpoint_dict["configuration_group_devices"].append(
+                            {
+                                "data": device_data,
+                                "endpoint": config_group_devices_endpoint,
+                            }
+                        )
+                    self.log_response(config_group_devices_endpoint, response)
 
         return endpoint_dict
 
