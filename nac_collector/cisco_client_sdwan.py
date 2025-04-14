@@ -124,43 +124,43 @@ class CiscoClientSDWAN(CiscoClient):
             ):
                 response = self.get_request(self.base_url + endpoint["endpoint"])
 
-                # Get the JSON content of the response
-                data = response.json()
+                if response:
+                    data = response.json()
 
-                if isinstance(data, list):
-                    for i in data:
-                        endpoint_dict[endpoint["name"]].append(
-                            {
-                                "data": i,
-                                "endpoint": endpoint["endpoint"]
-                                + "/"
-                                + self.get_id_value(i),
-                            }
-                        )
-                elif data.get("data"):
-                    if isinstance(data["data"], list):
-                        for i in data["data"]:
-                            try:
-                                endpoint_dict[endpoint["name"]].append(
-                                    {
-                                        "data": i,
-                                        "endpoint": endpoint["endpoint"]
-                                        + "/"
-                                        + self.get_id_value(i),
-                                    }
-                                )
-                            except TypeError:
-                                endpoint_dict[endpoint["name"]].append(
-                                    {"data": i, "endpoint": endpoint["endpoint"]}
-                                )
-                    else:
-                        endpoint_dict[endpoint["name"]].append(
-                            {"data": data["data"], "endpoint": endpoint["endpoint"]}
-                        )
+                    if isinstance(data, list):
+                        for i in data:
+                            endpoint_dict[endpoint["name"]].append(
+                                {
+                                    "data": i,
+                                    "endpoint": endpoint["endpoint"]
+                                    + "/"
+                                    + self.get_id_value(i),
+                                }
+                            )
+                    elif data.get("data"):
+                        if isinstance(data["data"], list):
+                            for i in data["data"]:
+                                try:
+                                    endpoint_dict[endpoint["name"]].append(
+                                        {
+                                            "data": i,
+                                            "endpoint": endpoint["endpoint"]
+                                            + "/"
+                                            + self.get_id_value(i),
+                                        }
+                                    )
+                                except TypeError:
+                                    endpoint_dict[endpoint["name"]].append(
+                                        {"data": i, "endpoint": endpoint["endpoint"]}
+                                    )
+                        else:
+                            endpoint_dict[endpoint["name"]].append(
+                                {"data": data["data"], "endpoint": endpoint["endpoint"]}
+                            )
 
-                # Save results to dictionary
-                final_dict.update(endpoint_dict)
-                self.log_response(endpoint["endpoint"], response)
+                    # Save results to dictionary
+                    final_dict.update(endpoint_dict)
+                    self.log_response(endpoint["endpoint"], response)
 
             # config groups
             elif "/v1/config-group/" in endpoint["endpoint"]:
