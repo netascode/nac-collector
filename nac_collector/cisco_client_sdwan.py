@@ -125,6 +125,7 @@ class CiscoClientSDWAN(CiscoClient):
                 response = self.get_request(self.base_url + endpoint["endpoint"])
 
                 if response:
+                    # Get the JSON content of the response
                     data = response.json()
 
                     if isinstance(data, list):
