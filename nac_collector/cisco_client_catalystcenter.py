@@ -3,6 +3,7 @@ import logging
 import click
 import requests
 import urllib3
+import json
 
 from nac_collector.cisco_client import CiscoClient
 
@@ -21,6 +22,7 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
     authentication for subsequent requests.
     """
 
+    LOOKUP_FILE = "nac_collector/resources/catalystcenter_lookups.json"
     DNAC_AUTH_ENDPOINT = "/dna/system/api/v1/auth/token"
     SOLUTION = "catalystcenter"
 
@@ -32,7 +34,14 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
         "credentials_cli": "cliCredential",
         "credentials_https_read": "httpsRead",
         "credentials_https_write": "httpsWrite",
+        "user": "users",
+        "role": "roles"
     }
+
+    # id_lookup = None
+    with open(LOOKUP_FILE, 'r') as json_file:
+        id_lookup = json.load(json_file)
+    
 
     def __init__(
         self,
@@ -104,39 +113,90 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
         Returns:
             dict: The updated endpoint dictionary with processed data.
         """
-
+        if endpoint.get("endpoint") in self.id_lookup:
+            new_endpoint = self.id_lookup[endpoint.get("endpoint")]["new_endpoint"]
+        else:
+            new_endpoint = endpoint["endpoint"]
+            
         if data is None:
             endpoint_dict[endpoint["name"]].append(
-                {"data": {}, "endpoint": endpoint["endpoint"]}
+                {"data": {}, "endpoint": new_endpoint}
             )
 
         # License API returns a list of dictionaries
         elif isinstance(data, list):
             endpoint_dict[endpoint["name"]].append(
-                {"data": data, "endpoint": endpoint["endpoint"]}
+                {"data": data, "endpoint": new_endpoint}
             )
         elif isinstance(data.get("response"), dict):
             for k, v in data.get("response").items():
-                if self.mappings[endpoint["name"]] == k:
+                if (
+                    self.mappings.get(endpoint["name"])
+                    and self.mappings[endpoint["name"]] == k
+                ):
                     for i in v:
                         endpoint_dict[endpoint["name"]].append(
                             {
                                 "data": i,
-                                "endpoint": endpoint["endpoint"]
-                                + "/"
-                                + self.get_id_value(i),
+                                "endpoint": new_endpoint + "/" + self.get_id_value(i),
                             }
                         )
+                else:
+                    endpoint_dict[endpoint["name"]].append(
+                        {"data": v, "endpoint": new_endpoint}
+                    )
+        elif isinstance(data.get("response"), list):
+            endpoint_dict[endpoint["name"]].append(
+                {"data": data.get("response"), "endpoint": endpoint["endpoint"]}
+            )
         elif data.get("response"):
             for i in data.get("response"):
                 endpoint_dict[endpoint["name"]].append(
                     {
                         "data": i,
-                        "endpoint": endpoint["endpoint"] + "/" + self.get_id_value(i),
+                        "endpoint": new_endpoint + "/" + self.get_id_value(i),
                     }
                 )
 
         return endpoint_dict  # Return the processed endpoint dictionary
+
+    def fetch_data_alternate(self, endpoint):
+        """
+        Retrieve data from an alternate endpoint if defined in id_lookup.
+        Parameters:
+            endpoint (dict): The endpoint configuration.
+        Returns:
+            dict: The dictionary containing the data retrieved from the alternate endpoint.
+        """
+
+        id_lookup_data = self.fetch_data(
+            self.id_lookup[endpoint.get("endpoint")]["lookup_endpoint"]
+        )
+        look_data = id_lookup_data["response"] 
+        if "/template-programmer/template/version" in endpoint.get("endpoint"): # bandain, this endpoint contains ids deeper than usual
+            look_data = [tpl for el in look_data for tpl in el['templates']] 
+        id_list = [
+            i[self.id_lookup[endpoint.get("endpoint")]["lookup_id"]]
+            for i in look_data
+        ]
+        data_list = []
+        for id_ in id_list:
+            lookup_endpoint = self.id_lookup[endpoint.get("endpoint")][
+                "new_endpoint"
+            ].replace("%v", id_)
+            data = self.fetch_data(lookup_endpoint)
+            if isinstance(data, dict) and data.get("response"):
+                data = data["response"]
+            if isinstance(data, dict):
+                data[self.id_lookup[endpoint.get("endpoint")].get("uid", "id")] = id_
+            elif isinstance(data, list):
+                data = {
+                    self.id_lookup[endpoint.get("endpoint")].get("uid", "id"): id_,
+                    "data": data,
+                }
+            data_list.append(data)
+        data = {"response": data_list}
+        return data
 
     def get_from_endpoints(self, endpoints_yaml_file):
         """
@@ -162,16 +222,20 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
         with click.progressbar(endpoints, label="Processing endpoints") as endpoint_bar:
             for endpoint in endpoint_bar:
                 logger.info("Processing endpoint: %s", endpoint["name"])
-
                 endpoint_dict = CiscoClient.create_endpoint_dict(endpoint)
-
-                data = self.fetch_data(endpoint["endpoint"])
+                if endpoint.get("endpoint") in self.id_lookup:
+                    logger.info(
+                        "Alternate endpoint found: %s",
+                        self.id_lookup[endpoint.get("endpoint")]["lookup_endpoint"],
+                    )
+                    data = self.fetch_data_alternate(endpoint)
+                else:
+                    data = self.fetch_data(endpoint["endpoint"])
 
                 # Process the endpoint data and get the updated dictionary
                 endpoint_dict = self.process_endpoint_data(
                     endpoint, endpoint_dict, data
                 )
-
                 if endpoint.get("children"):
                     # Create empty list of parent_endpoint_ids
                     parent_endpoint_ids = []
@@ -179,7 +243,10 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
                     for item in endpoint_dict[endpoint["name"]]:
                         # Add the item's id to the list
                         try:
-                            parent_endpoint_ids.append(item["data"]["id"])
+                            if isinstance(item["data"], list):
+                                [parent_endpoint_ids.append(x['id']) for x in item['data']]
+                            else:
+                                parent_endpoint_ids.append(item["data"]["id"])
                         except KeyError:
                             continue
 
@@ -215,14 +282,26 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
                             for index, value in enumerate(
                                 endpoint_dict[endpoint["name"]]
                             ):
-                                if value.get("data").get("id") == id_:
-                                    endpoint_dict[endpoint["name"]][index].setdefault(
-                                        "children", {}
-                                    )[
-                                        children_endpoint["name"]
-                                    ] = children_endpoint_dict[
-                                        children_endpoint["name"]
-                                    ]
+                                if isinstance(value.get("data"), list):
+                                    for el in value.get("data"):
+                                        if el.get("id") == id_:
+                                            endpoint_dict[endpoint["name"]][index].setdefault(
+                                            "children", {}
+                                        )[
+                                            children_endpoint["name"]
+                                        ] = children_endpoint_dict[
+                                            children_endpoint["name"]
+                                        ]
+                                        break
+                                else:
+                                    if value.get("data").get("id") == id_:
+                                        endpoint_dict[endpoint["name"]][index].setdefault(
+                                            "children", {}
+                                        )[
+                                            children_endpoint["name"]
+                                        ] = children_endpoint_dict[
+                                            children_endpoint["name"]
+                                        ]
 
                 # Save results to dictionary
                 final_dict.update(endpoint_dict)
@@ -234,17 +313,14 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
         Attempts to get the 'id' or 'name' value from a dictionary.
 
         Parameters:
-            i (dict): The dictionary to get the 'id' or 'name' value from.
+            i (dict): The dictionary to get the 'id', 'name', 'userId' or 'siteId' value from.
 
         Returns:
-            str or None: The 'id' or 'name' value if it exists, None otherwise.
+            str or None: The 'id', 'name', 'userId' or 'siteId' value if it exists, None otherwise.
         """
-        try:
-            id_value = i["id"]
-        except KeyError:
-            try:
-                id_value = i["name"]
-            except KeyError:
-                id_value = None
-
-        return id_value
+        params = ["id", "name", "userId", "siteId"]
+        for p in params:
+            x = i.get(p)
+            if x is not None:
+                return x
+        return None

@@ -1,0 +1,50 @@
+{
+    "/dna/intent/api/v1/sda/fabricDevices": {
+        "lookup_endpoint": "/dna/intent/api/v1/sda/fabricSites?limit=500",
+        "lookup_id": "siteId",
+        "new_endpoint": "/dna/intent/api/v1/sda/fabricDevices?fabricId=%v",
+        "uid": "siteId"
+    },
+    "/dna/intent/api/v1/sda/fabricDevices/layer2Handoffs": {
+        "lookup_endpoint": "/dna/intent/api/v1/sda/fabricSites?limit=500",
+        "lookup_id": "siteId",
+        "new_endpoint": "/dna/intent/api/v1/sda/fabricDevices/layer2Handoffs?fabricId=%v",
+        "uid": "siteId"
+    },
+    "/dna/intent/api/v1/sda/fabricDevices/layer3Handoffs/ipTransits": {
+        "lookup_endpoint": "/dna/intent/api/v1/site",
+        "lookup_id": "id",
+        "new_endpoint": "/dna/intent/api/v1/sda/fabricDevices/layer3Handoffs/ipTransits?fabricId=%v",
+        "uid": "siteId"
+    },
+    "/dna/intent/api/v1/virtual-network": {
+        "lookup_endpoint": "/dna/intent/api/v1/sda/multicast/virtualNetworks",
+        "lookup_id": "virtualNetworkName",
+        "new_endpoint": "/dna/intent/api/v1/virtual-network?virtualNetworkName=%v",
+        "uid": "virtualNetworkName"
+    },
+    "/dna/intent/api/v1/template-programmer/template/version": {
+        "lookup_endpoint": "/dna/intent/api/v2/template-programmer/project",
+        "lookup_id": "id",
+        "new_endpoint": "/dna/intent/api/v1/template-programmer/template/version/%v",
+        "uid": "templateId"
+    },
+    "/dna/intent/api/v1/business/sda/authentication-profile": {
+        "lookup_endpoint": "/dna/intent/api/v1/site",
+        "lookup_id": "siteNameHierarchy",
+        "new_endpoint": "/dna/intent/api/v1/business/sda/authentication-profile?siteNameHierarchy=%v",
+        "uid": "siteNameHierarchy"
+    },
+    "/dna/intent/api/v2/credential-to-site": {
+        "lookup_endpoint": "/dna/intent/api/v1/site",
+        "lookup_id": "id",
+        "new_endpoint": "/dna/intent/api/v1/sites/%v/deviceCredentials",
+        "uid": "siteId"
+    },
+    "/dna/intent/api/v1/reserve-ip-subpool": {
+        "lookup_endpoint": "/dna/intent/api/v1/site",
+        "lookup_id": "id",
+        "new_endpoint": "/dna/intent/api/v1/reserve-ip-subpool?siteId=%v",
+        "uid": "siteId"
+    }
+}

@@ -96,13 +96,15 @@ class GithubRepoWrapper:
                     if file.endswith(".yaml") and not file.endswith("update_rank.yaml"):
                         with open(os.path.join(root, file), "r", encoding="utf-8") as f:
                             data = self.yaml.load(f)
-                            if "rest_endpoint" in data:
+                            if data.get("no_read") is not None and data.get("no_read") == True:
+                                continue
+                            if "rest_endpoint" or "get_rest_endpoint" in data:
+                                endpoint = data.get("get_rest_endpoint") if data.get("get_rest_endpoint") is not None else data["rest_endpoint"]
                                 self.logger.info(
                                     "Found rest_endpoint: %s in file: %s",
-                                    data["rest_endpoint"],
+                                    endpoint,
                                     file,
                                 )
-                                endpoints.append(data["rest_endpoint"])
                                 # for SDWAN feature_device_templates
                                 if file.split(".yaml")[0] == "feature_device_template":
                                     endpoints_list.append(
@@ -115,7 +117,7 @@ class GithubRepoWrapper:
                                     endpoints_list.append(
                                         {
                                             "name": file.split(".yaml")[0],
-                                            "endpoint": data["rest_endpoint"],
+                                            "endpoint": endpoint,
                                         }
                                     )
 
