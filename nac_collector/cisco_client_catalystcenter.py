@@ -38,7 +38,11 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
         "role": "roles"
     }
 
-    # id_lookup = None
+    """
+    Lookups are essential because some endpoint IDs required in Catalyst Center do not follow simple child URL patterns. 
+    Instead, they have a fixed structure that cannot be inferred directly from the provider file. 
+    As a result, a lookup file is necessary to retrieve the correct IDs.
+    """
     with open(LOOKUP_FILE, 'r') as json_file:
         id_lookup = json.load(json_file)
     
@@ -114,7 +118,7 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
             dict: The updated endpoint dictionary with processed data.
         """
         if endpoint.get("endpoint") in self.id_lookup:
-            new_endpoint = self.id_lookup[endpoint.get("endpoint")]["new_endpoint"]
+            new_endpoint = self.id_lookup[endpoint.get("endpoint")]["target_endpoint"]
         else:
             new_endpoint = endpoint["endpoint"]
             
@@ -170,28 +174,28 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
         """
 
         id_lookup_data = self.fetch_data(
-            self.id_lookup[endpoint.get("endpoint")]["lookup_endpoint"]
+            self.id_lookup[endpoint.get("endpoint")]["source_endpoint"]
         )
         look_data = id_lookup_data["response"] 
         if "/template-programmer/template/version" in endpoint.get("endpoint"): # bandain, this endpoint contains ids deeper than usual
             look_data = [tpl for el in look_data for tpl in el['templates']] 
         id_list = [
-            i[self.id_lookup[endpoint.get("endpoint")]["lookup_id"]]
+            i[self.id_lookup[endpoint.get("endpoint")]["source_key"]]
             for i in look_data
         ]
         data_list = []
         for id_ in id_list:
             lookup_endpoint = self.id_lookup[endpoint.get("endpoint")][
-                "new_endpoint"
+                "target_endpoint"
             ].replace("%v", id_)
             data = self.fetch_data(lookup_endpoint)
             if isinstance(data, dict) and data.get("response"):
                 data = data["response"]
             if isinstance(data, dict):
-                data[self.id_lookup[endpoint.get("endpoint")].get("uid", "id")] = id_
+                data[self.id_lookup[endpoint.get("endpoint")].get("target_key", "id")] = id_
             elif isinstance(data, list):
                 data = {
-                    self.id_lookup[endpoint.get("endpoint")].get("uid", "id"): id_,
+                    self.id_lookup[endpoint.get("endpoint")].get("target_key", "id"): id_,
                     "data": data,
                 }
             data_list.append(data)
@@ -226,7 +230,7 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
                 if endpoint.get("endpoint") in self.id_lookup:
                     logger.info(
                         "Alternate endpoint found: %s",
-                        self.id_lookup[endpoint.get("endpoint")]["lookup_endpoint"],
+                        self.id_lookup[endpoint.get("endpoint")]["source_endpoint"],
                     )
                     data = self.fetch_data_alternate(endpoint)
                 else:
