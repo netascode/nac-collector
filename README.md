@@ -98,3 +98,27 @@ If you installed the project with pip, you can run the script directly from the 
 ```sh
 nac-collector -s ISE -v DEBUG --git-provider
 ```
+
+## Catalyst Center
+
+If you installed with `poetry install` command:
+
+- with env variables
+
+```sh
+poetry run nac-collector -s CATALYSTCENTER -v --git-provider
+```
+
+- without env variables
+
+```sh
+poetry run nac-collector -s CATALYSTCENTER --username USERNAME --password PASSWORD --url URL -v DEBUG --git-provider
+```
+
+If you installed the project with pip, you can run the script directly from the command line:
+
+```sh
+nac-collector -s CATALYSTCENTER -v DEBUG --git-provider
+```
+
+It contains some custom logic, explained in [README_catalyst_center.md](README_catalyst_center.md)
