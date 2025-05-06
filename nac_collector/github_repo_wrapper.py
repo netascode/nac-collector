@@ -96,7 +96,7 @@ class GithubRepoWrapper:
                     if file.endswith(".yaml") and not file.endswith("update_rank.yaml"):
                         with open(os.path.join(root, file), "r", encoding="utf-8") as f:
                             data = self.yaml.load(f)
-                            if data.get("no_read") is not None and data.get("no_read") == True:
+                            if data.get("no_read") is not None and data.get("no_read"):
                                 continue
                             if "rest_endpoint" or "get_rest_endpoint" in data:
                                 endpoint = data.get("get_rest_endpoint") if data.get("get_rest_endpoint") is not None else data["rest_endpoint"]

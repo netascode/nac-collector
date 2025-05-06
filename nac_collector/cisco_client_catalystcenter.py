@@ -35,7 +35,7 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
         "credentials_https_read": "httpsRead",
         "credentials_https_write": "httpsWrite",
         "user": "users",
-        "role": "roles"
+        "role": "roles",
     }
 
     """
@@ -43,9 +43,8 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
     Instead, they have a fixed structure that cannot be inferred directly from the provider file. 
     As a result, a lookup file is necessary to retrieve the correct IDs.
     """
-    with open(LOOKUP_FILE, 'r') as json_file:
+    with open(LOOKUP_FILE, "r") as json_file:
         id_lookup = json.load(json_file)
-    
 
     def __init__(
         self,
@@ -121,7 +120,7 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
             new_endpoint = self.id_lookup[endpoint.get("endpoint")]["target_endpoint"]
         else:
             new_endpoint = endpoint["endpoint"]
-            
+
         if data is None:
             endpoint_dict[endpoint["name"]].append(
                 {"data": {}, "endpoint": new_endpoint}
@@ -176,12 +175,13 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
         id_lookup_data = self.fetch_data(
             self.id_lookup[endpoint.get("endpoint")]["source_endpoint"]
         )
-        look_data = id_lookup_data["response"] 
-        if "/template-programmer/template/version" in endpoint.get("endpoint"): # bandain, this endpoint contains ids deeper than usual
-            look_data = [tpl for el in look_data for tpl in el['templates']] 
+        look_data = id_lookup_data["response"]
+        if "/template-programmer/template/version" in endpoint.get(
+            "endpoint"
+        ):  # bandaid, this endpoint contains ids deeper than usual
+            look_data = [tpl for el in look_data for tpl in el["templates"]]
         id_list = [
-            i[self.id_lookup[endpoint.get("endpoint")]["source_key"]]
-            for i in look_data
+            i[self.id_lookup[endpoint.get("endpoint")]["source_key"]] for i in look_data
         ]
         data_list = []
         for id_ in id_list:
@@ -192,10 +192,14 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
             if isinstance(data, dict) and data.get("response"):
                 data = data["response"]
             if isinstance(data, dict):
-                data[self.id_lookup[endpoint.get("endpoint")].get("target_key", "id")] = id_
+                data[
+                    self.id_lookup[endpoint.get("endpoint")].get("target_key", "id")
+                ] = id_
             elif isinstance(data, list):
                 data = {
-                    self.id_lookup[endpoint.get("endpoint")].get("target_key", "id"): id_,
+                    self.id_lookup[endpoint.get("endpoint")].get(
+                        "target_key", "id"
+                    ): id_,
                     "data": data,
                 }
             data_list.append(data)
@@ -248,7 +252,10 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
                         # Add the item's id to the list
                         try:
                             if isinstance(item["data"], list):
-                                [parent_endpoint_ids.append(x['id']) for x in item['data']]
+                                [
+                                    parent_endpoint_ids.append(x["id"])
+                                    for x in item["data"]
+                                ]
                             else:
                                 parent_endpoint_ids.append(item["data"]["id"])
                         except KeyError:
@@ -289,19 +296,19 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
                                 if isinstance(value.get("data"), list):
                                     for el in value.get("data"):
                                         if el.get("id") == id_:
-                                            endpoint_dict[endpoint["name"]][index].setdefault(
-                                            "children", {}
-                                        )[
-                                            children_endpoint["name"]
-                                        ] = children_endpoint_dict[
-                                            children_endpoint["name"]
-                                        ]
+                                            endpoint_dict[endpoint["name"]][
+                                                index
+                                            ].setdefault("children", {})[
+                                                children_endpoint["name"]
+                                            ] = children_endpoint_dict[
+                                                children_endpoint["name"]
+                                            ]
                                         break
                                 else:
                                     if value.get("data").get("id") == id_:
-                                        endpoint_dict[endpoint["name"]][index].setdefault(
-                                            "children", {}
-                                        )[
+                                        endpoint_dict[endpoint["name"]][
+                                            index
+                                        ].setdefault("children", {})[
                                             children_endpoint["name"]
                                         ] = children_endpoint_dict[
                                             children_endpoint["name"]
