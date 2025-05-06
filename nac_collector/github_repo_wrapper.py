@@ -99,7 +99,11 @@ class GithubRepoWrapper:
                             if data.get("no_read") is not None and data.get("no_read"):
                                 continue
                             if "rest_endpoint" or "get_rest_endpoint" in data:
-                                endpoint = data.get("get_rest_endpoint") if data.get("get_rest_endpoint") is not None else data["rest_endpoint"]
+                                endpoint = (
+                                    data.get("get_rest_endpoint")
+                                    if data.get("get_rest_endpoint") is not None
+                                    else data["rest_endpoint"]
+                                )
                                 self.logger.info(
                                     "Found rest_endpoint: %s in file: %s",
                                     endpoint,
