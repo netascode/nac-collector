@@ -98,7 +98,7 @@ class GithubRepoWrapper:
                             data = self.yaml.load(f)
                             if data.get("no_read") is not None and data.get("no_read"):
                                 continue
-                            if "rest_endpoint" or "get_rest_endpoint" in data:
+                            if "rest_endpoint" in data or "get_rest_endpoint" in data:
                                 endpoint = (
                                     data.get("get_rest_endpoint")
                                     if data.get("get_rest_endpoint") is not None
