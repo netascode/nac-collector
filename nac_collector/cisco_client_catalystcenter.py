@@ -292,8 +292,6 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
                             )
 
                             data = self.fetch_data(children_joined_endpoint)
-                            if "aaaSettings" in children_joined_endpoint:
-                                print("aaa")
                             # Process the children endpoint data and get the updated dictionary
                             children_endpoint_dict = self.process_endpoint_data(
                                 children_endpoint, children_endpoint_dict, data, id_
