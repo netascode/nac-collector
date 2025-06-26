@@ -11,6 +11,7 @@ from nac_collector.cisco_client_ise import CiscoClientISE
 from nac_collector.cisco_client_catalystcenter import CiscoClientCATALYSTCENTER
 from nac_collector.cisco_client_ndo import CiscoClientNDO
 from nac_collector.cisco_client_sdwan import CiscoClientSDWAN
+from nac_collector.cisco_client_meraki import CiscoClientMERAKI
 from nac_collector.constants import GIT_TMP, MAX_RETRIES, RETRY_AFTER
 from nac_collector.github_repo_wrapper import GithubRepoWrapper
 
@@ -56,6 +57,7 @@ def configure_logging(level: str) -> None:
 @options.solution
 @options.username
 @options.password
+@options.api_key
 @options.url
 @options.git_provider
 @options.endpoints_file
@@ -66,6 +68,7 @@ def main(
     solution: str,
     username: str,
     password: str,
+    api_key: str,
     url: str,
     git_provider: bool,
     endpoints_file: str,
@@ -100,11 +103,14 @@ def main(
         cisco_client = CiscoClientFMC
     elif solution == "CATALYSTCENTER":
         cisco_client = CiscoClientCATALYSTCENTER
+    elif solution == "MERAKI":
+        cisco_client = CiscoClientMERAKI
 
     if cisco_client:
         client = cisco_client(
             username=username,
             password=password,
+            api_key=api_key,
             base_url=url,
             max_retries=MAX_RETRIES,
             retry_after=RETRY_AFTER,
