@@ -1,5 +1,7 @@
 import logging
 
+import copy
+import json
 import click
 import requests
 import urllib3
@@ -13,19 +15,15 @@ logger = logging.getLogger("main")
 logging.getLogger("urllib3").setLevel(logging.ERROR)
 
 
-class CiscoClientISE(CiscoClient):
+class CiscoClientMERAKI(CiscoClient):
     """
     This class inherits from the abstract class CiscoClient. It's used for authenticating
-    with the Cisco ISE API and retrieving data from various endpoints.
-    Authentication is username/password based and a session is created upon successful
-    authentication for subsequent requests.
+    with the Cisco MERAKI API and retrieving data from various endpoints.
+    This is a single step authentication.
+     - API Token / Key is used for all queries
     """
 
-    ISE_AUTH_ENDPOINTS = [
-        "/admin/API/NetworkAccessConfig/ERS",
-        "/admin/API/apiService/get",
-    ]
-    SOLUTION = "ise"
+    SOLUTION = "meraki"
 
     def __init__(
         self,
@@ -48,6 +46,8 @@ class CiscoClientISE(CiscoClient):
             timeout,
             ssl_verify,
         )
+        self.x_auth_refresh_token = None
+        self.domains = []
 
     def authenticate(self):
         """
@@ -57,46 +57,20 @@ class CiscoClientISE(CiscoClient):
             bool: True if authentication is successful, False otherwise.
         """
 
-        for api in self.ISE_AUTH_ENDPOINTS:
-            auth_url = f"{self.base_url}{api}"
-
-            # Set headers based on auth_url
-            # If it's ERS API, then set up content-type and accept as application/xml
-            if "API/NetworkAccessConfig/ERS" in auth_url:
-                headers = {
-                    "Content-Type": "application/xml",
-                    "Accept": "application/xml",
-                }
-            else:
-                headers = {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json",
-                }
-
-            response = requests.get(
-                auth_url,
-                auth=(self.username, self.password),
-                headers=headers,
-                verify=self.ssl_verify,
-                timeout=self.timeout,
-            )
-
-            if response and response.status_code == 200:
-                logger.info("Authentication Successful for URL: %s", auth_url)
-                # Create a session after successful authentication
-                self.session = requests.Session()
-                self.session.auth = (self.username, self.password)
-                self.session.headers.update(headers)
-                self.session.headers.update(
-                    {"Content-Type": "application/json", "Accept": "application/json"}
-                )
-                return True
-
-            logger.error(
-                "Authentication failed with status code: %s",
-                response.status_code,
-            )
+        if not self.api_key:
+            logger.error("API key is required for authentication.")
             return False
+
+        self.session = requests.Session()
+        self.session.headers.update(
+            {
+                "Authorization": "Bearer " + self.api_key,
+                "Content-Type": "application/json",
+                "User-Agent": "nac-collector",
+            }
+        )
+        logger.info("Authentication successful with API key.")
+        return True
 
     def process_endpoint_data(self, endpoint, endpoint_dict, data):
         """
@@ -116,14 +90,8 @@ class CiscoClientISE(CiscoClient):
                 {"data": {}, "endpoint": endpoint["endpoint"]}
             )
 
-        # License API returns a list of dictionaries
         elif isinstance(data, list):
-            endpoint_dict[endpoint["name"]].append(
-                {"data": data, "endpoint": endpoint["endpoint"]}
-            )
-
-        elif data.get("response"):
-            for i in data.get("response"):
+            for i in data:
                 endpoint_dict[endpoint["name"]].append(
                     {
                         "data": i,
@@ -131,15 +99,12 @@ class CiscoClientISE(CiscoClient):
                     }
                 )
 
-        # Pagination for ERS API results
-        elif data.get("SearchResult"):
-            ers_data = self.process_ers_api_results(data)
-
-            for i in ers_data:
+        elif data.get("items", None):
+            for i in data.get("items"):
                 endpoint_dict[endpoint["name"]].append(
                     {
                         "data": i,
-                        "endpoint": endpoint["endpoint"] + "/" + self.get_id_value(i),
+                        "endpoint": f'{endpoint["endpoint"]}/{self.get_id_value(i)}',
                     }
                 )
 
@@ -165,24 +130,24 @@ class CiscoClientISE(CiscoClient):
         # Initialize an empty dictionary
         final_dict = {}
 
+        # Recreate endpoints per-domain
+        endpoints = self.resolve_domains(endpoints, self.domains)
+
         # Iterate over all endpoints
         with click.progressbar(endpoints, label="Processing endpoints") as endpoint_bar:
             for endpoint in endpoint_bar:
-                logger.info("Processing endpoint: %s", endpoint["name"])
+                logger.info("Processing endpoint: %s", endpoint)
 
                 endpoint_dict = CiscoClient.create_endpoint_dict(endpoint)
 
                 data = self.fetch_data(endpoint["endpoint"])
 
-                # Process the endpoint data and get the updated dictionary
                 endpoint_dict = self.process_endpoint_data(
                     endpoint, endpoint_dict, data
                 )
 
                 if endpoint.get("children"):
-                    # Create empty list of parent_endpoint_ids
                     parent_endpoint_ids = []
-
                     for item in endpoint_dict[endpoint["name"]]:
                         # Add the item's id to the list
                         try:
@@ -198,7 +163,6 @@ class CiscoClientISE(CiscoClient):
                             + children_endpoint["endpoint"],
                         )
 
-                        # Iterate over the parent endpoint ids
                         for id_ in parent_endpoint_ids:
                             children_endpoint_dict = CiscoClient.create_endpoint_dict(
                                 children_endpoint
@@ -230,44 +194,21 @@ class CiscoClientISE(CiscoClient):
                                     ] = children_endpoint_dict[
                                         children_endpoint["name"]
                                     ]
+                                    logger.info(
+                                        "Updated endpoint_dict: %s",
+                                        json.dumps(
+                                            endpoint_dict, sort_keys=True, indent=4
+                                        ),
+                                    )
 
                 # Save results to dictionary
-                final_dict.update(endpoint_dict)
+                # Due to domain expansion, it may happen that same endpoint["name"] will occur multiple times
+                if endpoint["name"] not in final_dict:
+                    final_dict.update(endpoint_dict)
+                else:
+                    final_dict[endpoint["name"]].extend(endpoint_dict[endpoint["name"]])
+
         return final_dict
-
-    def process_ers_api_results(self, data):
-        """
-        Process ERS API results and handle pagination.
-
-        Parameters:
-            data (dict): The data received from the ERS API.
-
-        Returns:
-            ers_data (list): The processed data.
-        """
-        # Pagination for ERS API results
-        paginated_data = data["SearchResult"]["resources"]
-        # Loop through all pages until there are no more pages
-        while data["SearchResult"].get("nextPage"):
-            url = data["SearchResult"]["nextPage"]["href"]
-            # Send a GET request to the URL
-            response = self.get_request(url)
-            # Get the JSON content of the response
-            data = response.json()
-            paginated_data.extend(data["SearchResult"]["resources"])
-
-        # For ERS API retrieve details querying all elements from paginated_data
-        ers_data = []
-        for element in paginated_data:
-            url = element["link"]["href"]
-            response = self.get_request(url)
-            # Get the JSON content of the response
-            data = response.json()
-
-            for _, value in data.items():
-                ers_data.append(value)
-
-        return ers_data
 
     @staticmethod
     def get_id_value(i):
@@ -284,7 +225,7 @@ class CiscoClientISE(CiscoClient):
             id_value = i["id"]
         except KeyError:
             try:
-                id_value = i["rule"]["id"]
+                id_value = i["uuid"]
             except KeyError:
                 try:
                     id_value = i["name"]
@@ -292,3 +233,30 @@ class CiscoClientISE(CiscoClient):
                     id_value = None
 
         return id_value
+
+    def resolve_domains(self, endpoints: list, domains: list):
+        """
+        Replace endpoint containing domain reference '{DOMAIN_UUID}' with one per domain.
+
+        Parameters:
+            endpoints (list): List of endpoints
+            domains (list): List of domains' UUIDs
+
+        Returns:
+            list: Per-domain list of endpoints
+        """
+
+        new_endpoints = []
+        for endpoint in endpoints:
+            # Endpoint is NOT domain specific
+            if "{DOMAIN_UUID}" not in endpoint["endpoint"]:
+                new_endpoints.append(copy.deepcopy(endpoint))
+                continue
+
+            # Endpoint is domain specific
+            base_endpoint = endpoint["endpoint"]
+            for domain in domains:
+                endpoint["endpoint"] = base_endpoint.replace("{DOMAIN_UUID}", domain)
+                new_endpoints.append(copy.deepcopy(endpoint))
+
+        return new_endpoints

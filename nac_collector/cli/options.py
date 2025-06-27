@@ -5,17 +5,16 @@ solution = click.option(
     "--solution",
     "-s",
     type=click.Choice(
-        ["SDWAN", "ISE", "NDO", "FMC", "CATALYSTCENTER"], case_sensitive=False
+        ["SDWAN", "ISE", "NDO", "FMC", "CATALYSTCENTER", "MERAKI"], case_sensitive=False
     ),
     required=True,
-    help="Solutions supported [SDWAN, ISE, NDO, FMC, CATALYSTCENTER]",
+    help="Solutions supported [SDWAN, ISE, NDO, FMC, CATALYSTCENTER, MERAKI]",
 )
 
 username = click.option(
     "--username",
     "-u",
     type=str,
-    required=True,
     envvar="NAC_USERNAME",
     help="Username for authentication. Can also be set using the NAC_USERNAME environment variable",
 )
@@ -24,9 +23,16 @@ password = click.option(
     "--password",
     "-p",
     type=str,
-    required=True,
     envvar="NAC_PASSWORD",
     help="Password for authentication. Can also be set using the NAC_PASSWORD environment variable",
+)
+
+api_key = click.option(
+    "--api-key",
+    "-k",
+    type=str,
+    envvar="NAC_API_KEY",
+    help="API key for authentication. Can also be set using the NAC_API_KEY environment variable",
 )
 
 url = click.option(
