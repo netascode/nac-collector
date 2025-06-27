@@ -82,6 +82,17 @@ def main(
 
     configure_logging(verbosity)
 
+    solutions_using_api_key = ["MERAKI"]
+
+    if solution not in solutions_using_api_key and not (username and password):
+        raise click.UsageError(
+            "You must provide both --username / -u and --password / -p for the solution %s" % solution
+        )
+    if solution in solutions_using_api_key and not api_key:
+        raise click.UsageError(
+            "You must provide --api-key / -k for the solution %s" % solution
+        )
+
     if git_provider:
         wrapper = GithubRepoWrapper(
             repo_url=f"https://github.com/CiscoDevNet/terraform-provider-{solution.lower()}.git",
