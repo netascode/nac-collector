@@ -37,7 +37,14 @@ class CiscoClientMERAKI(CiscoClient):
         ssl_verify,
     ):
         super().__init__(
-            username, password, api_key, base_url, max_retries, retry_after, timeout, ssl_verify
+            username,
+            password,
+            api_key,
+            base_url,
+            max_retries,
+            retry_after,
+            timeout,
+            ssl_verify,
         )
         self.x_auth_refresh_token = None
         self.domains = []
@@ -55,11 +62,13 @@ class CiscoClientMERAKI(CiscoClient):
             return False
 
         self.session = requests.Session()
-        self.session.headers.update({
-            'Authorization': 'Bearer ' + self.api_key,
-            'Content-Type': 'application/json',
-            'User-Agent': 'nac-collector',
-        })
+        self.session.headers.update(
+            {
+                "Authorization": "Bearer " + self.api_key,
+                "Content-Type": "application/json",
+                "User-Agent": "nac-collector",
+            }
+        )
         logger.info("Authentication successful with API key.")
         return True
 
@@ -86,9 +95,7 @@ class CiscoClientMERAKI(CiscoClient):
                 endpoint_dict[endpoint["name"]].append(
                     {
                         "data": i,
-                        "endpoint": endpoint["endpoint"]
-                        + "/"
-                        + self.get_id_value(i),
+                        "endpoint": endpoint["endpoint"] + "/" + self.get_id_value(i),
                     }
                 )
 
@@ -187,7 +194,12 @@ class CiscoClientMERAKI(CiscoClient):
                                     ] = children_endpoint_dict[
                                         children_endpoint["name"]
                                     ]
-                                    logger.info("Updated endpoint_dict: %s", json.dumps(endpoint_dict, sort_keys=True, indent=4))
+                                    logger.info(
+                                        "Updated endpoint_dict: %s",
+                                        json.dumps(
+                                            endpoint_dict, sort_keys=True, indent=4
+                                        ),
+                                    )
 
                 # Save results to dictionary
                 # Due to domain expansion, it may happen that same endpoint["name"] will occur multiple times

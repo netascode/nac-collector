@@ -86,7 +86,8 @@ def main(
 
     if solution not in solutions_using_api_key and not (username and password):
         raise click.UsageError(
-            "You must provide both --username / -u and --password / -p for the solution %s" % solution
+            "You must provide both --username / -u and --password / -p for the solution %s"
+            % solution
         )
     if solution in solutions_using_api_key and not api_key:
         raise click.UsageError(
