@@ -27,9 +27,9 @@ Options:
   --version                       Show the version and exit.
   -v, --verbosity LVL             Either CRITICAL, ERROR, WARNING, INFO or
                                   DEBUG
-  -s, --solution [SDWAN|ISE|NDO|FMC]
-                                  Solutions supported [SDWAN, ISE, NDO, FMC]
-                                  [required]
+  -s, --solution [SDWAN|ISE|NDO|FMC|CATALYSTCENTER]
+                                  Solutions supported [SDWAN, ISE, NDO, FMC,
+                                  CATALYSTCENTER]  [required]
   -u, --username TEXT             Username for authentication. Can also be set
                                   using the NAC_USERNAME environment variable
                                   [required]
