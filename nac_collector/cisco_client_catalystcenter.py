@@ -5,6 +5,7 @@ import requests
 import urllib3
 import json
 import os
+import concurrent.futures
 
 from nac_collector.cisco_client import CiscoClient
 
@@ -180,13 +181,15 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
             dict: The dictionary containing the data retrieved from the alternate endpoint.
         """
 
-        id_lookup_data = self.fetch_data(
+        id_lookup_data = self.fetch_data_pagination(
             self.id_lookup[endpoint.get("endpoint")]["source_endpoint"]
         )
+        if id_lookup_data is None:
+            return None
         look_data = id_lookup_data["response"]
         if "/template-programmer/template/version" in endpoint.get(
             "endpoint"
-        ):  # bandaid, this endpoint contains ids deeper than usual
+        ):  # bandaid, this endpoint contains ids deeper than usual 
             look_data = [tpl for el in look_data for tpl in el["templates"]]
         id_list = [
             i[self.id_lookup[endpoint.get("endpoint")]["source_key"]] for i in look_data
@@ -196,7 +199,7 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
             lookup_endpoint = self.id_lookup[endpoint.get("endpoint")][
                 "target_endpoint"
             ].replace("%v", id_)
-            data = self.fetch_data(lookup_endpoint)
+            data = self.fetch_data_pagination(lookup_endpoint)
             if isinstance(data, dict) and data.get("response"):
                 data = data["response"]
             if isinstance(data, dict):
@@ -236,119 +239,12 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
 
         # Iterate over all endpoints
         with click.progressbar(endpoints, label="Processing endpoints") as endpoint_bar:
-            for endpoint in endpoint_bar:
-                logger.info("Processing endpoint: %s", endpoint["name"])
-                endpoint_dict = CiscoClient.create_endpoint_dict(endpoint)
-                if endpoint.get("endpoint") in self.id_lookup:
-                    logger.info(
-                        "Alternate endpoint found: %s",
-                        self.id_lookup[endpoint.get("endpoint")]["source_endpoint"],
-                    )
-                    data = self.fetch_data_alternate(endpoint)
-                else:
-                    data = self.fetch_data(endpoint["endpoint"])
-
-                # Process the endpoint data and get the updated dictionary
-                endpoint_dict = self.process_endpoint_data(
-                    endpoint, endpoint_dict, data
-                )
-                if endpoint.get("children"):
-                    # Create empty list of parent_endpoint_ids
-                    parent_endpoint_ids = []
-
-                    for item in endpoint_dict[endpoint["name"]]:
-                        # Add the item's id to the list
-                        try:
-                            if isinstance(item["data"], list):
-                                [
-                                    parent_endpoint_ids.append(x["id"])
-                                    for x in item["data"]
-                                ]
-                            else:
-                                parent_endpoint_ids.append(item["data"]["id"])
-                        except KeyError:
-                            continue
-
-                    for children_endpoint in endpoint["children"]:
-                        logger.info(
-                            "Processing children endpoint: %s",
-                            endpoint["endpoint"]
-                            + "/%v"
-                            + children_endpoint["endpoint"],
-                        )
-
-                        # Iterate over the parent endpoint ids
-                        for id_ in parent_endpoint_ids:
-                            children_endpoint_dict = CiscoClient.create_endpoint_dict(
-                                children_endpoint
-                            )
-
-                            # Replace '%v' in the endpoint with the id
-                            children_joined_endpoint = (
-                                endpoint["endpoint"]
-                                + "/"
-                                + id_
-                                + children_endpoint["endpoint"]
-                            )
-
-                            data = self.fetch_data(children_joined_endpoint)
-                            # Process the children endpoint data and get the updated dictionary
-                            children_endpoint_dict = self.process_endpoint_data(
-                                children_endpoint, children_endpoint_dict, data, id_
-                            )
-                            
-                            for index, value in enumerate(
-                                endpoint_dict[endpoint["name"]]
-                            ):
-                                if isinstance(value.get("data"), list):
-                                    for elem in value.get("data"):
-                                        attr = endpoint_dict[endpoint["name"]][
-                                            index
-                                        ].setdefault("children", {}).get(
-                                            children_endpoint["name"]
-                                        )
-                                        if attr is None:
-                                            childs = [children_endpoint_dict[
-                                                children_endpoint["name"]
-                                            ]]
-                                            if len(childs) == 0:
-                                                continue
-                                            if isinstance(childs, list):
-                                                for idx, ch in enumerate(childs):
-                                                    filtered_list = [item for item in ch if item.get("data") not in ("null",[], None, {})]
-                                                    if len(filtered_list) == 0:
-                                                        del childs[idx]
-
-                                            
-                                            endpoint_dict[endpoint["name"]][
-                                                index
-                                            ].setdefault("children", {})[
-                                                children_endpoint["name"]
-                                            ] = [children_endpoint_dict[
-                                                children_endpoint["name"]
-                                            ]]
-                                        else:
-                                            endpoint_dict[endpoint["name"]][
-                                                index
-                                            ].setdefault("children", {})[
-                                                children_endpoint["name"]
-                                            ].append(children_endpoint_dict[
-                                                children_endpoint["name"]
-                                            ])
-                                        break
-                                else:
-                                    if value.get("data").get("id") == id_:
-                                        endpoint_dict[endpoint["name"]][
-                                            index
-                                        ].setdefault("children", {})[
-                                            children_endpoint["name"]
-                                        ] = children_endpoint_dict[
-                                            children_endpoint["name"]
-                                        ]
-
-                # Save results to dictionary
-                final_dict.update(endpoint_dict)
-        return final_dict
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                results = list(executor.map(self.process_endpoint, endpoint_bar))
+            for r in results:
+                final_dict.update(r)
+            return final_dict
+      
 
     @staticmethod
     def get_id_value(i):
@@ -367,3 +263,118 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
             if x is not None:
                 return x
         return None
+
+    def process_endpoint(self, endpoint):
+        logger.info("Processing endpoint: %s", endpoint["name"])
+        endpoint_dict = CiscoClient.create_endpoint_dict(endpoint)
+        if endpoint.get("endpoint") in self.id_lookup:
+            logger.info(
+                "Alternate endpoint found: %s",
+                self.id_lookup[endpoint.get("endpoint")]["source_endpoint"],
+            )
+            data = self.fetch_data_alternate(endpoint)
+            if data is None:
+                return
+        else:
+            data = self.fetch_data_pagination(endpoint["endpoint"])
+
+        # Process the endpoint data and get the updated dictionary
+        endpoint_dict = self.process_endpoint_data(
+            endpoint, endpoint_dict, data
+        )
+        if endpoint.get("children"):
+            # Create empty list of parent_endpoint_ids
+            parent_endpoint_ids = []
+
+            for item in endpoint_dict[endpoint["name"]]:
+                # Add the item's id to the list
+                try:
+                    if isinstance(item["data"], list):
+                        [
+                            parent_endpoint_ids.append(x["id"])
+                            for x in item["data"]
+                        ]
+                    else:
+                        parent_endpoint_ids.append(item["data"]["id"])
+                except KeyError:
+                    continue
+
+            for children_endpoint in endpoint["children"]:
+                logger.info(
+                    "Processing children endpoint: %s",
+                    endpoint["endpoint"]
+                    + "/%v"
+                    + children_endpoint["endpoint"],
+                )
+
+                # Iterate over the parent endpoint ids
+                for id_ in parent_endpoint_ids:
+                    children_endpoint_dict = CiscoClient.create_endpoint_dict(
+                        children_endpoint
+                    )
+
+                    # Replace '%v' in the endpoint with the id
+                    children_joined_endpoint = (
+                        endpoint["endpoint"]
+                        + "/"
+                        + id_
+                        + children_endpoint["endpoint"]
+                    )
+
+                    data = self.fetch_data_pagination(children_joined_endpoint)
+                    # Process the children endpoint data and get the updated dictionary
+                    children_endpoint_dict = self.process_endpoint_data(
+                        children_endpoint, children_endpoint_dict, data, id_
+                    )
+                    
+                    for index, value in enumerate(
+                        endpoint_dict[endpoint["name"]]
+                    ):
+                        if isinstance(value.get("data"), list):
+                            for elem in value.get("data"):
+                                attr = endpoint_dict[endpoint["name"]][
+                                    index
+                                ].setdefault("children", {}).get(
+                                    children_endpoint["name"]
+                                )
+                                if attr is None:
+                                    childs = [children_endpoint_dict[
+                                        children_endpoint["name"]
+                                    ]]
+                                    if len(childs) == 0:
+                                        continue
+                                    if isinstance(childs, list):
+                                        for idx, ch in enumerate(childs):
+                                            filtered_list = [item for item in ch if item.get("data") not in ("null",[], None, {})]
+                                            if len(filtered_list) == 0:
+                                                del childs[idx]
+
+                                    
+                                    endpoint_dict[endpoint["name"]][
+                                        index
+                                    ].setdefault("children", {})[
+                                        children_endpoint["name"]
+                                    ] = [children_endpoint_dict[
+                                        children_endpoint["name"]
+                                    ]]
+                                else:
+                                    endpoint_dict[endpoint["name"]][
+                                        index
+                                    ].setdefault("children", {})[
+                                        children_endpoint["name"]
+                                    ].append(children_endpoint_dict[
+                                        children_endpoint["name"]
+                                    ])
+                                break
+                        else:
+                            if value.get("data").get("id") == id_:
+                                endpoint_dict[endpoint["name"]][
+                                    index
+                                ].setdefault("children", {})[
+                                    children_endpoint["name"]
+                                ] = children_endpoint_dict[
+                                    children_endpoint["name"]
+                                ]
+
+        # Save results to dictionary
+        return endpoint_dict
