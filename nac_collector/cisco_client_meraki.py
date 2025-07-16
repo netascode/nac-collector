@@ -95,7 +95,8 @@ class CiscoClientMERAKI(CiscoClient):
                 endpoint_dict[endpoint["name"]].append(
                     {
                         "data": i,
-                        "endpoint": endpoint["endpoint"] + "/" + self.get_id_value(i),
+                        # TODO If get_id_value() return None, this just gets put into the string as "/None".
+                        "endpoint": f'{endpoint["endpoint"]}/{self.get_id_value(i, endpoint)}',
                     }
                 )
 
@@ -104,7 +105,8 @@ class CiscoClientMERAKI(CiscoClient):
                 endpoint_dict[endpoint["name"]].append(
                     {
                         "data": i,
-                        "endpoint": f'{endpoint["endpoint"]}/{self.get_id_value(i)}',
+                        # TODO If get_id_value() return None, this just gets put into the string as "/None".
+                        "endpoint": f'{endpoint["endpoint"]}/{self.get_id_value(i, endpoint)}',
                     }
                 )
 
@@ -211,28 +213,22 @@ class CiscoClientMERAKI(CiscoClient):
         return final_dict
 
     @staticmethod
-    def get_id_value(i):
+    def get_id_value(i: dict, endpoint: dict):
         """
         Attempts to get the 'id' or 'name' value from a dictionary.
 
         Parameters:
             i (dict): The dictionary to get the 'id' or 'name' value from.
+            endpoint (dict): The endpoint configuration.
 
         Returns:
             str or None: The 'id' or 'name' value if it exists, None otherwise.
         """
+        id_name = endpoint.get("id_name", "id")
         try:
-            id_value = i["id"]
+            return i[id_name]
         except KeyError:
-            try:
-                id_value = i["uuid"]
-            except KeyError:
-                try:
-                    id_value = i["name"]
-                except KeyError:
-                    id_value = None
-
-        return id_value
+            return None
 
     def resolve_domains(self, endpoints: list, domains: list):
         """
