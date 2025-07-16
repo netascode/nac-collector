@@ -118,21 +118,18 @@ class GithubRepoWrapper:
                                     endpoint,
                                     file,
                                 )
+                                entry = {
+                                    "name": file.split(".yaml")[0],
+                                }
                                 # for SDWAN feature_device_templates
                                 if file.split(".yaml")[0] == "feature_device_template":
-                                    endpoints_list.append(
-                                        {
-                                            "name": file.split(".yaml")[0],
-                                            "endpoint": "/template/device/object/%i",
-                                        }
-                                    )
+                                    entry["endpoint"] = "/template/device/object/%i"
                                 else:
-                                    endpoints_list.append(
-                                        {
-                                            "name": file.split(".yaml")[0],
-                                            "endpoint": endpoint,
-                                        }
-                                    )
+                                    entry["endpoint"] = endpoint
+                                id_name = data.get("id_name")
+                                if id_name is not None:
+                                    entry["id_name"] = id_name
+                                endpoints_list.append(entry)
 
                     # for SDWAN feature_templates
                     if root.endswith("feature_templates"):
@@ -173,31 +170,34 @@ class GithubRepoWrapper:
         parent_map = {}
 
         # Function to split endpoint and register it in the hierarchy
-        def register_endpoint(parts, name):
+        def register_endpoint(parts, entry):
             current_level = parent_map
             base_endpoint = parts[0]
 
             # Register base endpoint
             if base_endpoint not in current_level:
-                current_level[base_endpoint] = {"names": [], "children": {}}
+                current_level[base_endpoint] = {"entries": [], "children": {}}
             current_level = current_level[base_endpoint]
 
             # Process each subsequent segment
             for part in parts[1:]:
                 if part not in current_level["children"]:
-                    current_level["children"][part] = {"names": [], "children": {}}
+                    current_level["children"][part] = {"entries": [], "children": {}}
                 current_level = current_level["children"][part]
 
             # Add the name to the list of names for this segment
             # This is to handle a case where there are two endpoint_data
             # with different name but same endpoint url
-            if name not in current_level["names"]:
-                current_level["names"].append(name)
+            if entry["name"] not in [
+                entry["name"] for entry in current_level["entries"]
+            ]:
+                current_level["entries"].append(entry)
 
         # Process each endpoint
         for endpoint_data in endpoints_list:
-            endpoint = endpoint_data["endpoint"]
-            name = endpoint_data["name"]
+            entry = endpoint_data.copy()
+            endpoint = entry["endpoint"]
+            del entry["endpoint"]
 
             # Split the endpoint by placeholders and slashes
             parts = []
@@ -222,7 +222,7 @@ class GithubRepoWrapper:
                     break
 
             # Register the endpoint in the hierarchy
-            register_endpoint(parts, name)
+            register_endpoint(parts, entry)
 
         # Convert the hierarchical map to a list format
         def build_hierarchy(node):
@@ -231,9 +231,9 @@ class GithubRepoWrapper:
             """
             output = []
             for part, content in node.items():
-                # Create an entry for each name associated with this endpoint
-                for name in content["names"]:
-                    entry = {"name": name, "endpoint": part}
+                # Add each entry associated with this endpoint
+                for entry in content["entries"]:
+                    entry["endpoint"] = part
                     if content["children"]:
                         entry["children"] = build_hierarchy(content["children"])
                     output.append(entry)
