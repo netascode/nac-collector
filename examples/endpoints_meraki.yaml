@@ -1,0 +1,148 @@
+- name: device
+  endpoint: /devices
+  children:
+  - name: cellular_gateway_port_forwarding_rules
+    endpoint: /cellularGateway/portForwardingRules
+  - name: appliance_radio_settings
+    endpoint: /appliance/radio/settings
+  - name: switch_routing_static_route
+    id_name: staticRouteId
+    endpoint: /switch/routing/staticRoutes
+  - name: switch_routing_interface
+    id_name: interfaceId
+    endpoint: /switch/routing/interfaces
+    children:
+    - name: switch_routing_interface_dhcp
+      endpoint: /dhcp
+  - name: wireless_device_bluetooth_settings
+    endpoint: /wireless/bluetooth/settings
+  - name: appliance_uplinks_settings
+    endpoint: /appliance/uplinks/settings
+  - name: device_cellular_sims
+    endpoint: /cellular/sims
+  - name: camera_sense
+    endpoint: /camera/sense
+  - name: switch_warm_spare
+    endpoint: /switch/warmSpare
+  - name: cellular_gateway_lan
+    endpoint: /cellularGateway/lan
+  - name: wireless_device_electronic_shelf_label
+    endpoint: /wireless/electronicShelfLabel
+  - name: camera_device_wireless_profiles
+    endpoint: /camera/wirelessProfiles
+  - name: switch_port
+    id_name: portId
+    endpoint: /switch/ports
+  - name: switch_ports
+    endpoint: /switch/ports
+  - name: sensor_relationships
+    endpoint: /sensor/relationships
+  - name: camera_quality_retention
+    endpoint: /camera/qualityAndRetention
+  - name: wireless_radio_settings
+    endpoint: /wireless/radio/settings
+  - name: camera_custom_analytics
+    endpoint: /camera/customAnalytics
+  - name: camera_video_settings
+    endpoint: /camera/video/settings
+  - name: device_management_interface
+    endpoint: /managementInterface
+- name: organization
+  endpoint: /organizations
+  children:
+  - name: appliance_dns_local_profile
+    id_name: profileId
+    endpoint: /appliance/dns/local/profiles
+  - name: organization_saml_idp
+    id_name: idpId
+    endpoint: /saml/idps
+  - name: organization_license
+    endpoint: /licenses
+  - name: organization_licenses
+    endpoint: /licenses
+  - name: organization_login_security
+    endpoint: /loginSecurity
+  - name: organization_adaptive_policy_group
+    id_name: groupId
+    endpoint: /adaptivePolicy/groups
+  - name: appliance_vpn_site_to_site_ipsec_peers_slas
+    endpoint: /appliance/vpn/siteToSite/ipsec/peers/slas
+  - name: appliance_dns_split_profile
+    id_name: profileId
+    endpoint: /appliance/dns/split/profiles
+  - name: organization_branding_policy
+    endpoint: /brandingPolicies
+  - name: wireless_location_scanning_receiver
+    id_name: receiverId
+    endpoint: /wireless/location/scanning/receivers
+  - name: organization_devices
+    endpoint: /devices
+  - name: organization_adaptive_policy
+    id_name: adaptivePolicyId
+    endpoint: /adaptivePolicy/policies
+  - name: appliance_organization_security_intrusion
+    endpoint: /appliance/security/intrusion
+  - name: switch_organization_ports_profiles_automation
+    endpoint: /switch/ports/profiles/automations
+  - name: insight_monitored_media_server
+    endpoint: /insight/monitoredMediaServers
+  - name: organization_branding_policies_priorities
+    endpoint: /brandingPolicies/priorities
+  - name: organization_early_access_features_opt_in
+    endpoint: /earlyAccess/features/optIns
+  - name: switch_organization_ports_profile
+    id_name: profileId
+    endpoint: /switch/ports/profiles
+  - name: camera_role
+    endpoint: /camera/roles
+  - name: organization_inventory_devices
+    endpoint: /inventory/devices
+  - name: appliance_dns_local_profile_assignments
+    endpoint: /appliance/dns/local/profiles/assignments/bulkCreate
+  - name: organization_inventory_claim
+    endpoint: /inventory/claim
+  - name: appliance_dns_local_record
+    id_name: recordId
+    endpoint: /appliance/dns/local/records
+  - name: organization_adaptive_policy_settings
+    endpoint: /adaptivePolicy/settings
+  - name: network
+    endpoint: /networks
+  - name: wireless_ssid_firewall_isolation_allowlist_entry
+    id_name: entryId
+    endpoint: /wireless/ssids/firewall/isolation/allowlist/entries
+  - name: organization_saml
+    endpoint: /saml
+  - name: organization_alerts_profile
+    endpoint: /alerts/profiles
+  - name: appliance_dns_split_profile_assignments
+    endpoint: /appliance/dns/split/profiles/assignments/bulkCreate
+  - name: organization_snmp
+    endpoint: /snmp
+  - name: organization_early_access_features
+    endpoint: /earlyAccess/features
+  - name: appliance_vpn_firewall_rules
+    endpoint: /appliance/vpn/vpnFirewallRules
+  - name: sm_admin_role
+    id_name: roleId
+    endpoint: /sm/admins/roles
+  - name: organization_saml_role
+    endpoint: /samlRoles
+  - name: organization_policy_object_group
+    endpoint: /policyObjects/groups
+  - name: organization_auth_radius_server
+    id_name: serverId
+    endpoint: /auth/radius/servers
+  - name: organization_config_template
+    endpoint: /configTemplates
+  - name: organization_admin
+    endpoint: /admins
+  - name: organization_policy_object
+    endpoint: /policyObjects
+  - name: appliance_third_party_vpn_peers
+    endpoint: /appliance/vpn/thirdPartyVPNPeers
+  - name: organization_firmware_upgrades
+    endpoint: /firmware/upgrades
+  - name: organization_adaptive_policy_acl
+    id_name: aclId
+    endpoint: /adaptivePolicy/acls
