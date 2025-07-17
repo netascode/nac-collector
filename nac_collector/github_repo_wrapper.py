@@ -143,6 +143,19 @@ class GithubRepoWrapper:
                         )
                         break
 
+        if self.solution == "meraki":
+            # Endpoints like /networks/%v/wireless/settings are rooted at /networks,
+            # but there is no provider resource with a /networks endpoint
+            # (the endpoint for fetching networks is /organizations/%v/networks instead),
+            # so parent_children() skips the whole tree.
+            # Add the (non-working) endpoint manually to prevent that.
+            endpoints_list.append(
+                {
+                    "name": "network",
+                    "endpoint": "/networks",
+                }
+            )
+
         # Adjust endpoints with potential parent-children relationships
         endpoints_list = self.parent_children(endpoints_list)
 

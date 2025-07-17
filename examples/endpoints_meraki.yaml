@@ -1,3 +1,271 @@
+- name: network
+  endpoint: /networks
+  children:
+  - name: appliance_connectivity_monitoring_destinations
+    endpoint: /appliance/connectivityMonitoringDestinations
+  - name: switch_port_schedule
+    endpoint: /switch/portSchedules
+  - name: wireless_ethernet_port_profile_default
+    endpoint: /wireless/ethernet/ports/profiles/setDefault
+  - name: appliance_traffic_shaping_uplink_bandwidth
+    endpoint: /appliance/trafficShaping/uplinkBandwidth
+  - name: switch_dhcp_server_policy
+    endpoint: /switch/dhcpServerPolicy
+  - name: appliance_ports
+    endpoint: /appliance/ports
+  - name: appliance_port
+    id_name: number
+    endpoint: /appliance/ports
+  - name: appliance_content_filtering
+    endpoint: /appliance/contentFiltering
+  - name: appliance_firewalled_service
+    endpoint: /appliance/firewall/firewalledServices
+  - name: wireless_settings
+    endpoint: /wireless/settings
+  - name: appliance_ssid
+    id_name: number
+    endpoint: /appliance/ssids
+  - name: appliance_ssids
+    endpoint: /appliance/ssids
+  - name: wireless_ssid
+    id_name: number
+    endpoint: /wireless/ssids
+    children:
+    - &id001
+      name: wireless_ssid_splash_settings
+      endpoint: /splash/settings
+    - &id002
+      name: wireless_ssid_schedules
+      endpoint: /schedules
+    - &id003
+      name: wireless_ssid_identity_psk
+      endpoint: /identityPsks
+    - &id004
+      name: wireless_ssid_l3_firewall_rules
+      endpoint: /firewall/l3FirewallRules
+    - &id005
+      name: wireless_ssid_l7_firewall_rules
+      endpoint: /firewall/l7FirewallRules
+    - &id006
+      name: wireless_ssid_hotspot_20
+      endpoint: /hotspot20
+    - &id007
+      name: wireless_ssid_traffic_shaping_rules
+      endpoint: /trafficShaping/rules
+    - &id008
+      name: wireless_ssid_bonjour_forwarding
+      endpoint: /bonjourForwarding
+    - &id009
+      name: wireless_ssid_device_type_group_policies
+      endpoint: /deviceTypeGroupPolicies
+    - &id010
+      name: wireless_ssid_vpn
+      endpoint: /vpn
+    - &id011
+      name: wireless_ssid_eap_override
+      endpoint: /eapOverride
+  - name: wireless_ssids
+    endpoint: /wireless/ssids
+    children:
+    - *id001
+    - *id002
+    - *id003
+    - *id004
+    - *id005
+    - *id006
+    - *id007
+    - *id008
+    - *id009
+    - *id010
+    - *id011
+  - name: switch_routing_multicast_rendezvous_point
+    id_name: rendezvousPointId
+    endpoint: /switch/routing/multicast/rendezvousPoints
+  - name: switch_link_aggregation
+    endpoint: /switch/linkAggregations
+  - name: switch_stack
+    endpoint: /switch/stacks
+    children:
+    - name: switch_stack_routing_static_route
+      id_name: staticRouteId
+      endpoint: /routing/staticRoutes
+    - name: switch_stack_routing_interface
+      id_name: interfaceId
+      endpoint: /routing/interfaces
+      children:
+      - name: switch_stack_routing_interface_dhcp
+        endpoint: /dhcp
+  - name: wireless_air_marshal_settings
+    endpoint: /wireless/airMarshal/settings
+  - name: switch_stp
+    endpoint: /switch/stp
+  - name: appliance_vlans_settings
+    endpoint: /appliance/vlans/settings
+  - name: network_traffic_analysis
+    endpoint: /trafficAnalysis
+  - name: switch_settings
+    endpoint: /switch/settings
+  - name: camera_wireless_profile
+    endpoint: /camera/wirelessProfiles
+  - name: network_mqtt_broker
+    endpoint: /mqttBrokers
+  - name: wireless_location_scanning
+    endpoint: /wireless/location/scanning
+  - name: switch_storm_control
+    endpoint: /switch/stormControl
+  - name: appliance_inbound_cellular_firewall_rules
+    endpoint: /appliance/firewall/inboundCellularFirewallRules
+  - name: appliance_rf_profile
+    endpoint: /appliance/rfProfiles
+  - name: wireless_rf_profile
+    endpoint: /wireless/rfProfiles
+  - name: appliance_security_malware
+    endpoint: /appliance/security/malware
+  - name: network_snmp
+    endpoint: /snmp
+  - name: wireless_network_electronic_shelf_label
+    endpoint: /wireless/electronicShelfLabel
+  - name: network_webhook_http_server
+    endpoint: /webhooks/httpServers
+  - name: appliance_port_forwarding_rules
+    endpoint: /appliance/firewall/portForwardingRules
+  - name: network_meraki_auth_user
+    endpoint: /merakiAuthUsers
+  - name: network_group_policy
+    id_name: groupPolicyId
+    endpoint: /groupPolicies
+  - name: appliance_traffic_shaping_custom_performance_class
+    id_name: customPerformanceClassId
+    endpoint: /appliance/trafficShaping/customPerformanceClasses
+  - name: switch_routing_multicast
+    endpoint: /switch/routing/multicast
+  - name: appliance_l3_firewall_rules
+    endpoint: /appliance/firewall/l3FirewallRules
+  - name: appliance_prefix_delegated_static
+    id_name: staticDelegatedPrefixId
+    endpoint: /appliance/prefixes/delegated/statics
+  - name: appliance_traffic_shaping
+    endpoint: /appliance/trafficShaping
+  - name: cellular_gateway_subnet_pool
+    endpoint: /cellularGateway/subnetPool
+  - name: wireless_network_bluetooth_settings
+    endpoint: /wireless/bluetooth/settings
+  - name: appliance_cellular_firewall_rules
+    endpoint: /appliance/firewall/cellularFirewallRules
+  - name: network_alerts_settings
+    endpoint: /alerts/settings
+  - name: cellular_gateway_dhcp
+    endpoint: /cellularGateway/dhcp
+  - name: wireless_ethernet_port_profile
+    id_name: profileId
+    endpoint: /wireless/ethernet/ports/profiles
+  - name: appliance_warm_spare
+    endpoint: /appliance/warmSpare
+  - name: wireless_air_marshal_rule
+    id_name: ruleId
+    endpoint: /wireless/airMarshal/rules
+  - name: network_device_claim
+    endpoint: /devices/claim
+  - name: network_netflow
+    endpoint: /netflow
+  - name: appliance_vlan_dhcp
+    endpoint: /appliance/vlans
+  - name: appliance_vlan
+    endpoint: /appliance/vlans
+  - name: appliance_l7_firewall_rules
+    endpoint: /appliance/firewall/l7FirewallRules
+  - name: cellular_gateway_uplink
+    endpoint: /cellularGateway/uplink
+  - name: appliance_static_route
+    endpoint: /appliance/staticRoutes
+  - name: appliance_site_to_site_vpn
+    endpoint: /appliance/vpn/siteToSiteVpn
+  - name: appliance_one_to_one_nat_rules
+    endpoint: /appliance/firewall/oneToOneNatRules
+  - name: appliance_traffic_shaping_rules
+    endpoint: /appliance/trafficShaping/rules
+  - name: network_firmware_upgrades
+    endpoint: /firmwareUpgrades
+  - name: sensor_network_relationships
+    endpoint: /sensor/relationships
+  - name: appliance_inbound_firewall_rules
+    endpoint: /appliance/firewall/inboundFirewallRules
+  - name: appliance_firewall_multicast_forwarding
+    endpoint: /appliance/firewall/multicastForwarding
+  - name: switch_access_control_lists
+    endpoint: /switch/accessControlLists
+  - name: camera_quality_retention_profile
+    endpoint: /camera/qualityRetentionProfiles
+  - name: network_syslog_servers
+    endpoint: /syslogServers
+  - name: network_vlan_profile_assignments_by_device
+    endpoint: /vlanProfiles/assignments/byDevice
+  - name: network_floor_plan
+    id_name: floorPlanId
+    endpoint: /floorPlans
+  - name: sm_target_group
+    endpoint: /sm/targetGroups
+  - name: wireless_alternate_management_interface
+    endpoint: /wireless/alternateManagementInterface
+  - name: appliance_traffic_shaping_vpn_exclusions
+    endpoint: /appliance/trafficShaping/vpnExclusions
+  - name: switch_alternate_management_interface
+    endpoint: /switch/alternateManagementInterface
+  - name: wireless_billing
+    endpoint: /wireless/billing
+  - name: appliance_one_to_many_nat_rules
+    endpoint: /appliance/firewall/oneToManyNatRules
+  - name: wireless_ethernet_port_profile_assign
+    endpoint: /wireless/ethernet/ports/profiles/assign
+  - name: cellular_gateway_connectivity_monitoring_destinations
+    endpoint: /cellularGateway/connectivityMonitoringDestinations
+  - name: sensor_alerts_profile
+    id_name: profileId
+    endpoint: /sensor/alerts/profiles
+  - name: switch_dscp_to_cos_mappings
+    endpoint: /switch/dscpToCosMappings
+  - name: sensor_mqtt_broker
+    id_name: mqttBrokerId
+    endpoint: /sensor/mqttBrokers
+  - name: sensor_mqtt_brokers
+    endpoint: /sensor/mqttBrokers
+  - name: network_settings
+    endpoint: /settings
+  - name: switch_dhcp_server_policy_arp_inspection_trusted_server
+    id_name: trustedServerId
+    endpoint: /switch/dhcpServerPolicy/arpInspection/trustedServers
+  - name: network_vlan_profile
+    endpoint: /vlanProfiles
+  - name: appliance_settings
+    endpoint: /appliance/settings
+  - name: network_policies_by_client
+    endpoint: /policies/byClient
+  - name: appliance_firewall_settings
+    endpoint: /appliance/firewall/settings
+  - name: network_webhook_payload_template
+    id_name: payloadTemplateId
+    endpoint: /webhooks/payloadTemplates
+  - name: appliance_single_lan
+    endpoint: /appliance/singleLan
+  - name: switch_qos_rule
+    endpoint: /switch/qosRules
+  - name: appliance_traffic_shaping_uplink_selection
+    endpoint: /appliance/trafficShaping/uplinkSelection
+  - name: appliance_vpn_bgp
+    endpoint: /appliance/vpn/bgp
+  - name: switch_qos_rule_order
+    endpoint: /switch/qosRules/order
+  - name: appliance_network_security_intrusion
+    endpoint: /appliance/security/intrusion
+  - name: switch_mtu
+    endpoint: /switch/mtu
+  - name: switch_routing_ospf
+    endpoint: /switch/routing/ospf
+  - name: switch_access_policy
+    id_name: accessPolicyNumber
+    endpoint: /switch/accessPolicies
+  - name: network_devices
+    endpoint: /devices
 - name: device
   endpoint: /devices
   children:
