@@ -159,6 +159,16 @@ class GithubRepoWrapper:
         # Adjust endpoints with potential parent-children relationships
         endpoints_list = self.parent_children(endpoints_list)
 
+        if self.solution == "meraki":
+            # Meraki API has 2 special-case roots: /networks and /devices.
+            # They are listed via /organizations/%v/{networks,devices},
+            # but the individual resources and their children are fetched
+            # using URIs rooted at them (e.g. /networks/%v, /networks/%v/switch/stacks).
+            self.move_meraki_root_to_child(
+                endpoints_list, "/networks", "/organizations"
+            )
+            self.move_meraki_root_to_child(endpoints_list, "/devices", "/organizations")
+
         # Save endpoints to a YAML file
         self._save_to_yaml(endpoints_list)
 
@@ -256,6 +266,28 @@ class GithubRepoWrapper:
         modified_endpoints = build_hierarchy(parent_map)
 
         return modified_endpoints
+
+    def move_meraki_root_to_child(self, endpoints_list, root_endpoint, new_parent_endpoint):
+        """
+        Move root_endpoint to replace the same endpoint in new_parent_endpoint's children.
+        Mark it to make the Meraki client know it's a special-case root
+        (listed via /new_parent/%v/root, but children are listed via /root/%v/child).
+        """
+
+        def find_next_endpoint(endpoints_list, endpoint) -> tuple[int, dict]:
+            return next((i, entry) for i, entry in enumerate(endpoints_list) if entry["endpoint"] == endpoint)
+
+        root_index, root = find_next_endpoint(endpoints_list, root_endpoint)
+        _, new_parent = find_next_endpoint(endpoints_list, new_parent_endpoint)
+        _, target = find_next_endpoint(new_parent["children"], root_endpoint)
+
+        target["children"] = root["children"]
+        if root.get("id_name") is not None:
+            target["id_name"] = root["id_name"]
+        # Tell the client to use /new_parent/%v/root to list 'root's,
+        # but use /root/%v/child to fetch its children.
+        target["root"] = True
+        del endpoints_list[root_index]
 
     def _delete_repo(self):
         """
