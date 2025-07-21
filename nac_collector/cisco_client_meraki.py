@@ -175,10 +175,14 @@ class CiscoClientMERAKI(CiscoClient):
                 continue
             parent_endpoint_ids.append(parent_id)
 
+        if parent_endpoint.get("root"):
+            # Use the parent as the root in the URI, ignoring the parent's parent.
+            parent_endpoint_uri = parent_endpoint["endpoint"]
+
         for children_endpoint in parent_endpoint["children"]:
             logger.info(
                 "Processing children endpoint: %s",
-                parent_endpoint_uri + "/%v" + children_endpoint["endpoint"],
+                f"{parent_endpoint_uri}/%v{children_endpoint["endpoint"]}",
             )
 
             for parent_id in parent_endpoint_ids:
@@ -186,15 +190,11 @@ class CiscoClientMERAKI(CiscoClient):
                     children_endpoint
                 )
 
-                # Replace '%v' in the endpoint with the id
-                children_joined_endpoint = (
-                    parent_endpoint_uri
-                    + "/"
-                    + parent_id
-                    + children_endpoint["endpoint"]
+                children_endpoint_uri = (
+                    f"{parent_endpoint_uri}/{parent_id}{children_endpoint["endpoint"]}"
                 )
 
-                data = self.fetch_data(children_joined_endpoint)
+                data = self.fetch_data(children_endpoint_uri)
 
                 # Process the children endpoint data and get the updated dictionary
                 children_endpoint_dict = self.process_endpoint_data(
@@ -204,7 +204,7 @@ class CiscoClientMERAKI(CiscoClient):
                 if children_endpoint.get("children"):
                     self.get_from_children_endpoints(
                         children_endpoint,
-                        children_joined_endpoint,
+                        children_endpoint_uri,
                         children_endpoint_dict[children_endpoint["name"]],
                     )
 
