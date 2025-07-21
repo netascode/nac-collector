@@ -31,6 +31,7 @@ class CiscoClientISE(CiscoClient):
         self,
         username,
         password,
+        api_key,
         base_url,
         max_retries,
         retry_after,
@@ -38,7 +39,14 @@ class CiscoClientISE(CiscoClient):
         ssl_verify,
     ):
         super().__init__(
-            username, password, base_url, max_retries, retry_after, timeout, ssl_verify
+            username,
+            password,
+            api_key,
+            base_url,
+            max_retries,
+            retry_after,
+            timeout,
+            ssl_verify,
         )
 
     def authenticate(self):

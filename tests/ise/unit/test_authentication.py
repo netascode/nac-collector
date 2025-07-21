@@ -12,6 +12,7 @@ def cisco_client():
     return CiscoClientISE(
         username="test_user",
         password="test_password",
+        api_key="test_api_key",
         base_url="https://example.com",
         max_retries=3,
         retry_after=1,

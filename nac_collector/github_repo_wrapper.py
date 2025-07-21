@@ -118,21 +118,18 @@ class GithubRepoWrapper:
                                     endpoint,
                                     file,
                                 )
+                                entry = {
+                                    "name": file.split(".yaml")[0],
+                                }
                                 # for SDWAN feature_device_templates
                                 if file.split(".yaml")[0] == "feature_device_template":
-                                    endpoints_list.append(
-                                        {
-                                            "name": file.split(".yaml")[0],
-                                            "endpoint": "/template/device/object/%i",
-                                        }
-                                    )
+                                    entry["endpoint"] = "/template/device/object/%i"
                                 else:
-                                    endpoints_list.append(
-                                        {
-                                            "name": file.split(".yaml")[0],
-                                            "endpoint": endpoint,
-                                        }
-                                    )
+                                    entry["endpoint"] = endpoint
+                                id_name = data.get("id_name")
+                                if id_name is not None:
+                                    entry["id_name"] = id_name
+                                endpoints_list.append(entry)
 
                     # for SDWAN feature_templates
                     if root.endswith("feature_templates"):
@@ -146,8 +143,37 @@ class GithubRepoWrapper:
                         )
                         break
 
+        if self.solution == "meraki":
+            # Endpoints like /networks/%v/wireless/settings are rooted at /networks,
+            # but there is no provider resource with a /networks endpoint
+            # (the endpoint for fetching networks is /organizations/%v/networks instead),
+            # so parent_children() skips the whole tree.
+            # Add the (non-working) endpoint manually to prevent that.
+            endpoints_list.append(
+                {
+                    "name": "network",
+                    "endpoint": "/networks",
+                }
+            )
+
+            # Workaround: the provider definition does not specify id_name for /devices.
+            devices_endpoint = self.find_first_endpoint(endpoints_list, "/devices/%v")
+            # TODO Do this automatically by checking for an attribute with "id: true",
+            #      but only for non-singletons?
+            devices_endpoint["id_name"] = "serial"
+
         # Adjust endpoints with potential parent-children relationships
         endpoints_list = self.parent_children(endpoints_list)
+
+        if self.solution == "meraki":
+            # Meraki API has 2 special-case roots: /networks and /devices.
+            # They are listed via /organizations/%v/{networks,devices},
+            # but the individual resources and their children are fetched
+            # using URIs rooted at them (e.g. /networks/%v, /networks/%v/switch/stacks).
+            self.move_meraki_root_to_child(
+                endpoints_list, "/networks", "/organizations"
+            )
+            self.move_meraki_root_to_child(endpoints_list, "/devices", "/organizations")
 
         # Save endpoints to a YAML file
         self._save_to_yaml(endpoints_list)
@@ -173,31 +199,34 @@ class GithubRepoWrapper:
         parent_map = {}
 
         # Function to split endpoint and register it in the hierarchy
-        def register_endpoint(parts, name):
+        def register_endpoint(parts, entry):
             current_level = parent_map
             base_endpoint = parts[0]
 
             # Register base endpoint
             if base_endpoint not in current_level:
-                current_level[base_endpoint] = {"names": [], "children": {}}
+                current_level[base_endpoint] = {"entries": [], "children": {}}
             current_level = current_level[base_endpoint]
 
             # Process each subsequent segment
             for part in parts[1:]:
                 if part not in current_level["children"]:
-                    current_level["children"][part] = {"names": [], "children": {}}
+                    current_level["children"][part] = {"entries": [], "children": {}}
                 current_level = current_level["children"][part]
 
             # Add the name to the list of names for this segment
             # This is to handle a case where there are two endpoint_data
             # with different name but same endpoint url
-            if name not in current_level["names"]:
-                current_level["names"].append(name)
+            if entry["name"] not in [
+                entry["name"] for entry in current_level["entries"]
+            ]:
+                current_level["entries"].append(entry)
 
         # Process each endpoint
         for endpoint_data in endpoints_list:
-            endpoint = endpoint_data["endpoint"]
-            name = endpoint_data["name"]
+            entry = endpoint_data.copy()
+            endpoint = entry["endpoint"]
+            del entry["endpoint"]
 
             # Split the endpoint by placeholders and slashes
             parts = []
@@ -222,7 +251,7 @@ class GithubRepoWrapper:
                     break
 
             # Register the endpoint in the hierarchy
-            register_endpoint(parts, name)
+            register_endpoint(parts, entry)
 
         # Convert the hierarchical map to a list format
         def build_hierarchy(node):
@@ -231,9 +260,9 @@ class GithubRepoWrapper:
             """
             output = []
             for part, content in node.items():
-                # Create an entry for each name associated with this endpoint
-                for name in content["names"]:
-                    entry = {"name": name, "endpoint": part}
+                # Add each entry associated with this endpoint
+                for entry in content["entries"]:
+                    entry["endpoint"] = part
                     if content["children"]:
                         entry["children"] = build_hierarchy(content["children"])
                     output.append(entry)
@@ -243,6 +272,48 @@ class GithubRepoWrapper:
         modified_endpoints = build_hierarchy(parent_map)
 
         return modified_endpoints
+
+    def find_first_endpoint(self, endpoints_list, endpoint):
+        _, found_endpoint = self.find_first_endpoint_with_index(
+            endpoints_list, endpoint
+        )
+        return found_endpoint
+
+    def pop_first_endpoint(self, endpoints_list, endpoint):
+        index, found_endpoint = self.find_first_endpoint_with_index(
+            endpoints_list, endpoint
+        )
+        del endpoints_list[index]
+        return found_endpoint
+
+    def find_first_endpoint_with_index(
+        self, endpoints_list, endpoint
+    ) -> tuple[int, dict]:
+        return next(
+            (i, entry)
+            for i, entry in enumerate(endpoints_list)
+            if entry["endpoint"] == endpoint
+        )
+
+    def move_meraki_root_to_child(
+        self, endpoints_list, root_endpoint, new_parent_endpoint
+    ):
+        """
+        Move root_endpoint to replace the same endpoint in new_parent_endpoint's children.
+        Mark it to make the Meraki client know it's a special-case root
+        (listed via /new_parent/%v/root, but children are listed via /root/%v/child).
+        """
+
+        root = self.pop_first_endpoint(endpoints_list, root_endpoint)
+        new_parent = self.find_first_endpoint(endpoints_list, new_parent_endpoint)
+        target = self.find_first_endpoint(new_parent["children"], root_endpoint)
+
+        target["children"] = root["children"]
+        if root.get("id_name") is not None:
+            target["id_name"] = root["id_name"]
+        # Tell the client to use /new_parent/%v/root to list 'root's,
+        # but use /root/%v/child to fetch its children.
+        target["root"] = True
 
     def _delete_repo(self):
         """
