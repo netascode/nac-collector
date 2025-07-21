@@ -75,6 +75,7 @@
       endpoint: /camera/video/settings
     - name: device_management_interface
       endpoint: /managementInterface
+    id_name: serial
     root: true
   - name: organization_adaptive_policy
     id_name: adaptivePolicyId

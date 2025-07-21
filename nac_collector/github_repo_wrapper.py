@@ -156,6 +156,12 @@ class GithubRepoWrapper:
                 }
             )
 
+            # Workaround: the provider definition does not specify id_name for /devices.
+            devices_endpoint = self.find_first_endpoint(endpoints_list, "/devices/%v")
+            # TODO Do this automatically by checking for an attribute with "id: true",
+            #      but only for non-singletons?
+            devices_endpoint["id_name"] = "serial"
+
         # Adjust endpoints with potential parent-children relationships
         endpoints_list = self.parent_children(endpoints_list)
 
@@ -267,19 +273,40 @@ class GithubRepoWrapper:
 
         return modified_endpoints
 
-    def move_meraki_root_to_child(self, endpoints_list, root_endpoint, new_parent_endpoint):
+    def find_first_endpoint(self, endpoints_list, endpoint):
+        _, found_endpoint = self.find_first_endpoint_with_index(
+            endpoints_list, endpoint
+        )
+        return found_endpoint
+
+    def pop_first_endpoint(self, endpoints_list, endpoint):
+        index, found_endpoint = self.find_first_endpoint_with_index(
+            endpoints_list, endpoint
+        )
+        del endpoints_list[index]
+        return found_endpoint
+
+    def find_first_endpoint_with_index(
+        self, endpoints_list, endpoint
+    ) -> tuple[int, dict]:
+        return next(
+            (i, entry)
+            for i, entry in enumerate(endpoints_list)
+            if entry["endpoint"] == endpoint
+        )
+
+    def move_meraki_root_to_child(
+        self, endpoints_list, root_endpoint, new_parent_endpoint
+    ):
         """
         Move root_endpoint to replace the same endpoint in new_parent_endpoint's children.
         Mark it to make the Meraki client know it's a special-case root
         (listed via /new_parent/%v/root, but children are listed via /root/%v/child).
         """
 
-        def find_next_endpoint(endpoints_list, endpoint) -> tuple[int, dict]:
-            return next((i, entry) for i, entry in enumerate(endpoints_list) if entry["endpoint"] == endpoint)
-
-        root_index, root = find_next_endpoint(endpoints_list, root_endpoint)
-        _, new_parent = find_next_endpoint(endpoints_list, new_parent_endpoint)
-        _, target = find_next_endpoint(new_parent["children"], root_endpoint)
+        root = self.pop_first_endpoint(endpoints_list, root_endpoint)
+        new_parent = self.find_first_endpoint(endpoints_list, new_parent_endpoint)
+        target = self.find_first_endpoint(new_parent["children"], root_endpoint)
 
         target["children"] = root["children"]
         if root.get("id_name") is not None:
@@ -287,7 +314,6 @@ class GithubRepoWrapper:
         # Tell the client to use /new_parent/%v/root to list 'root's,
         # but use /root/%v/child to fetch its children.
         target["root"] = True
-        del endpoints_list[root_index]
 
     def _delete_repo(self):
         """
