@@ -52,5 +52,11 @@
         "source_key": "id",
         "target_endpoint": "/dna/intent/api/v1/networkDevices/assignedToSite?siteId=%v",
         "target_key": "siteId"
+    },
+    "/dna/intent/api/v1/templates/%v/networkProfilesForSites": {
+        "source_endpoint": "/dna/intent/api/v2/template-programmer/template",
+        "source_key": "id",
+        "target_endpoint": "/dna/intent/api/v1/templates/%v/networkProfilesForSites",
+        "target_key": "templateId"
     }
 }

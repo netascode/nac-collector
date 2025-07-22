@@ -86,7 +86,7 @@ class CiscoClient(ABC):
         Returns:
             response (requests.Response): The response from the GET request.
         """
-
+        response = None
         for _ in range(self.max_retries):
             try:
                 # Send a GET request to the URL
