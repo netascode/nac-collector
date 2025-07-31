@@ -29,6 +29,8 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
     )
     DNAC_AUTH_ENDPOINT = "/dna/system/api/v1/auth/token"
     SOLUTION = "catalystcenter"
+    TMP_DIR = './tmp'
+    USE_TMPS = True # TODO: Make this and env option?
 
     "Used for mapping credentials to the correct endpoint"
     mappings = {
@@ -238,6 +240,7 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
         final_dict = {}
 
         # Iterate over all endpoints
+        os.makedirs(self.TMP_DIR, exist_ok=True)
         with click.progressbar(endpoints, label="Processing endpoints") as endpoint_bar:
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 results = list(executor.map(self.process_endpoint, endpoint_bar))
@@ -265,6 +268,11 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
         return None
 
     def process_endpoint(self, endpoint):
+        tmp_file_name = os.path.join(self.TMP_DIR, endpoint["name"])
+        if self.USE_TMPS and os.path.exists(tmp_file_name):
+            with open(tmp_file_name, "r") as json_file:
+                return json.load(json_file)
+
         logger.info("Processing endpoint: %s", endpoint["name"])
         endpoint_dict = CiscoClient.create_endpoint_dict(endpoint)
         if endpoint.get("endpoint") in self.id_lookup:
@@ -375,6 +383,9 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
                                 ] = children_endpoint_dict[
                                     children_endpoint["name"]
                                 ]
-
+        
+        if self.USE_TMPS:
+            with open(tmp_file_name, "w") as json_file:
+                json.dump(endpoint_dict, json_file)
         # Save results to dictionary
         return endpoint_dict
