@@ -31,6 +31,8 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
     SOLUTION = "catalystcenter"
     TMP_DIR = './tmp'
     USE_TMPS = True # TODO: Make this and env option?
+    USE_IGNORE_LIST = True # TODO: here as well
+    ENDPOINT_IGNORE_NAMES = ['tag', 'discovery', 'sites', 'assign_devices_to_tag', 'assign_templates_to_tag']
 
     "Used for mapping credentials to the correct endpoint"
     mappings = {
@@ -268,6 +270,8 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
         return None
 
     def process_endpoint(self, endpoint):
+        if self.USE_IGNORE_LIST and endpoint['name'] in self.ENDPOINT_IGNORE_NAMES:
+            return
         tmp_file_name = os.path.join(self.TMP_DIR, endpoint["name"])
         if self.USE_TMPS and os.path.exists(tmp_file_name):
             with open(tmp_file_name, "r") as json_file:
