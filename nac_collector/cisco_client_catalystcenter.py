@@ -7,7 +7,10 @@ import json
 import os
 import concurrent.futures
 
+from urllib3.util.retry import Retry
+from requests.adapters import HTTPAdapter
 from nac_collector.cisco_client import CiscoClient
+import threading
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 logger = logging.getLogger("main")
@@ -30,9 +33,12 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
     DNAC_AUTH_ENDPOINT = "/dna/system/api/v1/auth/token"
     SOLUTION = "catalystcenter"
     TMP_DIR = './tmp'
+    # TMP_DIR = os.path.join('./.tmp', os.getenv("NAC_URL", "default"))
     USE_TMPS = True # TODO: Make this and env option?
     USE_IGNORE_LIST = True # TODO: here as well
-    ENDPOINT_IGNORE_NAMES = ['tag', 'discovery', 'sites', 'assign_devices_to_tag', 'assign_templates_to_tag']
+    ENDPOINT_IGNORE_NAMES = ['tag', 'discovery', 'sites', 'assign_devices_to_tag', 'assign_templates_to_tag', 'device']
+
+    global_site_id = None
 
     "Used for mapping credentials to the correct endpoint"
     mappings = {
@@ -83,7 +89,23 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
             "Content-Type": "application/json",
             "Authorization": "application/json",
         }
-        response = requests.post(
+
+        # retries = self.max_retries # standard use
+        retries = 30
+
+        retry_cfg = Retry(
+            connect=retries,
+            read=retries,
+            status=0,
+            backoff_factor=1,
+            allowed_methods={"POST"},
+            raise_on_status=False,
+        )
+
+        session = requests.Session()
+        session.mount("https://", HTTPAdapter(max_retries=retry_cfg))
+
+        response = session.post(
             auth_url,
             auth=(self.username, self.password),
             headers=headers,
@@ -96,7 +118,6 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
 
             token = response.json()["Token"]
 
-            # Create a session after successful authentication
             self.session = requests.Session()
             self.session.headers.update(
                 {
@@ -247,7 +268,8 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 results = list(executor.map(self.process_endpoint, endpoint_bar))
             for r in results:
-                final_dict.update(r)
+                if r is not None:
+                    final_dict.update(r)
             return final_dict
       
 
@@ -270,14 +292,19 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
         return None
 
     def process_endpoint(self, endpoint):
-        if self.USE_IGNORE_LIST and endpoint['name'] in self.ENDPOINT_IGNORE_NAMES:
+        if self.USE_IGNORE_LIST and endpoint["name"] in self.ENDPOINT_IGNORE_NAMES:
             return
+        
         tmp_file_name = os.path.join(self.TMP_DIR, endpoint["name"])
-        if self.USE_TMPS and os.path.exists(tmp_file_name):
-            with open(tmp_file_name, "r") as json_file:
-                return json.load(json_file)
+        try:
+            if self.USE_TMPS and os.path.exists(tmp_file_name):
+                with open(tmp_file_name, "r") as json_file:
+                    return json.load(json_file)
+        except Exception as e:
+            logger.info("encountered error while proceeding data from tmp file %s: %s, continue fetching data normally",tmp_file_name, e)
 
         logger.info("Processing endpoint: %s", endpoint["name"])
+
         endpoint_dict = CiscoClient.create_endpoint_dict(endpoint)
         if endpoint.get("endpoint") in self.id_lookup:
             logger.info(
@@ -290,106 +317,80 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
         else:
             data = self.fetch_data_pagination(endpoint["endpoint"])
 
-        # Process the endpoint data and get the updated dictionary
-        endpoint_dict = self.process_endpoint_data(
-            endpoint, endpoint_dict, data
-        )
-        if endpoint.get("children"):
-            # Create empty list of parent_endpoint_ids
-            parent_endpoint_ids = []
+        if endpoint['name'] == "site":
+            self.global_site_id = [x for x in data['response'] if x['name'] == 'Global'][0]['id']
 
+        endpoint_dict = self.process_endpoint_data(endpoint, endpoint_dict, data)
+
+        if endpoint.get("children"):
+
+            parent_endpoint_ids = []
             for item in endpoint_dict[endpoint["name"]]:
-                # Add the item's id to the list
                 try:
                     if isinstance(item["data"], list):
-                        [
-                            parent_endpoint_ids.append(x["id"])
-                            for x in item["data"]
-                        ]
+                        parent_endpoint_ids.extend([x["id"] for x in item["data"]])
                     else:
                         parent_endpoint_ids.append(item["data"]["id"])
                 except KeyError:
                     continue
 
-            for children_endpoint in endpoint["children"]:
-                logger.info(
-                    "Processing children endpoint: %s",
-                    endpoint["endpoint"]
-                    + "/%v"
-                    + children_endpoint["endpoint"],
-                )
 
-                # Iterate over the parent endpoint ids
-                for id_ in parent_endpoint_ids:
-                    children_endpoint_dict = CiscoClient.create_endpoint_dict(
-                        children_endpoint
-                    )
 
-                    # Replace '%v' in the endpoint with the id
-                    children_joined_endpoint = (
-                        endpoint["endpoint"]
-                        + "/"
-                        + id_
-                        + children_endpoint["endpoint"]
-                    )
+            lock = threading.Lock()
 
-                    data = self.fetch_data_pagination(children_joined_endpoint)
-                    # Process the children endpoint data and get the updated dictionary
-                    children_endpoint_dict = self.process_endpoint_data(
-                        children_endpoint, children_endpoint_dict, data, id_
-                    )
+            def _process_child(children_endpoint):
+                """
+                Process a single children_endpoint for all parent IDs.
+                Runs sequentially for the given child, but in parallel
+                with other children.
+                """
+                log_msg = "%s/%%v%s" % (endpoint["endpoint"], children_endpoint["endpoint"])
+                logger.info("Processing children endpoint: %s", log_msg)
+                
+                parent_ids = parent_endpoint_ids
+                if children_endpoint['name'] == "wireless_ssid":
+                    parent_ids = [self.global_site_id]
                     
-                    for index, value in enumerate(
-                        endpoint_dict[endpoint["name"]]
-                    ):
-                        if isinstance(value.get("data"), list):
-                            for elem in value.get("data"):
-                                attr = endpoint_dict[endpoint["name"]][
-                                    index
-                                ].setdefault("children", {}).get(
-                                    children_endpoint["name"]
-                                )
-                                if attr is None:
-                                    childs = [children_endpoint_dict[
-                                        children_endpoint["name"]
-                                    ]]
-                                    if len(childs) == 0:
-                                        continue
-                                    if isinstance(childs, list):
-                                        for idx, ch in enumerate(childs):
-                                            filtered_list = [item for item in ch if item.get("data") not in ("null",[], None, {})]
-                                            if len(filtered_list) == 0:
-                                                del childs[idx]
 
-                                    
-                                    endpoint_dict[endpoint["name"]][
-                                        index
-                                    ].setdefault("children", {})[
+                for parent_id in parent_ids:
+                    child_dict = CiscoClient.create_endpoint_dict(children_endpoint)
+
+                    joined_endpoint = (
+                        f"{endpoint['endpoint']}/{parent_id}{children_endpoint['endpoint']}"
+                    )
+                    data = self.fetch_data_pagination(joined_endpoint)
+
+                    child_dict = self.process_endpoint_data(
+                        children_endpoint, child_dict, data, parent_id
+                    )
+
+                    with lock:
+                        for idx, entry in enumerate(endpoint_dict[endpoint["name"]]):
+                            if isinstance(entry.get("data"), list):
+                                for _ in entry["data"]:
+                                    current = entry.setdefault("children", {}).get(
                                         children_endpoint["name"]
-                                    ] = [children_endpoint_dict[
+                                    )
+                                    if current is None:
+                                        entry["children"][children_endpoint["name"]] = [
+                                            child_dict[children_endpoint["name"]]
+                                        ]
+                                    else:
+                                        current.append(child_dict[children_endpoint["name"]])
+                                    break
+
+                            else:
+                                if entry.get("data", {}).get("id") == parent_id:
+                                    entry.setdefault("children", {})[
                                         children_endpoint["name"]
-                                    ]]
-                                else:
-                                    endpoint_dict[endpoint["name"]][
-                                        index
-                                    ].setdefault("children", {})[
-                                        children_endpoint["name"]
-                                    ].append(children_endpoint_dict[
-                                        children_endpoint["name"]
-                                    ])
-                                break
-                        else:
-                            if value.get("data").get("id") == id_:
-                                endpoint_dict[endpoint["name"]][
-                                    index
-                                ].setdefault("children", {})[
-                                    children_endpoint["name"]
-                                ] = children_endpoint_dict[
-                                    children_endpoint["name"]
-                                ]
-        
+                                    ] = child_dict[children_endpoint["name"]]
+
+
+            with concurrent.futures.ThreadPoolExecutor()  as executor:
+                list(executor.map(_process_child, endpoint["children"]))
+
         if self.USE_TMPS:
             with open(tmp_file_name, "w") as json_file:
                 json.dump(endpoint_dict, json_file)
-        # Save results to dictionary
+
         return endpoint_dict
