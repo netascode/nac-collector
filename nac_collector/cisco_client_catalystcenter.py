@@ -37,7 +37,8 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
     USE_IGNORE_LIST = True # TODO: here as well
     ENDPOINT_IGNORE_NAMES = ['tag', 'discovery', 'sites', 'assign_devices_to_tag', 'assign_templates_to_tag', 'device']
     ADDITIONAL_URLS = [{"name": "extended_templates", "endpoint": "/api/v1/template-programmer/extendedTemplates"}]
-    SWAP_URLS = {"/dna/intent/api/v1/template-programmer/template": "/dna/intent/api/v2/template-programmer/template"}
+    SWAP_URLS = {"/dna/intent/api/v1/template-programmer/template": "/dna/intent/api/v2/template-programmer/template",
+                 "/telemetrySettings": "/telemetrySettings?_inherited=true"}
 
     global_site_id = None
 
@@ -350,6 +351,8 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
                 logger.info("Processing children endpoint: %s", log_msg)
                 
                 parent_ids = parent_endpoint_ids
+                if children_endpoint.get("endpoint") in self.SWAP_URLS.keys():
+                    children_endpoint["endpoint"] = self.SWAP_URLS[children_endpoint["endpoint"]]
                 if children_endpoint['name'] == "wireless_ssid":
                     parent_ids = [self.global_site_id]
                     
@@ -360,12 +363,12 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
                     joined_endpoint = (
                         f"{endpoint['endpoint']}/{parent_id}{children_endpoint['endpoint']}"
                     )
-                    data = self.fetch_data_pagination(joined_endpoint)
-
+                    data = self.fetch_data_pagination(joined_endpoint)          
                     child_dict = self.process_endpoint_data(
                         children_endpoint, child_dict, data, parent_id
                     )
-
+                    if len(child_dict.get(children_endpoint["name"], [])) > 0:
+                        child_dict[children_endpoint["name"]][0]["id"] = parent_id
                     with lock:
                         for idx, entry in enumerate(endpoint_dict[endpoint["name"]]):
                             if isinstance(entry.get("data"), list):

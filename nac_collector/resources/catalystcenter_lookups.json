@@ -58,5 +58,11 @@
         "source_key": "id",
         "target_endpoint": "/dna/intent/api/v1/templates/%v/networkProfilesForSites",
         "target_key": "templateId"
+    },
+    "/api/v1/template-programmer/extendedTemplates": {
+        "source_endpoint": "/dna/intent/api/v2/template-programmer/template",
+        "source_key": "id",
+        "target_endpoint": "/api/v1/template-programmer/extendedTemplates?allTemplateAttributes=true&id=%v",
+        "target_key": "id"
     }
 }

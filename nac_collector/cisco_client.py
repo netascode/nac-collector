@@ -251,6 +251,7 @@ class CiscoClient(ABC):
                     response.status_code,
                     len(current_response),
                 )
+                current_response = current_response if type(current_response) == list else [current_response]
                 all_responses.extend(current_response)
 
                 # Check if the current response has fewer items than the limit, meaning no more data
