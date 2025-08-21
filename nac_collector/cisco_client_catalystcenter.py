@@ -33,11 +33,11 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
     DNAC_AUTH_ENDPOINT = "/dna/system/api/v1/auth/token"
     SOLUTION = "catalystcenter"
     TMP_DIR = './tmp'
-    # TMP_DIR = os.path.join('./.tmp', os.getenv("NAC_URL", "default"))
     USE_TMPS = True # TODO: Make this and env option?
     USE_IGNORE_LIST = True # TODO: here as well
     ENDPOINT_IGNORE_NAMES = ['tag', 'discovery', 'sites', 'assign_devices_to_tag', 'assign_templates_to_tag', 'device']
-    additional_urls = [{"name": "extended_templates", "endpoint": "/api/v1/template-programmer/extendedTemplates"}]
+    ADDITIONAL_URLS = [{"name": "extended_templates", "endpoint": "/api/v1/template-programmer/extendedTemplates"}]
+    SWAP_URLS = {"/dna/intent/api/v1/template-programmer/template": "/dna/intent/api/v2/template-programmer/template"}
 
     global_site_id = None
 
@@ -259,7 +259,7 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
         logger.info("Loading endpoints from %s", endpoints_yaml_file)
         with open(endpoints_yaml_file, "r", encoding="utf-8") as f:
             endpoints = self.yaml.load(f)
-        endpoints.extend(self.additional_urls)
+        endpoints.extend(self.ADDITIONAL_URLS)
         # Initialize an empty dictionary
         final_dict = {}
 
@@ -295,7 +295,8 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
     def process_endpoint(self, endpoint):
         if self.USE_IGNORE_LIST and endpoint["name"] in self.ENDPOINT_IGNORE_NAMES:
             return
-        
+        if endpoint.get("endpoint") in self.SWAP_URLS.keys():
+            endpoint["endpoint"] = self.SWAP_URLS[endpoint["endpoint"]]
         tmp_file_name = os.path.join(self.TMP_DIR, endpoint["name"])
         try:
             if self.USE_TMPS and os.path.exists(tmp_file_name):
