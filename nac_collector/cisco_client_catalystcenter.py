@@ -37,6 +37,7 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
     USE_TMPS = True # TODO: Make this and env option?
     USE_IGNORE_LIST = True # TODO: here as well
     ENDPOINT_IGNORE_NAMES = ['tag', 'discovery', 'sites', 'assign_devices_to_tag', 'assign_templates_to_tag', 'device']
+    additional_urls = [{"name": "extended_templates", "endpoint": "/api/v1/template-programmer/extendedTemplates"}]
 
     global_site_id = None
 
@@ -258,7 +259,7 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
         logger.info("Loading endpoints from %s", endpoints_yaml_file)
         with open(endpoints_yaml_file, "r", encoding="utf-8") as f:
             endpoints = self.yaml.load(f)
-
+        endpoints.extend(self.additional_urls)
         # Initialize an empty dictionary
         final_dict = {}
 
