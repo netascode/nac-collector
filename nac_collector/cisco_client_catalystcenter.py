@@ -195,7 +195,6 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
                         elem["id"] = id_
                     endpoint_dict[endpoint["name"]].append(elem)
                     
-
         elif isinstance(data.get("response"), list):
             endpoint_dict[endpoint["name"]].append(
                 {"data": data.get("response"), "endpoint": endpoint["endpoint"]}
