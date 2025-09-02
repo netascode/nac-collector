@@ -85,7 +85,9 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
             if choice == "r":
                 logger.info("Resuming...")
             else:
-                logger.info("Starting from scratch, removing existing temporary data...")
+                logger.info(
+                    "Starting from scratch, removing existing temporary data..."
+                )
                 self.remove(self.job == self.base_url)
 
     def authenticate(self):
@@ -188,13 +190,11 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
                             }
                         )
                 else:
-                    elem = (
-                        {"data": v, "endpoint": new_endpoint, "name": k}
-                    )
+                    elem = {"data": v, "endpoint": new_endpoint, "name": k}
                     if id_ is not None:
                         elem["id"] = id_
                     endpoint_dict[endpoint["name"]].append(elem)
-                    
+
         elif isinstance(data.get("response"), list):
             endpoint_dict[endpoint["name"]].append(
                 {"data": data.get("response"), "endpoint": endpoint["endpoint"]}
@@ -227,7 +227,7 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
         look_data = id_lookup_data["response"]
         if "/template-programmer/template/version" in endpoint.get(
             "endpoint"
-        ):  # bandaid, this endpoint contains ids deeper than usual 
+        ):  # bandaid, this endpoint contains ids deeper than usual
             look_data = [tpl for el in look_data for tpl in el["templates"]]
         id_list = [
             i[self.id_lookup[endpoint.get("endpoint")]["source_key"]] for i in look_data
@@ -282,7 +282,6 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
                 if r is not None:
                     final_dict.update(r)
             return final_dict
-      
 
     @staticmethod
     def get_id_value(i):
@@ -304,10 +303,13 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
 
     def process_endpoint(self, endpoint):
         with self.lock:
-            existing = self.db.get((self.job.url == self.base_url) & (self.job.endpoint_name == endpoint['name']))
+            existing = self.db.get(
+                (self.job.url == self.base_url)
+                & (self.job.endpoint_name == endpoint["name"])
+            )
         if existing and self.SKIP_TMPS != "true":
             logger.info("Got endpoint: %s data from tmp db", endpoint["name"])
-            return existing['content']
+            return existing["content"]
 
         logger.info("Processing endpoint: %s", endpoint["name"])
 
@@ -323,13 +325,14 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
         else:
             data = self.fetch_data_pagination(endpoint["endpoint"])
 
-        if endpoint['name'] == "site": # save global site id for other purposes
-            self.global_site_id = [x for x in data['response'] if x['name'] == 'Global'][0]['id']
+        if endpoint["name"] == "site":  # save global site id for other purposes
+            self.global_site_id = [
+                x for x in data["response"] if x["name"] == "Global"
+            ][0]["id"]
 
         endpoint_dict = self.process_endpoint_data(endpoint, endpoint_dict, data)
 
         if endpoint.get("children"):
-
             parent_endpoint_ids = []
             for item in endpoint_dict[endpoint["name"]]:
                 try:
@@ -340,8 +343,6 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
                 except KeyError:
                     continue
 
-
-
             lock = threading.Lock()
 
             def _process_child(children_endpoint):
@@ -350,21 +351,23 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
                 Runs sequentially for the given child, but in parallel
                 with other children.
                 """
-                log_msg = "%s/%%v%s" % (endpoint["endpoint"], children_endpoint["endpoint"])
+                log_msg = "%s/%%v%s" % (
+                    endpoint["endpoint"],
+                    children_endpoint["endpoint"],
+                )
                 logger.info("Processing children endpoint: %s", log_msg)
-                
+
                 parent_ids = parent_endpoint_ids
-                if children_endpoint['name'] == "wireless_ssid": # bandaid - This child endpoint only has data for global site, so we skip every other site
+                if (
+                    children_endpoint["name"] == "wireless_ssid"
+                ):  # bandaid - This child endpoint only has data for global site, so we skip every other site
                     parent_ids = [self.global_site_id]
-                    
 
                 for parent_id in parent_ids:
                     child_dict = CiscoClient.create_endpoint_dict(children_endpoint)
 
-                    joined_endpoint = (
-                        f"{endpoint['endpoint']}/{parent_id}{children_endpoint['endpoint']}"
-                    )
-                    data = self.fetch_data_pagination(joined_endpoint)          
+                    joined_endpoint = f"{endpoint['endpoint']}/{parent_id}{children_endpoint['endpoint']}"
+                    data = self.fetch_data_pagination(joined_endpoint)
                     child_dict = self.process_endpoint_data(
                         children_endpoint, child_dict, data, parent_id
                     )
@@ -382,7 +385,9 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
                                             child_dict[children_endpoint["name"]]
                                         ]
                                     else:
-                                        current.append(child_dict[children_endpoint["name"]])
+                                        current.append(
+                                            child_dict[children_endpoint["name"]]
+                                        )
                                     break
 
                             else:
@@ -391,16 +396,18 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
                                         children_endpoint["name"]
                                     ] = child_dict[children_endpoint["name"]]
 
-
-            with concurrent.futures.ThreadPoolExecutor()  as executor:
+            with concurrent.futures.ThreadPoolExecutor() as executor:
                 list(executor.map(_process_child, endpoint["children"]))
         with self.lock:
             self.db.upsert(
-            {
-                "url": self.base_url,
-                "content": endpoint_dict,
-                "endpoint_name": endpoint["name"],
-                "job_start": self.start_time
-            }, (self.job.url == self.base_url) & (self.job.endpoint_name == endpoint["name"]))
+                {
+                    "url": self.base_url,
+                    "content": endpoint_dict,
+                    "endpoint_name": endpoint["name"],
+                    "job_start": self.start_time,
+                },
+                (self.job.url == self.base_url)
+                & (self.job.endpoint_name == endpoint["name"]),
+            )
 
         return endpoint_dict

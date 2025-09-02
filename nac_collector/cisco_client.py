@@ -113,11 +113,8 @@ class CiscoClient(ABC):
                 time.sleep(self.retry_after)
 
             elif response.status_code == 401:
-                self.logger.info(
-                    "token outdated, getting new"
-                )
+                self.logger.info("token outdated, getting new")
                 self.authenticate()
-                
 
             elif response.status_code == 200:
                 # If the status code is 200 (OK), return the response
@@ -203,7 +200,7 @@ class CiscoClient(ABC):
                 endpoint,
                 response.status_code,
             )
-    
+
     def fetch_data_pagination(self, endpoint):
         """
         Fetch all data from a specified endpoint, handling pagination via the "offset" parameter.
@@ -220,18 +217,18 @@ class CiscoClient(ABC):
 
         while True:
             # Append the offset to the endpoint URL as a query parameter
-            connector = '?' if '?' not in endpoint else '&'
-            if '/dna/intent/api/v1/reserve-ip-subpool' in endpoint: # FIXME 
+            connector = "?" if "?" not in endpoint else "&"
+            if "/dna/intent/api/v1/reserve-ip-subpool" in endpoint:  # FIXME
                 paginated_endpoint = f"{endpoint}"
             else:
                 paginated_endpoint = f"{endpoint}{connector}offset={offset}"
-            
-            
-            
+
             # Make the request to the given endpoint
             response = self.get_request(self.base_url + paginated_endpoint)
             if not response:
-                self.logger.error("No valid response received for endpoint: %s", paginated_endpoint)
+                self.logger.error(
+                    "No valid response received for endpoint: %s", paginated_endpoint
+                )
                 return None
 
             try:
@@ -239,11 +236,11 @@ class CiscoClient(ABC):
                 response_data = response.json()
                 in_response = False
                 if "response" in response_data:
-                    current_response = response_data.get('response', [])
+                    current_response = response_data.get("response", [])
                     in_response = True
                 else:
                     current_response = response_data
-                
+
                 # Log and collect the current batch of data
                 self.logger.info(
                     "GET %s succeeded with status code %s, fetched %d items",
@@ -251,7 +248,11 @@ class CiscoClient(ABC):
                     response.status_code,
                     len(current_response),
                 )
-                current_response = current_response if type(current_response) == list else [current_response]
+                current_response = (
+                    current_response
+                    if type(current_response) is list
+                    else [current_response]
+                )
                 all_responses.extend(current_response)
 
                 # Check if the current response has fewer items than the limit, meaning no more data
@@ -262,7 +263,8 @@ class CiscoClient(ABC):
                 offset += limit
             except ValueError:
                 self.logger.error(
-                    "Failed to decode JSON from response for endpoint: %s", paginated_endpoint
+                    "Failed to decode JSON from response for endpoint: %s",
+                    paginated_endpoint,
                 )
                 return None
 
