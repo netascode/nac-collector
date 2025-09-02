@@ -41,12 +41,6 @@
         "target_endpoint": "/dna/intent/api/v2/sites/%v/deviceCredentials",
         "target_key": "siteId"
     },
-    "/dna/intent/api/v1/reserve-ip-subpool": {
-        "source_endpoint": "/dna/intent/api/v2/site",
-        "source_key": "id",
-        "target_endpoint": "/dna/intent/api/v1/reserve-ip-subpool?siteId=%v",
-        "target_key": "siteId"
-    },
     "/dna/intent/api/v1/networkDevices/assignedToSite": {
         "source_endpoint": "/dna/intent/api/v2/site",
         "source_key": "id",

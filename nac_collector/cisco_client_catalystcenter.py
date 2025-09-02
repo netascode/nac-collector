@@ -2,10 +2,12 @@ import logging
 
 import click
 import requests
+import datetime
 import urllib3
 import json
 import os
 import concurrent.futures
+from tinydb import TinyDB, Query
 
 from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
@@ -32,13 +34,7 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
     )
     DNAC_AUTH_ENDPOINT = "/dna/system/api/v1/auth/token"
     SOLUTION = "catalystcenter"
-    TMP_DIR = './tmp'
-    USE_TMPS = True # TODO: Make this and env option?
-    USE_IGNORE_LIST = True # TODO: here as well
-    ENDPOINT_IGNORE_NAMES = ['tag', 'discovery', 'sites', 'assign_devices_to_tag', 'assign_templates_to_tag', 'device']
-    ADDITIONAL_URLS = [{"name": "extended_templates", "endpoint": "/api/v1/template-programmer/extendedTemplates"}]
-    SWAP_URLS = {"/dna/intent/api/v1/template-programmer/template": "/dna/intent/api/v2/template-programmer/template",
-                 "/telemetrySettings": "/telemetrySettings?_inherited=true"}
+    SKIP_TMPS = os.environ.get("NAC_SKIP_TMP", "").lower()
 
     global_site_id = None
 
@@ -72,9 +68,25 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
         timeout,
         ssl_verify,
     ):
+        self.db = TinyDB("./tmp_db.json")
+        self.job = Query()
+        self.start_time = datetime.datetime.now(datetime.UTC).isoformat()
+        self.lock = threading.Lock()
         super().__init__(
             username, password, base_url, max_retries, retry_after, timeout, ssl_verify
         )
+        with self.lock:
+            existing = self.db.get(self.job.url == self.base_url)
+        if existing and self.SKIP_TMPS != "true":
+            choice = input(
+                f"Detected unfinished job for {self.base_url}"
+                f"Do you want to (r)esume it or delete it and (s)tart from scratch"
+            )
+            if choice == "r":
+                logger.info("Resuming...")
+            else:
+                logger.info("Starting from scratch, removing existing temporary data...")
+                self.remove(self.job == self.base_url)
 
     def authenticate(self):
         """
@@ -260,12 +272,10 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
         logger.info("Loading endpoints from %s", endpoints_yaml_file)
         with open(endpoints_yaml_file, "r", encoding="utf-8") as f:
             endpoints = self.yaml.load(f)
-        endpoints.extend(self.ADDITIONAL_URLS)
         # Initialize an empty dictionary
         final_dict = {}
 
         # Iterate over all endpoints
-        os.makedirs(self.TMP_DIR, exist_ok=True)
         with click.progressbar(endpoints, label="Processing endpoints") as endpoint_bar:
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 results = list(executor.map(self.process_endpoint, endpoint_bar))
@@ -294,17 +304,11 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
         return None
 
     def process_endpoint(self, endpoint):
-        if self.USE_IGNORE_LIST and endpoint["name"] in self.ENDPOINT_IGNORE_NAMES:
-            return
-        if endpoint.get("endpoint") in self.SWAP_URLS.keys():
-            endpoint["endpoint"] = self.SWAP_URLS[endpoint["endpoint"]]
-        tmp_file_name = os.path.join(self.TMP_DIR, endpoint["name"])
-        try:
-            if self.USE_TMPS and os.path.exists(tmp_file_name):
-                with open(tmp_file_name, "r") as json_file:
-                    return json.load(json_file)
-        except Exception as e:
-            logger.info("encountered error while proceeding data from tmp file %s: %s, continue fetching data normally",tmp_file_name, e)
+        with self.lock:
+            existing = self.db.get((self.job.url == self.base_url) & (self.job.endpoint_name == endpoint['name']))
+        if existing and self.SKIP_TMPS != "true":
+            logger.info("Got endpoint: %s data from tmp db", endpoint["name"])
+            return existing['content']
 
         logger.info("Processing endpoint: %s", endpoint["name"])
 
@@ -320,7 +324,7 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
         else:
             data = self.fetch_data_pagination(endpoint["endpoint"])
 
-        if endpoint['name'] == "site":
+        if endpoint['name'] == "site": # save global site id for other purposes
             self.global_site_id = [x for x in data['response'] if x['name'] == 'Global'][0]['id']
 
         endpoint_dict = self.process_endpoint_data(endpoint, endpoint_dict, data)
@@ -351,9 +355,7 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
                 logger.info("Processing children endpoint: %s", log_msg)
                 
                 parent_ids = parent_endpoint_ids
-                if children_endpoint.get("endpoint") in self.SWAP_URLS.keys():
-                    children_endpoint["endpoint"] = self.SWAP_URLS[children_endpoint["endpoint"]]
-                if children_endpoint['name'] == "wireless_ssid":
+                if children_endpoint['name'] == "wireless_ssid": # bandaid - This child endpoint only has data for global site, so we skip every other site
                     parent_ids = [self.global_site_id]
                     
 
@@ -393,9 +395,13 @@ class CiscoClientCATALYSTCENTER(CiscoClient):
 
             with concurrent.futures.ThreadPoolExecutor()  as executor:
                 list(executor.map(_process_child, endpoint["children"]))
-
-        if self.USE_TMPS:
-            with open(tmp_file_name, "w") as json_file:
-                json.dump(endpoint_dict, json_file)
+        with self.lock:
+            self.db.upsert(
+            {
+                "url": self.base_url,
+                "content": endpoint_dict,
+                "endpoint_name": endpoint["name"],
+                "job_start": self.start_time
+            }, (self.job.url == self.base_url) & (self.job.endpoint_name == endpoint["name"]))
 
         return endpoint_dict
