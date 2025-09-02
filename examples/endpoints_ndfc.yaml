@@ -1,0 +1,21 @@
+# NDFC (Nexus Dashboard Fabric Controller) API Endpoints
+# This file contains sample endpoints for collecting configuration data from NDFC
+
+# Fabric configuration (Note: %v will be replaced by fabric_name parameter)
+- name: Fabric_Configuration
+  endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/control/fabrics/%v
+
+# Workflow for collecting policies bound to switches in a fabric:
+
+# Step 1: Get all switches discovered in the fabric
+- name: Discovered_Switches
+  endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/control/fabrics/%v/inventory
+
+# Step 2: Get all policies in the fabric (will be filtered by discovered switch serial numbers)
+# Note: All policies are fetched and then filtered client-side based on discovered switch serial numbers
+- name: Policies
+  endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/control/policies
+
+# VRF configuration
+- name: VRF_Configuration
+  endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/top-down/fabrics/%v/vrfs

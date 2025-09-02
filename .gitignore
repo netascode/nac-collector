@@ -14,3 +14,5 @@ terraform*
 __pycache__/
 
 .idea
+.venv/
+nac_collector/resources/NDFC*.json
