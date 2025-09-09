@@ -1,157 +1,127 @@
-- name: user
-  endpoint: /dna/system/api/v1/user
-- name: update_device_management_address
-  endpoint: /dna/intent/api/v1/network-device
-- name: network_devices
-  endpoint: /dna/intent/api/v1/network-device
-- name: device
-  endpoint: /dna/intent/api/v1/network-device
-- name: device_detail
-  endpoint: /dna/intent/api/v1/device-detail
-- name: virtual_network_to_fabric_site
-  endpoint: /dna/intent/api/v1/sda/layer3VirtualNetworks
-- name: fabric_l3_virtual_network
-  endpoint: /dna/intent/api/v1/sda/layer3VirtualNetworks
-- name: sites
-  endpoint: /dna/intent/api/v1/sites
-  children:
-  - name: banner_settings
-    endpoint: /bannerSettings
-  - name: telemetry_settings
-    endpoint: /telemetrySettings
-  - name: wireless_ssid
-    endpoint: /wirelessSettings/ssids
-  - name: ntp_settings
-    endpoint: /ntpSettings
-  - name: dhcp_settings
-    endpoint: /dhcpSettings
-  - name: aaa_settings
-    endpoint: /aaaSettings
-  - name: dns_settings
-    endpoint: /dnsSettings
-  - name: timezone_settings
-    endpoint: /timeZoneSettings
 - name: site
   endpoint: /dna/intent/api/v1/sites
   children:
+  - name: aaa_settings
+    endpoint: /aaaSettings?_inherited=true
   - name: banner_settings
     endpoint: /bannerSettings
-  - name: telemetry_settings
-    endpoint: /telemetrySettings
-  - name: wireless_ssid
-    endpoint: /wirelessSettings/ssids
-  - name: ntp_settings
-    endpoint: /ntpSettings
   - name: dhcp_settings
     endpoint: /dhcpSettings
-  - name: aaa_settings
-    endpoint: /aaaSettings
   - name: dns_settings
     endpoint: /dnsSettings
+  - name: ntp_settings
+    endpoint: /ntpSettings
+  - name: telemetry_settings
+    endpoint: /telemetrySettings?_inherited=true
   - name: timezone_settings
     endpoint: /timeZoneSettings
-- name: fabric_virtual_network
-  endpoint: /dna/intent/api/v1/virtual-network
-- name: wireless_profile
-  endpoint: /intent/api/v1/wirelessProfiles
-- name: sp_profile
-  endpoint: /dna/intent/api/v2/service-provider
-- name: assign_device_to_site
-  endpoint: /dna/intent/api/v1/networkDevices/assignedToSite
-- name: floor
-  endpoint: /api/v1/dna-maps-service/domains
+  - name: wireless_ssid
+    endpoint: /wirelessSettings/ssids
 - name: anycast_gateway
   endpoint: /dna/intent/api/v1/sda/anycastGateways
-- name: anycast_gateways
-  endpoint: /dna/intent/api/v1/sda/anycastGateways
-- name: network_profile
-  endpoint: /api/v1/siteprofile
-- name: fabric_device
-  endpoint: /dna/intent/api/v1/sda/fabricDevices
-- name: fabric_port_assignments
-  endpoint: /dna/intent/api/v1/sda/portAssignments
-- name: credentials_snmpv3
+- name: area
+  endpoint: /dna/intent/api/v2/site
+- name: building
+  endpoint: /dna/intent/api/v2/site
+- name: assign_credentials
+  endpoint: /api/v1/commonsetting/global
+- name: network
+  endpoint: /api/v1/commonsetting/global
+- name: assign_device_to_site
+  endpoint: /dna/intent/api/v1/networkDevices/assignedToSite
+- name: authentication_policy_server
+  endpoint: /dna/intent/api/v1/authentication-policy-servers
+- name: credentials_cli
   endpoint: /dna/intent/api/v2/global-credential
 - name: credentials_https_read
+  endpoint: /dna/intent/api/v2/global-credential
+- name: credentials_https_write
   endpoint: /dna/intent/api/v2/global-credential
 - name: credentials_snmpv2_read
   endpoint: /dna/intent/api/v2/global-credential
 - name: credentials_snmpv2_write
   endpoint: /dna/intent/api/v2/global-credential
-- name: credentials_https_write
+- name: credentials_snmpv3
   endpoint: /dna/intent/api/v2/global-credential
-- name: credentials_cli
-  endpoint: /dna/intent/api/v2/global-credential
-- name: fabric_l3_handoff_ip_transits
-  endpoint: /dna/intent/api/v1/sda/fabricDevices/layer3Handoffs/ipTransits
-- name: fabric_l3_handoff_ip_transit
-  endpoint: /dna/intent/api/v1/sda/fabricDevices/layer3Handoffs/ipTransits
-- name: discovery
-  endpoint: /dna/intent/api/v1/discovery/1/500
-- name: update_authentication_profile
-  endpoint: /dna/intent/api/v1/sda/authenticationProfiles
-- name: image
-  endpoint: /dna/intent/api/v1/image/importation
-- name: template
-  endpoint: /dna/intent/api/v1/template-programmer/template
-- name: fabric_l2_handoff
-  endpoint: /dna/intent/api/v1/sda/fabricDevices/layer2Handoffs
-- name: network
-  endpoint: /api/v1/commonsetting/global
-- name: assign_credentials
-  endpoint: /api/v1/commonsetting/global
+- name: network_devices
+  endpoint: /dna/intent/api/v1/network-device
+- name: update_device_management_address
+  endpoint: /dna/intent/api/v1/network-device
+- name: device_detail
+  endpoint: /dna/intent/api/v1/device-detail
 - name: fabric_authentication_profile
   endpoint: /dna/intent/api/v1/business/sda/authentication-profile
-- name: ip_pools
-  endpoint: /dna/intent/api/v1/ipam/globalIpAddressPools
-- name: fabric_sites
-  endpoint: /dna/intent/api/v1/sda/fabricSites
-- name: tag
-  endpoint: /dna/intent/api/v1/tag
-  children:
-  - name: assign_templates_to_tag
-    endpoint: /member
-  - name: assign_devices_to_tag
-    endpoint: /member
-- name: fabric_site
-  endpoint: /dna/intent/api/v1/sda/fabricSites?limit=500
-- name: ip_pool
-  endpoint: /api/v2/ippool
-- name: wireless_enterprise_ssid
-  endpoint: /dna/intent/api/v1/enterprise-ssid
-- name: fabric_provision_device
-  endpoint: /dna/intent/api/v1/sda/provisionDevices
-- name: transit_network
-  endpoint: /dna/intent/api/v1/sda/transitNetworks
-- name: area
-  endpoint: /dna/intent/api/v2/site
-- name: building
-  endpoint: /dna/intent/api/v2/site
-- name: fabric_l3_handoff_sda_transit
-  endpoint: /dna/intent/api/v1/sda/fabricDevices/layer3Handoffs/sdaTransits
+- name: fabric_device
+  endpoint: /dna/intent/api/v1/sda/fabricDevices
+- name: fabric_l2_handoff
+  endpoint: /dna/intent/api/v1/sda/fabricDevices/layer2Handoffs
 - name: fabric_l2_virtual_network
   endpoint: /dna/intent/api/v1/sda/layer2VirtualNetworks
-- name: template_version
-  endpoint: /dna/intent/api/v1/template-programmer/template/version
-- name: template_versions
-  endpoint: /dna/intent/api/v1/template-programmer/template/version
-- name: pnp_device
-  endpoint: /dna/intent/api/v1/onboarding/pnp-device
-- name: role
-  endpoint: /dna/system/api/v1/roles
-- name: ip_pool_reservation
-  endpoint: /dna/intent/api/v1/reserve-ip-subpool
+- name: fabric_l3_handoff_ip_transit
+  endpoint: /dna/intent/api/v1/sda/fabricDevices/layer3Handoffs/ipTransits
+- name: fabric_l3_handoff_ip_transits
+  endpoint: /dna/intent/api/v1/sda/fabricDevices/layer3Handoffs/ipTransits
+- name: fabric_l3_handoff_sda_transit
+  endpoint: /dna/intent/api/v1/sda/fabricDevices/layer3Handoffs/sdaTransits
+- name: fabric_l3_virtual_network
+  endpoint: /dna/intent/api/v1/sda/layer3VirtualNetworks
+- name: virtual_network_to_fabric_site
+  endpoint: /dna/intent/api/v1/sda/layer3VirtualNetworks
+- name: fabric_port_assignments
+  endpoint: /dna/intent/api/v1/sda/portAssignments
+- name: fabric_provision_device
+  endpoint: /dna/intent/api/v1/sda/provisionDevices
+- name: fabric_site
+  endpoint: /dna/intent/api/v1/sda/fabricSites?limit=500
+- name: fabric_sites
+  endpoint: /dna/intent/api/v1/sda/fabricSites
+- name: fabric_virtual_network
+  endpoint: /dna/intent/api/v1/virtual-network
 - name: fabric_zone
   endpoint: /dna/intent/api/v1/sda/fabricZones
-- name: virtual_network_ip_pool
-  endpoint: /dna/intent/api/v1/business/sda/virtualnetwork/ippool
-- name: wireless_rf_profile
-  endpoint: /dna/intent/api/v1/wirelessSettings/rfProfiles
-- name: wireless_interface
-  endpoint: /dna/intent/api/v1/wirelessSettings/interfaces
-- name: authentication_policy_server
-  endpoint: /dna/intent/api/v1/authentication-policy-servers
+- name: floor
+  endpoint: /api/v1/dna-maps-service/domains
+- name: image
+  endpoint: /dna/intent/api/v1/image/importation
+- name: ip_pool
+  endpoint: /api/v2/ippool
+- name: ip_pools
+  endpoint: /dna/intent/api/v1/ipam/globalIpAddressPools
+- name: ip_pool_reservation
+  endpoint: /dna/intent/api/v1/reserve-ip-subpool?ignoreInheritedGroups=true
 - name: lan_automation
   endpoint: /dna/intent/api/v1/lan-automation/status
+- name: network_profile
+  endpoint: /api/v1/siteprofile?populated=true
+- name: pnp_device
+  endpoint: /dna/intent/api/v1/onboarding/pnp-device
 - name: project
   endpoint: /dna/intent/api/v1/template-programmer/project
+- name: role
+  endpoint: /dna/system/api/v1/roles
+- name: sp_profile
+  endpoint: /dna/intent/api/v2/service-provider
+- name: template
+  endpoint: /dna/intent/api/v2/template-programmer/template
+- name: template_version
+  endpoint: /dna/intent/api/v1/template-programmer/template/version
+- name: transit_network
+  endpoint: /dna/intent/api/v1/sda/transitNetworks
+- name: update_authentication_profile
+  endpoint: /dna/intent/api/v1/sda/authenticationProfiles
+- name: user
+  endpoint: /dna/system/api/v1/user
+- name: virtual_network_ip_pool
+  endpoint: /dna/intent/api/v1/business/sda/virtualnetwork/ippool
+- name: wireless_enterprise_ssid
+  endpoint: /dna/intent/api/v1/enterprise-ssid
+- name: wireless_interface
+  endpoint: /dna/intent/api/v1/wirelessSettings/interfaces
+- name: wireless_profile
+  endpoint: /intent/api/v1/wirelessProfiles
+- name: wireless_rf_profile
+  endpoint: /dna/intent/api/v1/wirelessSettings/rfProfiles
+- name: extended_templates
+  endpoint: /api/v1/template-programmer/extendedTemplates
+- name: vlanToSsids
+  endpoint: /dna/intent/api/v1/sda/fabrics/%v/vlanToSsids

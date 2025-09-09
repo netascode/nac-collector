@@ -48,3 +48,8 @@
   source_key: id
   target_endpoint: /api/v1/template-programmer/extendedTemplates?allTemplateAttributes=true&id=%v
   target_key: id
+- endpoint: /dna/intent/api/v1/sda/fabrics/%v/vlanToSsids
+  source_endpoint: /dna/intent/api/v1/sda/fabricSites?limit=500
+  source_key: id
+  target_endpoint: /dna/intent/api/v1/sda/fabrics/%v/vlanToSsids
+  target_key: siteId
