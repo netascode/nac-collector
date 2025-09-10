@@ -290,8 +290,6 @@
   children:
   - name: device_ha_pair_failover_interface_mac_address
     endpoint: /failoverinterfacemacaddressconfigs
-  - name: device_ha_pair_physical_interface_mac_address
-    endpoint: /failoverinterfacemacaddressconfigs
   - name: device_ha_pair_monitoring
     endpoint: /monitoredinterfaces
 - name: ikev2_ipsec_proposals
