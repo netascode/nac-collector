@@ -109,6 +109,12 @@ class CiscoClientMERAKI(CiscoClient):
                     }
                 )
 
+        else:
+            endpoint_dict[endpoint["name"]] = {
+                "data": data,
+                "endpoint": endpoint["endpoint"],
+            }
+
         return endpoint_dict  # Return the processed endpoint dictionary
 
     def get_from_endpoints(self, endpoints_yaml_file):
