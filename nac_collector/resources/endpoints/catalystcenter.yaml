@@ -2,54 +2,12 @@
   endpoint: /dna/system/api/v1/user
 - name: update_device_management_address
   endpoint: /dna/intent/api/v1/network-device
-- name: network_devices
-  endpoint: /dna/intent/api/v1/network-device
 - name: device
   endpoint: /dna/intent/api/v1/network-device
-- name: device_detail
-  endpoint: /dna/intent/api/v1/device-detail
 - name: virtual_network_to_fabric_site
   endpoint: /dna/intent/api/v1/sda/layer3VirtualNetworks
 - name: fabric_l3_virtual_network
   endpoint: /dna/intent/api/v1/sda/layer3VirtualNetworks
-- name: sites
-  endpoint: /dna/intent/api/v1/sites
-  children:
-  - name: banner_settings
-    endpoint: /bannerSettings
-  - name: telemetry_settings
-    endpoint: /telemetrySettings
-  - name: wireless_ssid
-    endpoint: /wirelessSettings/ssids
-  - name: ntp_settings
-    endpoint: /ntpSettings
-  - name: dhcp_settings
-    endpoint: /dhcpSettings
-  - name: aaa_settings
-    endpoint: /aaaSettings
-  - name: dns_settings
-    endpoint: /dnsSettings
-  - name: timezone_settings
-    endpoint: /timeZoneSettings
-- name: site
-  endpoint: /dna/intent/api/v1/sites
-  children:
-  - name: banner_settings
-    endpoint: /bannerSettings
-  - name: telemetry_settings
-    endpoint: /telemetrySettings
-  - name: wireless_ssid
-    endpoint: /wirelessSettings/ssids
-  - name: ntp_settings
-    endpoint: /ntpSettings
-  - name: dhcp_settings
-    endpoint: /dhcpSettings
-  - name: aaa_settings
-    endpoint: /aaaSettings
-  - name: dns_settings
-    endpoint: /dnsSettings
-  - name: timezone_settings
-    endpoint: /timeZoneSettings
 - name: fabric_virtual_network
   endpoint: /dna/intent/api/v1/virtual-network
 - name: wireless_profile
@@ -102,10 +60,6 @@
   endpoint: /api/v1/commonsetting/global
 - name: fabric_authentication_profile
   endpoint: /dna/intent/api/v1/business/sda/authentication-profile
-- name: ip_pools
-  endpoint: /dna/intent/api/v1/ipam/globalIpAddressPools
-- name: fabric_sites
-  endpoint: /dna/intent/api/v1/sda/fabricSites
 - name: tag
   endpoint: /dna/intent/api/v1/tag
   children:
@@ -132,8 +86,6 @@
 - name: fabric_l2_virtual_network
   endpoint: /dna/intent/api/v1/sda/layer2VirtualNetworks
 - name: template_version
-  endpoint: /dna/intent/api/v1/template-programmer/template/version
-- name: template_versions
   endpoint: /dna/intent/api/v1/template-programmer/template/version
 - name: pnp_device
   endpoint: /dna/intent/api/v1/onboarding/pnp-device

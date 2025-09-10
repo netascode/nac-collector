@@ -102,9 +102,6 @@
   endpoint: /ers/config/identitygroup
 - name: active_directory_join_point
   endpoint: /ers/config/activedirectory
-  children:
-  - name: active_directory_groups_by_domain
-    endpoint: /getGroupsByDomain
 - name: tacacs_profile
   endpoint: /ers/config/tacacsprofile
 - name: tacacs_command_set
