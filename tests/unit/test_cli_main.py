@@ -210,6 +210,81 @@ class TestDeviceBasedSolutions:
         assert len(warning_calls) > 0
         assert "endpoints-file is ignored" in str(warning_calls[0])
 
+    @patch("nac_collector.cli.main.CiscoClientIOSXR")
+    @patch("nac_collector.cli.main.load_devices_from_file")
+    def test_iosxr_solution_with_devices_file(
+        self, mock_load_devices, mock_iosxr_class, sample_devices_yaml
+    ):
+        # Setup mocks
+        mock_devices = [
+            {"name": "Router1", "target": "router1.example.com"},
+            {"name": "Router2", "target": "router2.example.com"},
+        ]
+        mock_load_devices.return_value = mock_devices
+
+        mock_client = MagicMock()
+        mock_iosxr_class.return_value = mock_client
+
+        # Test IOSXR solution with devices file
+        with patch("nac_collector.cli.main.time.time", side_effect=[0, 5]):
+            with pytest.raises(typer.Exit) as exc_info:
+                main(
+                    solution=Solution.IOSXR,
+                    username="test_user",
+                    password="test_pass",
+                    url="http://unused.com",  # Should be ignored for device-based
+                    devices_file=sample_devices_yaml,
+                    verbosity=LogLevel.WARNING,
+                    fetch_latest=False,
+                    endpoints_file=None,
+                    timeout=30,
+                    output=None,
+                    version=None,
+                )
+
+            # Verify successful exit
+            assert exc_info.value.exit_code == 0
+
+        # Verify devices were loaded
+        mock_load_devices.assert_called_once_with(sample_devices_yaml)
+
+        # Verify IOSXR client was created with correct parameters
+        mock_iosxr_class.assert_called_once_with(
+            devices=mock_devices,
+            default_username="test_user",
+            default_password="test_pass",
+            max_retries=5,
+            retry_after=60,
+            timeout=30,
+            ssl_verify=False,
+        )
+
+        # Verify collection was called with default output file
+        mock_client.collect_and_write_to_archive.assert_called_once_with(
+            "nac-collector.zip"
+        )
+
+    @patch("nac_collector.cli.main.load_devices_from_file")
+    def test_iosxr_solution_missing_devices_file(self, mock_load_devices):
+        # Test that missing devices file raises error
+        with pytest.raises(typer.Exit) as exc_info:
+            main(
+                solution=Solution.IOSXR,
+                username="test_user",
+                password="test_pass",
+                url="http://unused.com",
+                devices_file=None,  # Missing devices file
+                verbosity=LogLevel.WARNING,
+                fetch_latest=False,
+                endpoints_file=None,
+                timeout=30,
+                output=None,
+                version=None,
+            )
+
+        assert exc_info.value.exit_code == 1
+        mock_load_devices.assert_not_called()
+
 
 class TestControllerBasedSolutions:
     @patch("nac_collector.cli.main.CiscoClientISE")
@@ -394,9 +469,22 @@ class TestSolutionEnum:
         assert hasattr(Solution, "IOSXE")
         assert Solution.IOSXE == "IOSXE"
 
+    def test_solution_enum_contains_iosxr(self):
+        # Test that IOSXR is in the Solution enum
+        assert hasattr(Solution, "IOSXR")
+        assert Solution.IOSXR == "IOSXR"
+
     def test_all_solutions_present(self):
         # Test that all expected solutions are present
-        expected_solutions = ["SDWAN", "ISE", "NDO", "FMC", "CATALYSTCENTER", "IOSXE"]
+        expected_solutions = [
+            "SDWAN",
+            "ISE",
+            "NDO",
+            "FMC",
+            "CATALYSTCENTER",
+            "IOSXE",
+            "IOSXR",
+        ]
         actual_solutions = [solution.value for solution in Solution]
 
         for expected in expected_solutions:

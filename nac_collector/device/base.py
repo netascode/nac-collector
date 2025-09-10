@@ -5,6 +5,9 @@ import re
 import zipfile
 from abc import ABC, abstractmethod
 from typing import Any
+from urllib.parse import urlparse
+
+import paramiko  # type: ignore[import-untyped]
 
 
 class CiscoClientDevice(ABC):
@@ -48,6 +51,150 @@ class CiscoClientDevice(ABC):
         username = device.get("username", self.default_username)
         password = device.get("password", self.default_password)
         return username, password
+
+    def _execute_ssh_command(
+        self, device: dict[str, Any], command: str, timeout: int = 60
+    ) -> dict[str, Any]:
+        """
+        Execute SSH command on device and return parsed JSON.
+        Common SSH logic shared between device types.
+        """
+        username, password = self.get_device_credentials(device)
+        target = device.get("target")
+
+        if not target:
+            return {"error": "No target specified for device"}
+
+        # Parse hostname and port from target
+        try:
+            parsed_target = urlparse(
+                f"ssh://{target}"
+                if not target.startswith(("ssh://", "http://", "https://"))
+                else target
+            )
+            hostname = parsed_target.hostname
+            port = parsed_target.port or 22
+        except ValueError:
+            return {"error": f"Invalid target format: {target}"}
+
+        if not hostname:
+            return {"error": f"Invalid target format: {target}"}
+
+        ssh_client = paramiko.SSHClient()
+        ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())  # nosec B507
+
+        try:
+            # Connect to the device
+            ssh_client.connect(
+                hostname=hostname,
+                port=port,
+                username=username,
+                password=password,
+                timeout=timeout,
+                look_for_keys=False,
+                allow_agent=False,
+            )
+
+            self.logger.debug(
+                f"Collecting configuration from {device.get('name')} via SSH"
+            )
+
+            # Execute the command
+            _, stdout, stderr = ssh_client.exec_command(command)  # nosec B601
+
+            # Wait for command completion and get exit status
+            exit_status = stdout.channel.recv_exit_status()
+
+            if exit_status != 0:
+                error_output = stderr.read().decode("utf-8").strip()
+                self.logger.error(
+                    f"SSH command failed on {device.get('name')} with exit status {exit_status}: {error_output}"
+                )
+                return {
+                    "error": f"SSH command failed with exit status {exit_status}: {error_output}"
+                }
+
+            # Read the output
+            output = stdout.read().decode("utf-8").strip()
+
+            if not output:
+                self.logger.error(
+                    f"No output received from SSH command on {device.get('name')}"
+                )
+                return {"error": "No output received from SSH command"}
+
+            try:
+                # Clean output by removing non-JSON lines (like timestamps, comments)
+                cleaned_output = self._clean_ssh_output(output)
+
+                # Parse JSON output
+                config_data = json.loads(cleaned_output)
+
+                # Apply device-specific post-processing
+                processed_data = self._process_ssh_output(config_data)
+
+                self.logger.info(
+                    f"Successfully collected configuration from {device.get('name')} via SSH"
+                )
+                return processed_data  # type: ignore[no-any-return]
+
+            except json.JSONDecodeError as e:
+                self.logger.error(
+                    f"Failed to parse JSON output from {device.get('name')}: {e}"
+                )
+                return {
+                    "error": f"Failed to parse JSON output: {str(e)}",
+                    "raw_output": output,
+                }
+
+        except paramiko.AuthenticationException:
+            error_msg = f"SSH authentication failed for {device.get('name')}"
+            self.logger.error(error_msg)
+            return {"error": error_msg}
+        except paramiko.SSHException as e:
+            error_msg = f"SSH connection error to {device.get('name')}: {e}"
+            self.logger.error(error_msg)
+            return {"error": error_msg}
+        except Exception as e:
+            error_msg = f"Error collecting from {device.get('name')}: {e}"
+            self.logger.error(error_msg)
+            return {"error": error_msg}
+        finally:
+            ssh_client.close()
+
+    def _clean_ssh_output(self, output: str) -> str:
+        """
+        Clean SSH command output by removing non-JSON lines.
+        Filters out timestamps, comments, and other non-JSON content that may
+        appear before the actual JSON data in device outputs.
+        """
+        lines = output.split("\n")
+        cleaned_lines = []
+
+        # Find the first line that starts with '{'
+        json_start_index = None
+        for i, line in enumerate(lines):
+            if line.strip().startswith("{"):
+                json_start_index = i
+                break
+
+        # If no JSON start found, return original output
+        if json_start_index is None:
+            return output
+
+        # Include everything from the JSON start onwards
+        # This preserves the complete JSON structure and any content after it
+        cleaned_lines = lines[json_start_index:]
+
+        return "\n".join(cleaned_lines)
+
+    def _process_ssh_output(self, config_data: dict[str, Any]) -> dict[str, Any]:
+        """
+        Process SSH command output after JSON parsing.
+        Subclasses can override this to apply device-specific transformations.
+        Default implementation returns data as-is.
+        """
+        return config_data
 
     def sanitize_filename(self, name: str) -> str:
         """Sanitize device name to create a valid filename."""

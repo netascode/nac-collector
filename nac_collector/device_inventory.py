@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 from typing import Any
 
 from ruamel.yaml import YAML
@@ -6,7 +7,7 @@ from ruamel.yaml import YAML
 logger = logging.getLogger(__name__)
 
 
-def load_devices_from_file(file_path: str) -> list[dict[str, Any]]:
+def load_devices_from_file(file_path: str | Path) -> list[dict[str, Any]]:
     """
     Load device inventory from YAML file.
 
@@ -18,7 +19,7 @@ def load_devices_from_file(file_path: str) -> list[dict[str, Any]]:
       password: cisco123  # optional
 
     Parameters:
-        file_path (str): Path to the YAML file containing device inventory
+        file_path (str | Path): Path to the YAML file containing device inventory
 
     Returns:
         list[dict[str, Any]]: List of device dictionaries, empty list on error
@@ -26,7 +27,8 @@ def load_devices_from_file(file_path: str) -> list[dict[str, Any]]:
     yaml = YAML(typ="safe", pure=True)
 
     try:
-        with open(file_path) as f:
+        path = Path(file_path)
+        with path.open() as f:
             devices = yaml.load(f)
 
         if not devices:

@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pytest
@@ -90,7 +91,8 @@ def test_cisco_client_ise_with_integration(cisco_client, tmpdir):
             raise ValueError(f"Unexpected URL in mock_get_request: {url}")
 
     # Load endpoints from the YAML file
-    with open("tests/integration/ise/fixtures/endpoints.yaml", encoding="utf-8") as f:
+    fixture_path = Path(__file__).parent / "fixtures" / "endpoints.yaml"
+    with fixture_path.open(encoding="utf-8") as f:
         endpoints_data = cisco_client.yaml.load(f)
 
     # Patching get_request method with mock implementation
@@ -103,8 +105,8 @@ def test_cisco_client_ise_with_integration(cisco_client, tmpdir):
         cisco_client.write_to_archive(final_dict, str(output_file), "ise")
 
         # Compare the content of ise.json inside the ZIP with expected data
-        expected_json_file = "tests/integration/ise/fixtures/ise.json"
-        with open(expected_json_file) as f_expected:
+        expected_json_file = Path(__file__).parent / "fixtures" / "ise.json"
+        with expected_json_file.open() as f_expected:
             expected_data = json.load(f_expected)
 
         # Extract ise.json from the ZIP archive and compare

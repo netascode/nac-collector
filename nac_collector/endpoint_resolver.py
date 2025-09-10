@@ -64,7 +64,7 @@ class EndpointResolver:
         """Load endpoint data from a YAML file."""
         try:
             yaml = YAML(typ="safe", pure=True)
-            with open(file_path, encoding="utf-8") as f:
+            with Path(file_path).open(encoding="utf-8") as f:
                 data: list[dict[str, Any]] = yaml.load(f)
                 logger.debug("Loaded endpoint data from file: %s", file_path)
                 return data

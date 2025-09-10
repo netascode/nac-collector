@@ -1,9 +1,6 @@
-import json
 from typing import Any
-from urllib.parse import urlparse
 
 import httpx
-import paramiko  # type: ignore[import-untyped]
 
 from nac_collector.device.base import CiscoClientDevice
 
@@ -37,108 +34,17 @@ class CiscoClientIOSXE(CiscoClientDevice):
         Collect full configuration from IOSXE device via SSH.
         Executes 'show running-config | format restconf-json' command.
         """
-        username, password = self.get_device_credentials(device)
-        target = device.get("target")
+        return self._execute_ssh_command(device, self.SSH_COMMAND, self.SSH_TIMEOUT)
 
-        if not target:
-            return {"error": "No target specified for device"}
-
-        # Parse hostname and port from target
-        try:
-            parsed_target = urlparse(
-                f"ssh://{target}"
-                if not target.startswith(("ssh://", "http://", "https://"))
-                else target
-            )
-            hostname = parsed_target.hostname
-            port = parsed_target.port or 22
-        except ValueError:
-            return {"error": f"Invalid target format: {target}"}
-
-        if not hostname:
-            return {"error": f"Invalid target format: {target}"}
-
-        ssh_client = paramiko.SSHClient()
-        ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())  # nosec B507
-
-        try:
-            # Connect to the device
-            ssh_client.connect(
-                hostname=hostname,
-                port=port,
-                username=username,
-                password=password,
-                timeout=self.SSH_TIMEOUT,
-                look_for_keys=False,
-                allow_agent=False,
-            )
-
-            self.logger.debug(
-                f"Collecting configuration from {device.get('name')} via SSH"
-            )
-
-            # Execute the command to get configuration in restconf-json format
-            _, stdout, stderr = ssh_client.exec_command(self.SSH_COMMAND)  # nosec B601
-
-            # Wait for command completion and get exit status
-            exit_status = stdout.channel.recv_exit_status()
-
-            if exit_status != 0:
-                error_output = stderr.read().decode("utf-8").strip()
-                self.logger.error(
-                    f"SSH command failed on {device.get('name')} with exit status {exit_status}: {error_output}"
-                )
-                return {
-                    "error": f"SSH command failed with exit status {exit_status}: {error_output}"
-                }
-
-            # Read the output
-            output = stdout.read().decode("utf-8").strip()
-
-            if not output:
-                self.logger.error(
-                    f"No output received from SSH command on {device.get('name')}"
-                )
-                return {"error": "No output received from SSH command"}
-
-            try:
-                # Parse JSON output
-                config_data = json.loads(output)
-
-                # Extract only the Cisco-IOS-XE-native:native data, removing the 'data' wrapper
-                if isinstance(config_data, dict) and "data" in config_data:
-                    native_data = config_data["data"]
-                else:
-                    native_data = config_data
-
-                self.logger.info(
-                    f"Successfully collected configuration from {device.get('name')} via SSH"
-                )
-                return native_data  # type: ignore[no-any-return]
-
-            except json.JSONDecodeError as e:
-                self.logger.error(
-                    f"Failed to parse JSON output from {device.get('name')}: {e}"
-                )
-                return {
-                    "error": f"Failed to parse JSON output: {str(e)}",
-                    "raw_output": output,
-                }
-
-        except paramiko.AuthenticationException:
-            error_msg = f"SSH authentication failed for {device.get('name')}"
-            self.logger.error(error_msg)
-            return {"error": error_msg}
-        except paramiko.SSHException as e:
-            error_msg = f"SSH connection error to {device.get('name')}: {e}"
-            self.logger.error(error_msg)
-            return {"error": error_msg}
-        except Exception as e:
-            error_msg = f"Error collecting from {device.get('name')}: {e}"
-            self.logger.error(error_msg)
-            return {"error": error_msg}
-        finally:
-            ssh_client.close()
+    def _process_ssh_output(self, config_data: dict[str, Any]) -> dict[str, Any]:
+        """
+        Process IOSXE SSH output by removing the 'data' wrapper if present.
+        """
+        # Extract only the Cisco-IOS-XE-native:native data, removing the 'data' wrapper
+        if isinstance(config_data, dict) and "data" in config_data:
+            return config_data["data"]  # type: ignore[no-any-return]
+        else:
+            return config_data
 
     def collect_from_device(self, device: dict[str, Any]) -> dict[str, Any]:
         """

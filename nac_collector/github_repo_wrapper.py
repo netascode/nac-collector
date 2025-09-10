@@ -1,6 +1,7 @@
 import logging
 import os
 import shutil
+from pathlib import Path
 from typing import Any
 
 from git import Repo
@@ -38,9 +39,9 @@ class GithubRepoWrapper:
                          and saves it to a new YAML file.
     """
 
-    def __init__(self, repo_url: str, clone_dir: str, solution: str) -> None:
+    def __init__(self, repo_url: str, clone_dir: str | Path, solution: str) -> None:
         self.repo_url = repo_url
-        self.clone_dir = clone_dir
+        self.clone_dir = str(clone_dir)
         self.solution = solution
         self.logger = logging.getLogger(__name__)
         self.logger.debug("Initializing GithubRepoWrapper")
@@ -52,7 +53,8 @@ class GithubRepoWrapper:
 
     def _clone_repo(self) -> None:
         # Check if the directory exists and is not empty
-        if os.path.exists(self.clone_dir) and os.listdir(self.clone_dir):
+        clone_path = Path(self.clone_dir)
+        if clone_path.exists() and any(clone_path.iterdir()):
             self.logger.debug("Directory exists and is not empty. Deleting directory.")
             # Delete the directory and its contents
             shutil.rmtree(self.clone_dir)
@@ -89,7 +91,7 @@ class GithubRepoWrapper:
         Returns:
             list[dict[str, Any]]: List of endpoint definitions with name and endpoint keys.
         """
-        definitions_dir = os.path.join(self.clone_dir, "gen", "definitions")
+        definitions_dir = Path(self.clone_dir) / "gen" / "definitions"
         self.logger.info("Inspecting YAML files in %s", definitions_dir)
         endpoints = []
         endpoints_list = []
@@ -110,7 +112,7 @@ class GithubRepoWrapper:
                     progress.advance(task)
                     # Exclude *_update_rank used in ISE from inspecting
                     if file.endswith(".yaml") and not file.endswith("update_rank.yaml"):
-                        with open(os.path.join(root, file), encoding="utf-8") as f:
+                        with (Path(root) / file).open(encoding="utf-8") as f:
                             data = self.yaml.load(f)
                             if data.get("no_read") is not None and data.get("no_read"):
                                 continue
@@ -279,7 +281,7 @@ class GithubRepoWrapper:
         This method does not return any value.
         """
         # Check if the directory exists
-        if os.path.exists(self.clone_dir):
+        if Path(self.clone_dir).exists():
             # Delete the directory and its contents
             shutil.rmtree(self.clone_dir)
         self.logger.info("Deleted repository")

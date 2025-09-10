@@ -16,6 +16,8 @@ from nac_collector.controller.ise import CiscoClientISE
 from nac_collector.controller.ndo import CiscoClientNDO
 from nac_collector.controller.sdwan import CiscoClientSDWAN
 from nac_collector.device.iosxe import CiscoClientIOSXE
+from nac_collector.device.iosxr import CiscoClientIOSXR
+from nac_collector.device.nxos import CiscoClientNXOS
 from nac_collector.device_inventory import load_devices_from_file
 from nac_collector.endpoint_resolver import EndpointResolver
 
@@ -53,6 +55,8 @@ class Solution(str, Enum):
     FMC = "FMC"
     CATALYSTCENTER = "CATALYSTCENTER"
     IOSXE = "IOSXE"
+    IOSXR = "IOSXR"
+    NXOS = "NXOS"
 
 
 def configure_logging(level: LogLevel) -> None:
@@ -174,7 +178,7 @@ def main(
     configure_logging(verbosity)
 
     # Define device-based solutions
-    DEVICE_BASED_SOLUTIONS = [Solution.IOSXE]
+    DEVICE_BASED_SOLUTIONS = [Solution.IOSXE, Solution.IOSXR, Solution.NXOS]
 
     # Check for incompatible option combinations
     if fetch_latest and solution == Solution.NDO:
@@ -222,6 +226,30 @@ def main(
             )
             # Collect from all devices and write to archive
             iosxe_client.collect_and_write_to_archive(output_file)
+        elif solution == Solution.IOSXR:
+            iosxr_client = CiscoClientIOSXR(
+                devices=devices,
+                default_username=username or "",
+                default_password=password or "",
+                max_retries=MAX_RETRIES,
+                retry_after=RETRY_AFTER,
+                timeout=timeout,
+                ssl_verify=False,
+            )
+            # Collect from all devices and write to archive
+            iosxr_client.collect_and_write_to_archive(output_file)
+        elif solution == Solution.NXOS:
+            nxos_client = CiscoClientNXOS(
+                devices=devices,
+                default_username=username or "",
+                default_password=password or "",
+                max_retries=MAX_RETRIES,
+                retry_after=RETRY_AFTER,
+                timeout=timeout,
+                ssl_verify=False,
+            )
+            # Collect from all devices and write to archive
+            nxos_client.collect_and_write_to_archive(output_file)
 
     # Handle existing controller-based solutions
     else:
