@@ -101,7 +101,7 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
                 logger.info(
                     "Starting from scratch, removing existing temporary data..."
                 )
-                self.db.remove(self.job == self.base_url)
+                self.db.remove(self.job.url == self.base_url)
 
     def authenticate(self) -> bool:
         """
