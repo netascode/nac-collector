@@ -96,7 +96,7 @@
 - name: pnp_device
   endpoint: /dna/intent/api/v1/onboarding/pnp-device
 - name: project
-  endpoint: /dna/intent/api/v1/template-programmer/project
+  endpoint: /dna/intent/api/v2/template-programmer/project
 - name: role
   endpoint: /dna/system/api/v1/roles
 - name: sp_profile
