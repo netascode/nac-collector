@@ -114,6 +114,10 @@ class GithubRepoWrapper:
                             data = self.yaml.load(f)
                             if data.get("no_read") is not None and data.get("no_read"):
                                 continue
+                            if data.get("no_resource") is not None and data.get(
+                                "no_resource"
+                            ):
+                                continue
                             if "rest_endpoint" in data or "get_rest_endpoint" in data:
                                 # exception for SDWAN localized_policy,cli_device_template,centralized_policy,security_policy
                                 if file.split(".yaml")[0] in [

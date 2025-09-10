@@ -13,15 +13,15 @@ class TestLoadDevicesFromFile:
     def test_load_valid_devices_file(self):
         yaml_content = """
 - name: Switch1
-  url: https://switch1.example.com
+  target: https://switch1.example.com
   username: admin
   password: cisco123
   protocol: restconf
 - name: Switch2
-  url: https://switch2.example.com
+  target: https://switch2.example.com
   protocol: restconf
 - name: Router1
-  url: https://router1.example.com
+  target: https://router1.example.com
   username: router_admin
 """
 
@@ -36,21 +36,21 @@ class TestLoadDevicesFromFile:
 
             # Check first device (all fields)
             assert devices[0]["name"] == "Switch1"
-            assert devices[0]["url"] == "https://switch1.example.com"
+            assert devices[0]["target"] == "https://switch1.example.com"
             assert devices[0]["username"] == "admin"
             assert devices[0]["password"] == "cisco123"
             assert devices[0]["protocol"] == "restconf"
 
             # Check second device (minimal fields)
             assert devices[1]["name"] == "Switch2"
-            assert devices[1]["url"] == "https://switch2.example.com"
+            assert devices[1]["target"] == "https://switch2.example.com"
             assert devices[1]["protocol"] == "restconf"
             assert "username" not in devices[1]
             assert "password" not in devices[1]
 
             # Check third device (mixed fields)
             assert devices[2]["name"] == "Router1"
-            assert devices[2]["url"] == "https://router1.example.com"
+            assert devices[2]["target"] == "https://router1.example.com"
             assert devices[2]["username"] == "router_admin"
             assert "password" not in devices[2]
             assert "protocol" not in devices[2]
@@ -75,7 +75,7 @@ class TestLoadDevicesFromFile:
         yaml_content = """
 configuration:
   - name: Switch1
-    url: https://switch1.example.com
+    target: https://switch1.example.com
 """
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
@@ -114,7 +114,7 @@ configuration:
     def test_invalid_device_format_not_dict(self):
         yaml_content = """
 - name: Switch1
-  url: https://switch1.example.com
+  target: https://switch1.example.com
 - "not a dictionary"
 """
 
@@ -133,13 +133,13 @@ configuration:
         finally:
             Path(temp_path).unlink()
 
-    def test_device_missing_url(self):
+    def test_device_missing_target(self):
         yaml_content = """
 - name: Switch1
   username: admin
   password: cisco123
 - name: Switch2
-  url: https://switch2.example.com
+  target: https://switch2.example.com
 """
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
@@ -152,17 +152,17 @@ configuration:
 
                 assert devices == []
                 mock_logger.error.assert_called_once_with(
-                    "Device Switch1 missing required 'url' field"
+                    "Device Switch1 missing required 'target' field"
                 )
         finally:
             Path(temp_path).unlink()
 
     def test_device_missing_name(self):
         yaml_content = """
-- url: https://switch1.example.com
+- target: https://switch1.example.com
   username: admin
 - name: Switch2
-  url: https://switch2.example.com
+  target: https://switch2.example.com
 """
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
@@ -196,9 +196,9 @@ configuration:
     def test_invalid_yaml_syntax(self):
         yaml_content = """
 - name: Switch1
-  url: https://switch1.example.com
+  target: https://switch1.example.com
 - name: Switch2
-  url: https://switch2.example.com
+  target: https://switch2.example.com
   invalid_yaml: [unclosed bracket
 """
 
@@ -221,9 +221,9 @@ configuration:
     def test_successful_loading_logs_info(self):
         yaml_content = """
 - name: Switch1
-  url: https://switch1.example.com
+  target: https://switch1.example.com
 - name: Switch2
-  url: https://switch2.example.com
+  target: https://switch2.example.com
 """
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
@@ -244,7 +244,7 @@ configuration:
     def test_single_device(self):
         yaml_content = """
 - name: OnlyDevice
-  url: https://only.example.com
+  target: https://only.example.com
   username: sole_user
   password: sole_pass
 """
@@ -258,7 +258,7 @@ configuration:
 
             assert len(devices) == 1
             assert devices[0]["name"] == "OnlyDevice"
-            assert devices[0]["url"] == "https://only.example.com"
+            assert devices[0]["target"] == "https://only.example.com"
             assert devices[0]["username"] == "sole_user"
             assert devices[0]["password"] == "sole_pass"
         finally:
@@ -267,7 +267,7 @@ configuration:
     def test_device_with_special_characters(self):
         yaml_content = """
 - name: "Switch-1_test"
-  url: "https://192.168.1.100:443"
+  target: "https://192.168.1.100:443"
   username: "admin@domain.com"
   password: "P@ssw0rd!123"
 """
@@ -281,7 +281,7 @@ configuration:
 
             assert len(devices) == 1
             assert devices[0]["name"] == "Switch-1_test"
-            assert devices[0]["url"] == "https://192.168.1.100:443"
+            assert devices[0]["target"] == "https://192.168.1.100:443"
             assert devices[0]["username"] == "admin@domain.com"
             assert devices[0]["password"] == "P@ssw0rd!123"
         finally:
@@ -290,8 +290,8 @@ configuration:
     def test_multiple_validation_errors_stops_at_first(self):
         yaml_content = """
 - name: Switch1
-  # Missing URL - should trigger first error
-- # Missing name and URL - would trigger second error if we got there
+  # Missing target - should trigger first error
+- # Missing name and target - would trigger second error if we got there
   username: admin
 """
 
@@ -306,7 +306,7 @@ configuration:
                 assert devices == []
                 # Should only call error once (for the first validation failure)
                 mock_logger.error.assert_called_once_with(
-                    "Device Switch1 missing required 'url' field"
+                    "Device Switch1 missing required 'target' field"
                 )
         finally:
             Path(temp_path).unlink()
