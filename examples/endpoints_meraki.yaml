@@ -4,15 +4,18 @@
   - name: appliance_dns_local_profile
     id_name: profileId
     endpoint: /appliance/dns/local/profiles
+  - name: wireless_zigbee_device
+    endpoint: /wireless/zigbee/devices
   - name: organization_saml_idp
     id_name: idpId
     endpoint: /saml/idps
   - name: organization_license
     endpoint: /licenses
-  - name: organization_licenses
-    endpoint: /licenses
   - name: organization_login_security
     endpoint: /loginSecurity
+  - name: organization_extensions_thousand_eyes_network
+    id_name: networkId
+    endpoint: /extensions/thousandEyes/networks
   - name: organization_adaptive_policy_group
     id_name: groupId
     endpoint: /adaptivePolicy/groups
@@ -26,57 +29,6 @@
   - name: wireless_location_scanning_receiver
     id_name: receiverId
     endpoint: /wireless/location/scanning/receivers
-  - name: organization_devices
-    endpoint: /devices
-    children:
-    - name: cellular_gateway_port_forwarding_rules
-      endpoint: /cellularGateway/portForwardingRules
-    - name: appliance_radio_settings
-      endpoint: /appliance/radio/settings
-    - name: switch_routing_static_route
-      id_name: staticRouteId
-      endpoint: /switch/routing/staticRoutes
-    - name: switch_routing_interface
-      id_name: interfaceId
-      endpoint: /switch/routing/interfaces
-      children:
-      - name: switch_routing_interface_dhcp
-        endpoint: /dhcp
-    - name: wireless_device_bluetooth_settings
-      endpoint: /wireless/bluetooth/settings
-    - name: appliance_uplinks_settings
-      endpoint: /appliance/uplinks/settings
-    - name: device_cellular_sims
-      endpoint: /cellular/sims
-    - name: camera_sense
-      endpoint: /camera/sense
-    - name: switch_warm_spare
-      endpoint: /switch/warmSpare
-    - name: cellular_gateway_lan
-      endpoint: /cellularGateway/lan
-    - name: wireless_device_electronic_shelf_label
-      endpoint: /wireless/electronicShelfLabel
-    - name: camera_device_wireless_profiles
-      endpoint: /camera/wirelessProfiles
-    - name: switch_port
-      id_name: portId
-      endpoint: /switch/ports
-    - name: switch_ports
-      endpoint: /switch/ports
-    - name: sensor_relationships
-      endpoint: /sensor/relationships
-    - name: camera_quality_retention
-      endpoint: /camera/qualityAndRetention
-    - name: wireless_radio_settings
-      endpoint: /wireless/radio/settings
-    - name: camera_custom_analytics
-      endpoint: /camera/customAnalytics
-    - name: camera_video_settings
-      endpoint: /camera/video/settings
-    - name: device_management_interface
-      endpoint: /managementInterface
-    id_name: serial
-    root: true
   - name: organization_adaptive_policy
     id_name: adaptivePolicyId
     endpoint: /adaptivePolicy/policies
@@ -95,8 +47,8 @@
     endpoint: /switch/ports/profiles
   - name: camera_role
     endpoint: /camera/roles
-  - name: organization_inventory_devices
-    endpoint: /inventory/devices
+  - name: wireless_zigbee_door_lock
+    endpoint: /wireless/zigbee/doorLocks
   - name: appliance_dns_local_profile_assignments
     endpoint: /appliance/dns/local/profiles/assignments/bulkCreate
   - name: organization_inventory_claim
@@ -119,11 +71,6 @@
       endpoint: /appliance/trafficShaping/uplinkBandwidth
     - name: switch_dhcp_server_policy
       endpoint: /switch/dhcpServerPolicy
-    - name: appliance_ports
-      endpoint: /appliance/ports
-    - name: appliance_port
-      id_name: number
-      endpoint: /appliance/ports
     - name: appliance_content_filtering
       endpoint: /appliance/contentFiltering
     - name: appliance_firewalled_service
@@ -133,59 +80,32 @@
     - name: appliance_ssid
       id_name: number
       endpoint: /appliance/ssids
-    - name: appliance_ssids
-      endpoint: /appliance/ssids
     - name: wireless_ssid
       id_name: number
       endpoint: /wireless/ssids
       children:
-      - &id001
-        name: wireless_ssid_splash_settings
+      - name: wireless_ssid_splash_settings
         endpoint: /splash/settings
-      - &id002
-        name: wireless_ssid_schedules
+      - name: wireless_ssid_schedules
         endpoint: /schedules
-      - &id003
-        name: wireless_ssid_identity_psk
+      - name: wireless_ssid_identity_psk
         endpoint: /identityPsks
-      - &id004
-        name: wireless_ssid_l3_firewall_rules
+      - name: wireless_ssid_l3_firewall_rules
         endpoint: /firewall/l3FirewallRules
-      - &id005
-        name: wireless_ssid_l7_firewall_rules
+      - name: wireless_ssid_l7_firewall_rules
         endpoint: /firewall/l7FirewallRules
-      - &id006
-        name: wireless_ssid_hotspot_20
+      - name: wireless_ssid_hotspot_20
         endpoint: /hotspot20
-      - &id007
-        name: wireless_ssid_traffic_shaping_rules
+      - name: wireless_ssid_traffic_shaping_rules
         endpoint: /trafficShaping/rules
-      - &id008
-        name: wireless_ssid_bonjour_forwarding
+      - name: wireless_ssid_bonjour_forwarding
         endpoint: /bonjourForwarding
-      - &id009
-        name: wireless_ssid_device_type_group_policies
+      - name: wireless_ssid_device_type_group_policies
         endpoint: /deviceTypeGroupPolicies
-      - &id010
-        name: wireless_ssid_vpn
+      - name: wireless_ssid_vpn
         endpoint: /vpn
-      - &id011
-        name: wireless_ssid_eap_override
+      - name: wireless_ssid_eap_override
         endpoint: /eapOverride
-    - name: wireless_ssids
-      endpoint: /wireless/ssids
-      children:
-      - *id001
-      - *id002
-      - *id003
-      - *id004
-      - *id005
-      - *id006
-      - *id007
-      - *id008
-      - *id009
-      - *id010
-      - *id011
     - name: switch_routing_multicast_rendezvous_point
       id_name: rendezvousPointId
       endpoint: /switch/routing/multicast/rendezvousPoints
@@ -269,6 +189,8 @@
       endpoint: /wireless/ethernet/ports/profiles
     - name: appliance_warm_spare
       endpoint: /appliance/warmSpare
+    - name: wireless_zigbee
+      endpoint: /wireless/zigbee
     - name: wireless_air_marshal_rule
       id_name: ruleId
       endpoint: /wireless/airMarshal/rules
@@ -294,20 +216,19 @@
       endpoint: /appliance/trafficShaping/rules
     - name: network_firmware_upgrades
       endpoint: /firmwareUpgrades
-    - name: sensor_network_relationships
-      endpoint: /sensor/relationships
     - name: appliance_inbound_firewall_rules
       endpoint: /appliance/firewall/inboundFirewallRules
     - name: appliance_firewall_multicast_forwarding
       endpoint: /appliance/firewall/multicastForwarding
+    - name: appliance_port
+      id_name: number
+      endpoint: /appliance/ports
     - name: switch_access_control_lists
       endpoint: /switch/accessControlLists
     - name: camera_quality_retention_profile
       endpoint: /camera/qualityRetentionProfiles
     - name: network_syslog_servers
       endpoint: /syslogServers
-    - name: network_vlan_profile_assignments_by_device
-      endpoint: /vlanProfiles/assignments/byDevice
     - name: network_floor_plan
       id_name: floorPlanId
       endpoint: /floorPlans
@@ -335,8 +256,6 @@
     - name: sensor_mqtt_broker
       id_name: mqttBrokerId
       endpoint: /sensor/mqttBrokers
-    - name: sensor_mqtt_brokers
-      endpoint: /sensor/mqttBrokers
     - name: network_settings
       endpoint: /settings
     - name: switch_dhcp_server_policy_arp_inspection_trusted_server
@@ -346,8 +265,6 @@
       endpoint: /vlanProfiles
     - name: appliance_settings
       endpoint: /appliance/settings
-    - name: network_policies_by_client
-      endpoint: /policies/byClient
     - name: appliance_firewall_settings
       endpoint: /appliance/firewall/settings
     - name: network_webhook_payload_template
@@ -372,8 +289,6 @@
     - name: switch_access_policy
       id_name: accessPolicyNumber
       endpoint: /switch/accessPolicies
-    - name: network_devices
-      endpoint: /devices
     root: true
   - name: wireless_ssid_firewall_isolation_allowlist_entry
     id_name: entryId
@@ -386,8 +301,6 @@
     endpoint: /appliance/dns/split/profiles/assignments/bulkCreate
   - name: organization_snmp
     endpoint: /snmp
-  - name: organization_early_access_features
-    endpoint: /earlyAccess/features
   - name: appliance_vpn_firewall_rules
     endpoint: /appliance/vpn/vpnFirewallRules
   - name: sm_admin_role
@@ -408,8 +321,55 @@
     endpoint: /policyObjects
   - name: appliance_third_party_vpn_peers
     endpoint: /appliance/vpn/thirdPartyVPNPeers
-  - name: organization_firmware_upgrades
-    endpoint: /firmware/upgrades
   - name: organization_adaptive_policy_acl
     id_name: aclId
     endpoint: /adaptivePolicy/acls
+  - name: device
+    id_name: serial
+    endpoint: /devices
+    children:
+    - name: cellular_gateway_port_forwarding_rules
+      endpoint: /cellularGateway/portForwardingRules
+    - name: appliance_radio_settings
+      endpoint: /appliance/radio/settings
+    - name: switch_routing_static_route
+      id_name: staticRouteId
+      endpoint: /switch/routing/staticRoutes
+    - name: switch_routing_interface
+      id_name: interfaceId
+      endpoint: /switch/routing/interfaces
+      children:
+      - name: switch_routing_interface_dhcp
+        endpoint: /dhcp
+    - name: wireless_device_bluetooth_settings
+      endpoint: /wireless/bluetooth/settings
+    - name: appliance_uplinks_settings
+      endpoint: /appliance/uplinks/settings
+    - name: device_cellular_sims
+      endpoint: /cellular/sims
+    - name: camera_sense
+      endpoint: /camera/sense
+    - name: switch_warm_spare
+      endpoint: /switch/warmSpare
+    - name: cellular_gateway_lan
+      endpoint: /cellularGateway/lan
+    - name: wireless_device_electronic_shelf_label
+      endpoint: /wireless/electronicShelfLabel
+    - name: camera_device_wireless_profiles
+      endpoint: /camera/wirelessProfiles
+    - name: switch_port
+      id_name: portId
+      endpoint: /switch/ports
+    - name: sensor_relationships
+      endpoint: /sensor/relationships
+    - name: camera_quality_retention
+      endpoint: /camera/qualityAndRetention
+    - name: wireless_radio_settings
+      endpoint: /wireless/radio/settings
+    - name: camera_custom_analytics
+      endpoint: /camera/customAnalytics
+    - name: camera_video_settings
+      endpoint: /camera/video/settings
+    - name: device_management_interface
+      endpoint: /managementInterface
+    root: true

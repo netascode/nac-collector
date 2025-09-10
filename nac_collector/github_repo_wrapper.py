@@ -98,6 +98,15 @@ class GithubRepoWrapper:
                             data = self.yaml.load(f)
                             if data.get("no_read") is not None and data.get("no_read"):
                                 continue
+                            if (
+                                self.solution == "meraki"
+                                and data.get("no_data_source")
+                                and data.get("no_resource")
+                            ):
+                                # Skip endpoints not used in resources -
+                                # they use the parent ID as the ID field,
+                                # which leaves no way to determine the ID field name (id_name).
+                                continue
                             if "rest_endpoint" in data or "get_rest_endpoint" in data:
                                 # exception for SDWAN localized_policy,cli_device_template,centralized_policy,security_policy
                                 if file.split(".yaml")[0] in [
@@ -155,12 +164,6 @@ class GithubRepoWrapper:
                     "endpoint": "/networks",
                 }
             )
-
-            # Workaround: the provider definition does not specify id_name for /devices.
-            devices_endpoint = self.find_first_endpoint(endpoints_list, "/devices/%v")
-            # TODO Do this automatically by checking for an attribute with "id: true",
-            #      but only for non-singletons?
-            devices_endpoint["id_name"] = "serial"
 
         # Adjust endpoints with potential parent-children relationships
         endpoints_list = self.parent_children(endpoints_list)
@@ -289,28 +292,36 @@ class GithubRepoWrapper:
     def find_first_endpoint_with_index(
         self, endpoints_list, endpoint
     ) -> tuple[int, dict]:
-        return next(
-            (i, entry)
-            for i, entry in enumerate(endpoints_list)
-            if entry["endpoint"] == endpoint
-        )
+        try:
+            return next(
+                (i, entry)
+                for i, entry in enumerate(endpoints_list)
+                if entry["endpoint"] == endpoint
+            )
+        except StopIteration:
+            raise Exception(f"Failed to find endpoint '{endpoint}'")
 
     def move_meraki_root_to_child(
         self, endpoints_list, root_endpoint, new_parent_endpoint
     ):
         """
-        Move root_endpoint to replace the same endpoint in new_parent_endpoint's children.
+        Move root_endpoint to be new_parent_endpoint's child
+        (replace the same child endpoint if it exists).
         Mark it to make the Meraki client know it's a special-case root
         (listed via /new_parent/%v/root, but children are listed via /root/%v/child).
         """
 
         root = self.pop_first_endpoint(endpoints_list, root_endpoint)
         new_parent = self.find_first_endpoint(endpoints_list, new_parent_endpoint)
-        target = self.find_first_endpoint(new_parent["children"], root_endpoint)
+        try:
+            target = self.find_first_endpoint(new_parent["children"], root_endpoint)
+            target["children"] = root["children"]
+            if root.get("id_name") is not None:
+                target["id_name"] = root["id_name"]
+        except Exception:
+            new_parent["children"].append(root)
+            target = root
 
-        target["children"] = root["children"]
-        if root.get("id_name") is not None:
-            target["id_name"] = root["id_name"]
         # Tell the client to use /new_parent/%v/root to list 'root's,
         # but use /root/%v/child to fetch its children.
         target["root"] = True
