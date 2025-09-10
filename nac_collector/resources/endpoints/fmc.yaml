@@ -1,9 +1,5 @@
 - name: file_policy
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/filepolicies
-- name: syslog_alerts
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/syslogalerts
-- name: syslog_alert
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/syslogalerts
 - name: port
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/protocolportobjects
 - name: ports
@@ -65,18 +61,10 @@
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/slamonitors
 - name: sla_monitors
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/slamonitors
-- name: application_risks
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/applicationrisks
-- name: application_risk
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/applicationrisks
 - name: vlan_tag_groups
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/vlangrouptags
 - name: vlan_tag_group
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/vlangrouptags
-- name: snmp_alerts
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/snmpalerts
-- name: snmp_alert
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/snmpalerts
 - name: device
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/devices/devicerecords
   children:
@@ -113,8 +101,6 @@
     endpoint: /vteppolicies
   - name: device_bgp_general_settings
     endpoint: /routing/bgpgeneralsettings
-- name: endpoint_device_types
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/endpointdevicetypes
 - name: secure_client_customization
   endpoint: 
     /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/secureclientcustomizations
@@ -140,14 +126,6 @@
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/certificatemaps
 - name: certificate_maps
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/certificatemaps
-- name: application
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/applications
-- name: applications
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/applications
-- name: file_types
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/filetypes
-- name: file_type
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/filetypes
 - name: extended_acl
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/extendedaccesslists
 - name: vpn_s2s
@@ -183,26 +161,12 @@
 - name: secure_client_custom_attribute
   endpoint: 
     /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/anyconnectcustomattributes
-- name: application_business_relevances
-  endpoint: 
-    /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/applicationproductivities
-- name: application_business_relevance
-  endpoint: 
-    /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/applicationproductivities
-- name: application_tag
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/applicationtags
-- name: application_tags
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/applicationtags
 - name: networks
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/networks
 - name: network
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/networks
 - name: secure_client_profile
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/anyconnectprofiles
-- name: application_type
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/applicationtypes
-- name: application_types
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/applicationtypes
 - name: service_access
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/serviceaccessobjects
 - name: secure_client_external_browser_package
@@ -221,10 +185,6 @@
 - name: network_analysis_policy
   endpoint: 
     /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/networkanalysispolicies
-- name: file_categories
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/filecategories
-- name: file_category
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/filecategories
 - name: icmpv4_objects
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/icmpv4objects
 - name: icmpv4_object
@@ -262,18 +222,12 @@
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/urls
 - name: url
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/urls
-- name: continents
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/continents
 - name: secure_client_image
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/anyconnectpackages
 - name: url_groups
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/urlgroups
 - name: url_group
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/urlgroups
-- name: security_intelligence_dns_lists
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/sidnslists
-- name: security_intelligence_dns_list
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/sidnslists
 - name: as_paths
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/aspathlists
 - name: as_path
@@ -290,16 +244,10 @@
   children:
   - name: device_ha_pair_failover_interface_mac_address
     endpoint: /failoverinterfacemacaddressconfigs
-  - name: device_ha_pair_physical_interface_mac_address
-    endpoint: /failoverinterfacemacaddressconfigs
   - name: device_ha_pair_monitoring
     endpoint: /monitoredinterfaces
 - name: ikev2_ipsec_proposals
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ikev2ipsecproposals
-- name: application_categories
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/applicationcategories
-- name: application_category
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/applicationcategories
 - name: security_zones
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/securityzones
 - name: security_zone
@@ -312,12 +260,6 @@
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/resourceprofiles
 - name: certificate_enrollment
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/certenrollments
-- name: security_intelligence_network_list
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/sinetworklists
-- name: security_intelligence_network_lists
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/sinetworklists
-- name: variable_set
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/variablesets
 - name: tunnel_zones
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/tunneltags
 - name: tunnel_zone
@@ -341,8 +283,6 @@
     endpoint: /subinterfaces
   - name: chassis_physical_interface
     endpoint: /physicalinterfaces
-- name: ise_sgts
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/isesecuritygrouptags
 - name: ikev1_ipsec_proposals
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ikev1ipsecproposals
 - name: dynamic_objects
@@ -356,22 +296,10 @@
 - name: extended_community_lists
   endpoint: 
     /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/extendedcommunitylists
-- name: domains
-  endpoint: /api/fmc_platform/v1/info/domain
-- name: security_intelligence_url_list
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/siurllists
-- name: security_intelligence_url_lists
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/siurllists
 - name: group_policy
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/grouppolicies
 - name: policy_list
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/policylists
-- name: countries
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/countries
-- name: security_intelligence_dns_feed
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/sidnsfeeds
-- name: security_intelligence_dns_feeds
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/sidnsfeeds
 - name: smart_license
   endpoint: /api/fmc_platform/v1/license/smartlicenses
 - name: dynamic_access_policy

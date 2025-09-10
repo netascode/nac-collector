@@ -35,8 +35,8 @@ def sample_devices_yaml():
 class TestDeviceBasedSolutions:
     @patch("nac_collector.cli.main.CiscoClientIOSXE")
     @patch("nac_collector.cli.main.load_devices_from_file")
-    def test_ios_xe_solution_with_devices_file(
-        self, mock_load_devices, mock_ios_xe_class, sample_devices_yaml
+    def test_iosxe_solution_with_devices_file(
+        self, mock_load_devices, mock_iosxe_class, sample_devices_yaml
     ):
         # Setup mocks
         mock_devices = [
@@ -46,7 +46,7 @@ class TestDeviceBasedSolutions:
         mock_load_devices.return_value = mock_devices
 
         mock_client = MagicMock()
-        mock_ios_xe_class.return_value = mock_client
+        mock_iosxe_class.return_value = mock_client
 
         # Test IOSXE solution with devices file
         with patch("nac_collector.cli.main.time.time", side_effect=[0, 5]):
@@ -72,7 +72,7 @@ class TestDeviceBasedSolutions:
         mock_load_devices.assert_called_once_with(sample_devices_yaml)
 
         # Verify IOSXE client was created with correct parameters
-        mock_ios_xe_class.assert_called_once_with(
+        mock_iosxe_class.assert_called_once_with(
             devices=mock_devices,
             default_username="test_user",
             default_password="test_pass",
@@ -89,15 +89,15 @@ class TestDeviceBasedSolutions:
 
     @patch("nac_collector.cli.main.CiscoClientIOSXE")
     @patch("nac_collector.cli.main.load_devices_from_file")
-    def test_ios_xe_solution_with_custom_output(
-        self, mock_load_devices, mock_ios_xe_class, sample_devices_yaml
+    def test_iosxe_solution_with_custom_output(
+        self, mock_load_devices, mock_iosxe_class, sample_devices_yaml
     ):
         # Setup mocks
         mock_load_devices.return_value = [
             {"name": "Device1", "url": "https://device1.example.com"}
         ]
         mock_client = MagicMock()
-        mock_ios_xe_class.return_value = mock_client
+        mock_iosxe_class.return_value = mock_client
 
         # Test with custom output file
         with patch("nac_collector.cli.main.time.time", side_effect=[0, 5]):
@@ -125,7 +125,7 @@ class TestDeviceBasedSolutions:
         )
 
     @patch("nac_collector.cli.main.load_devices_from_file")
-    def test_ios_xe_solution_missing_devices_file(self, mock_load_devices):
+    def test_iosxe_solution_missing_devices_file(self, mock_load_devices):
         # Test that missing devices file raises error
         with pytest.raises(typer.Exit) as exc_info:
             main(
@@ -146,7 +146,7 @@ class TestDeviceBasedSolutions:
         mock_load_devices.assert_not_called()
 
     @patch("nac_collector.cli.main.load_devices_from_file")
-    def test_ios_xe_solution_empty_devices_file(
+    def test_iosxe_solution_empty_devices_file(
         self, mock_load_devices, sample_devices_yaml
     ):
         # Test that empty devices list raises error
@@ -173,15 +173,15 @@ class TestDeviceBasedSolutions:
     @patch("nac_collector.cli.main.CiscoClientIOSXE")
     @patch("nac_collector.cli.main.load_devices_from_file")
     @patch("nac_collector.cli.main.console")
-    def test_ios_xe_solution_ignores_endpoints_file_with_warning(
-        self, mock_console, mock_load_devices, mock_ios_xe_class, sample_devices_yaml
+    def test_iosxe_solution_ignores_endpoints_file_with_warning(
+        self, mock_console, mock_load_devices, mock_iosxe_class, sample_devices_yaml
     ):
         # Setup mocks
         mock_load_devices.return_value = [
             {"name": "Device1", "url": "https://device1.example.com"}
         ]
         mock_client = MagicMock()
-        mock_ios_xe_class.return_value = mock_client
+        mock_iosxe_class.return_value = mock_client
 
         # Test with endpoints file (should be ignored with warning)
         with patch("nac_collector.cli.main.time.time", side_effect=[0, 5]):
@@ -353,7 +353,7 @@ class TestSpecialCases:
         mock_logger,
         mock_time,
         mock_load_devices,
-        mock_ios_xe_class,
+        mock_iosxe_class,
         sample_devices_yaml,
     ):
         # Test that execution time is logged for successful completion
@@ -364,7 +364,7 @@ class TestSpecialCases:
             {"name": "Device1", "url": "https://device1.example.com"}
         ]
         mock_client = MagicMock()
-        mock_ios_xe_class.return_value = mock_client
+        mock_iosxe_class.return_value = mock_client
 
         with pytest.raises(typer.Exit) as exc_info:
             main(
@@ -389,7 +389,7 @@ class TestSpecialCases:
 
 
 class TestSolutionEnum:
-    def test_solution_enum_contains_ios_xe(self):
+    def test_solution_enum_contains_iosxe(self):
         # Test that IOSXE is in the Solution enum
         assert hasattr(Solution, "IOSXE")
         assert Solution.IOSXE == "IOSXE"

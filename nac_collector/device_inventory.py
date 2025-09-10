@@ -12,7 +12,7 @@ def load_devices_from_file(file_path: str) -> list[dict[str, Any]]:
 
     Expected format:
     - name: Switch1
-      url: https://1.1.1.1
+      target: https://1.1.1.1  # For RESTCONF: URL, for SSH: IP/hostname
       protocol: restconf  # optional
       username: admin     # optional
       password: cisco123  # optional
@@ -42,14 +42,14 @@ def load_devices_from_file(file_path: str) -> list[dict[str, Any]]:
             if not isinstance(device, dict):
                 logger.error("Invalid device format: each device must be a dictionary")
                 return []
-            if "url" not in device:
+            if "target" not in device:
                 logger.error(
-                    f"Device {device.get('name', 'unknown')} missing required 'url' field"
+                    f"Device {device.get('name', 'unknown')} missing required 'target' field"
                 )
                 return []
             if "name" not in device:
                 logger.error(
-                    f"Device at {device.get('url')} missing required 'name' field"
+                    f"Device at {device.get('target')} missing required 'name' field"
                 )
                 return []
 
