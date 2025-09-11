@@ -2,6 +2,13 @@ import logging
 from typing import Any
 
 import httpx
+from rich.progress import (
+    BarColumn,
+    Progress,
+    SpinnerColumn,
+    TaskProgressColumn,
+    TextColumn,
+)
 
 from nac_collector.controller.base import CiscoClientController
 
@@ -72,53 +79,69 @@ class CiscoClientNDO(CiscoClientController):
         endpoints = endpoints_data
         final_dict = {}
 
-        for endpoint in endpoints:
-            if all(x not in endpoint.get("endpoint", "") for x in ["%v", "%i"]):  # noqa
-                endpoint_dict = CiscoClientController.create_endpoint_dict(endpoint)
-                response = self.get_request(self.base_url + endpoint["endpoint"])  # noqa
-                if response is None:
-                    continue
-                data = response.json()
-                key = endpoint["name"]
-
-                if isinstance(data, dict):
-                    next_key = next(iter(data))
-                    if key == next_key:
-                        data = data[next_key]
-
-                endpoint_dict[key] = data if isinstance(data, list) else data
-
-                final_dict.update(endpoint_dict)
-
-            else:
-                parent_endpoint: dict[str, Any] | str = ""
-                parent_path = "/".join(endpoint.get("endpoint", "").split("/")[:-1])  # noqa
-                for e in endpoints:
-                    if parent_path in e.get("endpoint", "") and e != endpoint:
-                        parent_endpoint = e
-                        break
-                if (
-                    isinstance(parent_endpoint, dict)
-                    and parent_endpoint.get("name") in final_dict
-                ):  # noqa
+        # Iterate over all endpoints
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            TaskProgressColumn(),
+            console=None,
+        ) as progress:
+            task = progress.add_task("Processing endpoints", total=len(endpoints_data))
+            for endpoint in endpoints:
+                progress.advance(task)
+                if all(x not in endpoint.get("endpoint", "") for x in ["%v", "%i"]):  # noqa
                     endpoint_dict = CiscoClientController.create_endpoint_dict(endpoint)
+                    response = self.get_request(self.base_url + endpoint["endpoint"])  # noqa
+                    if response is None:
+                        continue
+                    data = response.json()
+                    key = endpoint["name"]
 
-                    r = []
+                    if isinstance(data, dict):
+                        next_key = next(iter(data))
+                        if key == next_key:
+                            data = data[next_key]
 
-                    for tmpl in final_dict[parent_endpoint["name"]]:
-                        if isinstance(tmpl, dict) and "templateId" in tmpl:
-                            response_inner = self.get_request(
-                                self.base_url
-                                + endpoint["endpoint"].replace(
-                                    "%v", tmpl.get("templateId", "")
-                                )
-                            )  # noqa
-                            if response_inner is None:
-                                continue
-                            data = response_inner.json()
-                        else:
+                    endpoint_dict[key] = data if isinstance(data, list) else data
+
+                    final_dict.update(endpoint_dict)
+
+                else:
+                    parent_endpoint: dict[str, Any] | str = ""
+                    parent_path = "/".join(endpoint.get("endpoint", "").split("/")[:-1])  # noqa
+                    for e in endpoints:
+                        if parent_path in e.get("endpoint", "") and e != endpoint:
+                            parent_endpoint = e
+                            break
+                    if (
+                        isinstance(parent_endpoint, dict)
+                        and parent_endpoint.get("name") in final_dict
+                    ):  # noqa
+                        endpoint_dict = CiscoClientController.create_endpoint_dict(
+                            endpoint
+                        )
+
+                        r = []
+
+                        parent_data = final_dict.get(parent_endpoint["name"])
+                        if not isinstance(parent_data, list | tuple):
                             continue
-                        r.append(data)
 
-                    final_dict.update({endpoint["name"]: r})
+                        for tmpl in parent_data:
+                            if isinstance(tmpl, dict) and "templateId" in tmpl:
+                                response_inner = self.get_request(
+                                    self.base_url
+                                    + endpoint["endpoint"].replace(
+                                        "%v", tmpl.get("templateId", "")
+                                    )
+                                )  # noqa
+                                if response_inner is None:
+                                    continue
+                                data = response_inner.json()
+                            else:
+                                continue
+                            r.append(data)
+
+                        final_dict.update({endpoint["name"]: r})
         return final_dict

@@ -2,6 +2,13 @@ import logging
 from typing import Any
 
 import httpx
+from rich.progress import (
+    BarColumn,
+    Progress,
+    SpinnerColumn,
+    TaskProgressColumn,
+    TextColumn,
+)
 
 from nac_collector.controller.base import CiscoClientController
 
@@ -100,129 +107,144 @@ class CiscoClientSDWAN(CiscoClientController):
         # Initialize an empty dictionary
         final_dict = {}
 
-        # Iterate through the endpoints
-        for endpoint in endpoints_data:
-            endpoint_dict = CiscoClientController.create_endpoint_dict(endpoint)
-
-            if all(
-                x not in endpoint["endpoint"]
-                for x in [
-                    "%v",
-                    "%i",
-                    "/v1/config-group/",
-                    "/v1/feature-profile/",
-                    "/template/device/",
-                    "/template/policy/definition",
-                    "/template/policy/vedge",
-                    "/template/policy/vsmart",
-                    "/template/policy/security",
-                ]
-            ):
-                response = self.get_request(self.base_url + endpoint["endpoint"])
-
-                if response:
-                    # Get the JSON content of the response
-                    data = response.json()
-
-                    if isinstance(data, list):
-                        for i in data:
-                            endpoint_dict[endpoint["name"]].append(
-                                {
-                                    "data": i,
-                                    "endpoint": endpoint["endpoint"]
-                                    + "/"
-                                    + self.get_id_value(i),
-                                }
-                            )
-                    elif data.get("data"):
-                        if isinstance(data["data"], list):
-                            for i in data["data"]:
-                                try:
-                                    endpoint_dict[endpoint["name"]].append(
-                                        {
-                                            "data": i,
-                                            "endpoint": endpoint["endpoint"]
-                                            + "/"
-                                            + self.get_id_value(i),
-                                        }
-                                    )
-                                except TypeError:
-                                    endpoint_dict[endpoint["name"]].append(
-                                        {"data": i, "endpoint": endpoint["endpoint"]}
-                                    )
-                        else:
-                            endpoint_dict[endpoint["name"]].append(
-                                {"data": data["data"], "endpoint": endpoint["endpoint"]}
-                            )
-
-                    # Save results to dictionary
-                    final_dict.update(endpoint_dict)
-                    self.log_response(endpoint["endpoint"], response)
-
-            # config groups
-            elif "/v1/config-group/" in endpoint["endpoint"]:
-                endpoint_dict = self.get_config_groups(endpoint, endpoint_dict)
-                final_dict.update(endpoint_dict)
-            # feature profiles
-            elif "/v1/feature-profile/" in endpoint["endpoint"]:
-                endpoint_dict = self.get_feature_profiles(endpoint, endpoint_dict)
-                final_dict.update(endpoint_dict)
-            # device templates
-            elif endpoint["name"] == "cli_device_template":
-                endpoint_dict = self.get_device_templates(endpoint, endpoint_dict)
-                final_dict.update(endpoint_dict)
-            # policy definitions
-            elif any(
-                substring in endpoint["endpoint"]
-                for substring in [
-                    "/template/policy/definition",
-                    "/template/policy/vedge",
-                    "/template/policy/vsmart",
-                    "/template/policy/security",
-                ]
-            ):
-                endpoint_dict = self.get_policy_definitions(endpoint, endpoint_dict)
-                final_dict.update(endpoint_dict)
-            # for feature templates and device templates
-            elif "%i" in endpoint["endpoint"]:
-                endpoint_dict = self.get_feature_templates(endpoint, endpoint_dict)
-                final_dict.update(endpoint_dict)
-
-            # resolve feature templates
-            elif "%i" in endpoint["endpoint"]:
+        # Iterate over all endpoints
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            TaskProgressColumn(),
+            console=None,
+        ) as progress:
+            task = progress.add_task("Processing endpoints", total=len(endpoints_data))
+            for endpoint in endpoints_data:
+                progress.advance(task)
                 endpoint_dict = CiscoClientController.create_endpoint_dict(endpoint)
-                new_endpoint = endpoint["endpoint"].replace(
-                    "/object/%i", ""
-                )  # Replace '/object/%i' with ''
-                response = self.get_request(self.base_url + new_endpoint)
-                if response is None:
-                    continue
-                for item in response.json()["data"]:
-                    template_endpoint = (
-                        new_endpoint + "/object/" + str(item["templateId"])
-                    )
-                    response = self.get_request(self.base_url + template_endpoint)
+
+                if all(
+                    x not in endpoint["endpoint"]
+                    for x in [
+                        "%v",
+                        "%i",
+                        "/v1/config-group/",
+                        "/v1/feature-profile/",
+                        "/template/device/",
+                        "/template/policy/definition",
+                        "/template/policy/vedge",
+                        "/template/policy/vsmart",
+                        "/template/policy/security",
+                    ]
+                ):
+                    response = self.get_request(self.base_url + endpoint["endpoint"])
+
+                    if response:
+                        # Get the JSON content of the response
+                        data = response.json()
+
+                        if isinstance(data, list):
+                            for i in data:
+                                endpoint_dict[endpoint["name"]].append(
+                                    {
+                                        "data": i,
+                                        "endpoint": endpoint["endpoint"]
+                                        + "/"
+                                        + self.get_id_value(i),
+                                    }
+                                )
+                        elif data.get("data"):
+                            if isinstance(data["data"], list):
+                                for i in data["data"]:
+                                    try:
+                                        endpoint_dict[endpoint["name"]].append(
+                                            {
+                                                "data": i,
+                                                "endpoint": endpoint["endpoint"]
+                                                + "/"
+                                                + self.get_id_value(i),
+                                            }
+                                        )
+                                    except TypeError:
+                                        endpoint_dict[endpoint["name"]].append(
+                                            {
+                                                "data": i,
+                                                "endpoint": endpoint["endpoint"],
+                                            }
+                                        )
+                            else:
+                                endpoint_dict[endpoint["name"]].append(
+                                    {
+                                        "data": data["data"],
+                                        "endpoint": endpoint["endpoint"],
+                                    }
+                                )
+
+                        # Save results to dictionary
+                        final_dict.update(endpoint_dict)
+                        self.log_response(endpoint["endpoint"], response)
+
+                # config groups
+                elif "/v1/config-group/" in endpoint["endpoint"]:
+                    endpoint_dict = self.get_config_groups(endpoint, endpoint_dict)
+                    final_dict.update(endpoint_dict)
+                # feature profiles
+                elif "/v1/feature-profile/" in endpoint["endpoint"]:
+                    endpoint_dict = self.get_feature_profiles(endpoint, endpoint_dict)
+                    final_dict.update(endpoint_dict)
+                # device templates
+                elif endpoint["name"] == "cli_device_template":
+                    endpoint_dict = self.get_device_templates(endpoint, endpoint_dict)
+                    final_dict.update(endpoint_dict)
+                # policy definitions
+                elif any(
+                    substring in endpoint["endpoint"]
+                    for substring in [
+                        "/template/policy/definition",
+                        "/template/policy/vedge",
+                        "/template/policy/vsmart",
+                        "/template/policy/security",
+                    ]
+                ):
+                    endpoint_dict = self.get_policy_definitions(endpoint, endpoint_dict)
+                    final_dict.update(endpoint_dict)
+                # for feature templates and device templates
+                elif "%i" in endpoint["endpoint"]:
+                    endpoint_dict = self.get_feature_templates(endpoint, endpoint_dict)
+                    final_dict.update(endpoint_dict)
+
+                # resolve feature templates
+                elif "%i" in endpoint["endpoint"]:
+                    endpoint_dict = CiscoClientController.create_endpoint_dict(endpoint)
+                    new_endpoint = endpoint["endpoint"].replace(
+                        "/object/%i", ""
+                    )  # Replace '/object/%i' with ''
+                    response = self.get_request(self.base_url + new_endpoint)
                     if response is None:
                         continue
+                    for item in response.json()["data"]:
+                        template_endpoint = (
+                            new_endpoint + "/object/" + str(item["templateId"])
+                        )
+                        response = self.get_request(self.base_url + template_endpoint)
+                        if response is None:
+                            continue
 
-                    # Get the JSON content of the response
-                    data = response.json()
-                    endpoint_dict[endpoint["name"]].append(
-                        {"data": data, "endpoint": template_endpoint}
-                    )
-                    # Save results to dictionary
-                    final_dict.update(endpoint_dict)
+                        # Get the JSON content of the response
+                        data = response.json()
+                        endpoint_dict[endpoint["name"]].append(
+                            {"data": data, "endpoint": template_endpoint}
+                        )
+                        # Save results to dictionary
+                        final_dict.update(endpoint_dict)
 
-                    self.log_response(endpoint["endpoint"], response)
-            else:
-                pass
+                        self.log_response(endpoint["endpoint"], response)
+                else:
+                    pass
         return final_dict
 
     def get_device_templates(
         self, endpoint: dict[str, Any], endpoint_dict: dict[str, Any]
     ) -> dict[str, Any]:
         """
-        Process CLI device templates.
+        Process device template variables.
 
         Args:
             endpoint (dict): The endpoint to process.
@@ -234,6 +256,8 @@ class CiscoClientSDWAN(CiscoClientController):
             return endpoint_dict
 
         for item in response.json()["data"]:
+            if item["deviceType"] == "vsmart":
+                continue
             if item["devicesAttached"] != 0:
                 device_template_endpoint = (
                     endpoint["endpoint"] + "config/attached/" + str(item["templateId"])

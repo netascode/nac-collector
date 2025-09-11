@@ -8,6 +8,13 @@ from typing import Any
 from urllib.parse import urlparse
 
 import paramiko  # type: ignore[import-untyped]
+from rich.progress import (
+    BarColumn,
+    Progress,
+    SpinnerColumn,
+    TaskProgressColumn,
+    TextColumn,
+)
 
 
 class CiscoClientDevice(ABC):
@@ -221,47 +228,63 @@ class CiscoClientDevice(ABC):
         failed = 0
 
         with zipfile.ZipFile(output, "w", zipfile.ZIP_DEFLATED) as zip_file:
-            # Collect from devices in parallel
-            with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-                futures = {
-                    executor.submit(self._collect_with_error_handling, device): device
-                    for device in self.devices
-                }
+            # Collect from devices in parallel with progress bar
+            with Progress(
+                SpinnerColumn(),
+                TextColumn("[progress.description]{task.description}"),
+                BarColumn(),
+                TaskProgressColumn(),
+                console=None,
+            ) as progress:
+                task = progress.add_task("Processing devices", total=len(self.devices))
 
-                # Process results as they complete
-                for future in concurrent.futures.as_completed(futures):
-                    device = futures[future]
-                    device_name = device.get("name", device.get("url", "unknown"))
-                    sanitized_name = self.sanitize_filename(device_name)
-                    json_filename = f"{sanitized_name}.json"
+                with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+                    futures = {
+                        executor.submit(
+                            self._collect_with_error_handling, device
+                        ): device
+                        for device in self.devices
+                    }
 
-                    try:
-                        device_data = future.result()
-                        if device_data:
-                            # Write device data to JSON file in archive
-                            json_content = json.dumps(device_data, indent=4)
-                            zip_file.writestr(json_filename, json_content)
-                            successful += 1
-                            self.logger.info(
-                                f"Successfully collected from {device_name}"
-                            )
-                        else:
+                    # Process results as they complete
+                    for future in concurrent.futures.as_completed(futures):
+                        progress.advance(task)
+                        device = futures[future]
+                        device_name = device.get("name", device.get("url", "unknown"))
+                        sanitized_name = self.sanitize_filename(device_name)
+                        json_filename = f"{sanitized_name}.json"
+
+                        try:
+                            device_data = future.result()
+                            if device_data:
+                                # Write device data to JSON file in archive
+                                json_content = json.dumps(device_data, indent=4)
+                                zip_file.writestr(json_filename, json_content)
+                                successful += 1
+                                self.logger.info(
+                                    f"Successfully collected from {device_name}"
+                                )
+                            else:
+                                # Write error information for failed device
+                                error_data = {
+                                    "device": device_name,
+                                    "error": "Collection failed - authentication or connection error",
+                                }
+                                json_content = json.dumps(error_data, indent=4)
+                                zip_file.writestr(json_filename, json_content)
+                                failed += 1
+                                self.logger.error(
+                                    f"Failed to collect from {device_name}"
+                                )
+                        except Exception as e:
                             # Write error information for failed device
-                            error_data = {
-                                "device": device_name,
-                                "error": "Collection failed - authentication or connection error",
-                            }
+                            error_data = {"device": device_name, "error": str(e)}
                             json_content = json.dumps(error_data, indent=4)
                             zip_file.writestr(json_filename, json_content)
                             failed += 1
-                            self.logger.error(f"Failed to collect from {device_name}")
-                    except Exception as e:
-                        # Write error information for failed device
-                        error_data = {"device": device_name, "error": str(e)}
-                        json_content = json.dumps(error_data, indent=4)
-                        zip_file.writestr(json_filename, json_content)
-                        failed += 1
-                        self.logger.error(f"Error collecting from {device_name}: {e}")
+                            self.logger.error(
+                                f"Error collecting from {device_name}: {e}"
+                            )
 
         self.logger.info(
             f"Collection complete: {successful} successful, {failed} failed. "
