@@ -221,10 +221,7 @@ class CiscoClientController(ABC):
         while True:
             # Append the offset to the endpoint URL as a query parameter
             connector = "?" if "?" not in endpoint else "&"
-            if "/dna/intent/api/v1/reserve-ip-subpool" in endpoint:  # FIXME
-                paginated_endpoint = f"{endpoint}"
-            else:
-                paginated_endpoint = f"{endpoint}{connector}offset={offset}"
+            paginated_endpoint = f"{endpoint}{connector}offset={offset}"
 
             # Make the request to the given endpoint
             response = self.get_request(self.base_url + paginated_endpoint)

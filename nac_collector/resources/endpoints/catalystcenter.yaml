@@ -88,7 +88,7 @@
 - name: ip_pools
   endpoint: /dna/intent/api/v1/ipam/globalIpAddressPools
 - name: ip_pool_reservation
-  endpoint: /dna/intent/api/v1/reserve-ip-subpool?ignoreInheritedGroups=true
+  endpoint: /dna/intent/api/v1/reserve-ip-subpool?ignoreInheritedGroups=true&limit=500
 - name: lan_automation
   endpoint: /dna/intent/api/v1/lan-automation/status
 - name: network_profile
