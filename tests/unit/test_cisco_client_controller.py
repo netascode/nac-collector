@@ -388,7 +388,7 @@ class TestFetchDataPagination:
             cisco_client.fetch_data_pagination("/dna/intent/api/v1/reserve-ip-subpool")
 
         mock_get.assert_called_once_with(
-            "https://example.com/dna/intent/api/v1/reserve-ip-subpool"
+            "https://example.com/dna/intent/api/v1/reserve-ip-subpool?offset=1"
         )
 
     def test_fetch_data_pagination_no_response(self, cisco_client):
