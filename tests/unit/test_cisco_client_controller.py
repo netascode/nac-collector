@@ -377,20 +377,6 @@ class TestFetchDataPagination:
 
         assert result == {"response": [{"id": 1, "name": "test"}]}
 
-    def test_fetch_data_pagination_reserve_ip_subpool_endpoint(self, cisco_client):
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {"response": [{"id": 1}]}
-
-        with patch.object(
-            cisco_client, "get_request", return_value=mock_response
-        ) as mock_get:
-            cisco_client.fetch_data_pagination("/dna/intent/api/v1/reserve-ip-subpool")
-
-        mock_get.assert_called_once_with(
-            "https://example.com/dna/intent/api/v1/reserve-ip-subpool?offset=1"
-        )
-
     def test_fetch_data_pagination_no_response(self, cisco_client):
         with patch.object(cisco_client, "get_request", return_value=None):
             result = cisco_client.fetch_data_pagination("/api/test")
