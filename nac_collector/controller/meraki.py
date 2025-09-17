@@ -1,4 +1,3 @@
-import copy
 import logging
 from typing import Any
 
@@ -49,7 +48,6 @@ class CiscoClientMERAKI(CiscoClientController):
             ssl_verify,
         )
         self.x_auth_refresh_token = None
-        self.domains: list[str] = []
 
     def authenticate(self) -> bool:
         """
@@ -149,9 +147,6 @@ class CiscoClientMERAKI(CiscoClientController):
         # Initialize an empty dictionary
         final_dict = {}
 
-        # Recreate endpoints per-domain
-        endpoints_data = self.resolve_domains(endpoints_data, self.domains)
-
         # Iterate over all endpoints
         with Progress(
             SpinnerColumn(),
@@ -177,11 +172,7 @@ class CiscoClientMERAKI(CiscoClientController):
                     )
 
                 # Save results to dictionary
-                # Due to domain expansion, it may happen that same endpoint["name"] will occur multiple times
-                if endpoint["name"] not in final_dict:
-                    final_dict.update(endpoint_dict)
-                else:
-                    final_dict[endpoint["name"]].extend(endpoint_dict[endpoint["name"]])
+                final_dict.update(endpoint_dict)
 
         return final_dict
 
@@ -262,32 +253,3 @@ class CiscoClientMERAKI(CiscoClientController):
             )
         except KeyError:
             return None
-
-    def resolve_domains(
-        self, endpoints: list[dict[str, Any]], domains: list[str]
-    ) -> list[dict[str, Any]]:
-        """
-        Replace endpoint containing domain reference '{DOMAIN_UUID}' with one per domain.
-
-        Parameters:
-            endpoints (list): List of endpoints
-            domains (list): List of domains' UUIDs
-
-        Returns:
-            list: Per-domain list of endpoints
-        """
-
-        new_endpoints = []
-        for endpoint in endpoints:
-            # Endpoint is NOT domain specific
-            if "{DOMAIN_UUID}" not in endpoint["endpoint"]:
-                new_endpoints.append(copy.deepcopy(endpoint))
-                continue
-
-            # Endpoint is domain specific
-            base_endpoint = endpoint["endpoint"]
-            for domain in domains:
-                endpoint["endpoint"] = base_endpoint.replace("{DOMAIN_UUID}", domain)
-                new_endpoints.append(copy.deepcopy(endpoint))
-
-        return new_endpoints
