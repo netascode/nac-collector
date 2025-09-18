@@ -272,7 +272,7 @@ class CiscoClientController(ABC):
         data = {"response": all_responses} if in_response else all_responses
         return data
 
-    def fetch_data(self, endpoint: str) -> dict[str, Any] | None:
+    def fetch_data(self, endpoint: str) -> dict[str, Any] | list[Any] | None:
         """
         Fetch data from a specified endpoint.
 
@@ -293,7 +293,9 @@ class CiscoClientController(ABC):
                     endpoint,
                     response.status_code,
                 )
-                return data if isinstance(data, dict) else None
+                return (
+                    data if (isinstance(data, dict) or isinstance(data, list)) else None
+                )
             except ValueError:
                 self.logger.error(
                     "Failed to decode JSON from response for endpoint: %s", endpoint
