@@ -1,5 +1,42 @@
 - name: file_policy
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/filepolicies
+- name: ftd_platform_settings
+  endpoint: 
+    /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/ftdplatformsettingspolicies
+  children:
+  - name: ftd_platform_settings_http_access
+    endpoint: /httpaccesssettings
+  - name: ftd_platform_settings_syslog_logging_setup
+    endpoint: /syslog/basicloggingsetups
+  - name: ftd_platform_settings_syslog_email_setup
+    endpoint: /syslog/loggingemailsetups
+  - name: ftd_platform_settings_ssh_access
+    endpoint: /sshaccesssettings
+  - name: ftd_platform_settings_syslog_settings
+    endpoint: /syslog/syslogsettings
+    children:
+    - name: ftd_platform_settings_syslog_settings_syslog_id
+      endpoint: /syslogids
+  - name: ftd_platform_settings_syslog_logging_destination
+    endpoint: /syslog/loggingdestinations
+  - name: ftd_platform_settings_time_synchronization
+    endpoint: /ntpsettings
+  - name: ftd_platform_settings_snmp
+    endpoint: /snmpsettings
+  - name: ftd_platform_settings_syslog_rate_limit
+    endpoint: /syslog/ratelimits
+  - name: ftd_platform_settings_icmp_access
+    endpoint: /icmpsettings
+  - name: ftd_platform_settings_dns
+    endpoint: /dnssettings
+  - name: ftd_platform_settings_trusted_dns_servers
+    endpoint: /trusteddnssettings
+  - name: ftd_platform_settings_banner
+    endpoint: /bannersettings
+  - name: ftd_platform_settings_syslog_event_list
+    endpoint: /syslog/eventlists
+  - name: ftd_platform_settings_syslog_servers
+    endpoint: /syslog/servers
 - name: port
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/protocolportobjects
 - name: ports
@@ -202,6 +239,8 @@
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/portobjectgroups
 - name: radius_server_group
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/radiusservergroups
+- name: health_policy
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/healthpolicies
 - name: route_map
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/routemaps
 - name: ipv4_prefix_list
@@ -222,6 +261,10 @@
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/urls
 - name: url
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/urls
+- name: dns_server_groups
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/dnsservergroups
+- name: dns_server_group
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/dnsservergroups
 - name: secure_client_image
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/anyconnectpackages
 - name: url_groups
