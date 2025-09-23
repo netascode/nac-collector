@@ -1,7 +1,8 @@
 import logging
 from typing import Any
 
-import httpx
+from meraki.exceptions import APIError
+from meraki.rest_session import RestSession
 from rich.progress import (
     BarColumn,
     Progress,
@@ -63,16 +64,9 @@ class CiscoClientMERAKI(CiscoClientController):
             )
             return False
 
-        self.client = httpx.Client(
-            verify=self.ssl_verify,
-            timeout=self.timeout,
-        )
-        self.client.headers.update(
-            {
-                "Authorization": "Bearer " + self.password,
-                "Content-Type": "application/json",
-                "User-Agent": "nac-collector",
-            }
+        # TODO Use self.ssl_verify, self.timeout?
+        self.session = RestSession(
+            logger, self.password, caller="NacCollector netascode"
         )
         logger.info("Authentication successful with API key.")
         return True
@@ -82,6 +76,7 @@ class CiscoClientMERAKI(CiscoClientController):
         endpoint: dict[str, Any],
         endpoint_dict: dict[str, Any],
         data: dict[str, Any] | list[Any] | None,
+        err_data: dict[str, Any] | None,
     ) -> dict[str, Any]:
         """
         Process the data for a given endpoint and update the endpoint_dict.
@@ -96,9 +91,10 @@ class CiscoClientMERAKI(CiscoClientController):
         """
 
         if data is None:
-            endpoint_dict[endpoint["name"]].append(
-                {"data": {}, "endpoint": endpoint["endpoint"]}
-            )
+            endpoint_dict[endpoint["name"]] = {
+                "error": err_data,
+                "endpoint": endpoint["endpoint"],
+            }
 
         elif isinstance(data, list):
             for i in data:
@@ -160,10 +156,13 @@ class CiscoClientMERAKI(CiscoClientController):
                 progress.advance(task)
                 endpoint_dict = CiscoClientController.create_endpoint_dict(endpoint)
 
-                data = self.fetch_data(endpoint["endpoint"])
+                data, err_data = self.fetch_data_with_error(endpoint["endpoint"])
 
                 endpoint_dict = self.process_endpoint_data(
-                    endpoint, endpoint_dict, data
+                    endpoint,
+                    endpoint_dict,
+                    data,
+                    err_data,
                 )
 
                 if endpoint.get("children"):
@@ -180,10 +179,19 @@ class CiscoClientMERAKI(CiscoClientController):
         self,
         parent_endpoint: dict[str, Any],
         parent_endpoint_uri: str,
-        parent_endpoint_dict: list[dict[str, Any]],
+        parent_endpoint_dict: list[dict[str, Any]] | dict[str, Any],
     ) -> None:
         parent_endpoint_ids = []
-        for item in parent_endpoint_dict:
+        if isinstance(parent_endpoint_dict, dict):
+            logger.info(
+                "Skipping fetching children of %s (%s) as it returned no data",
+                parent_endpoint,
+                parent_endpoint_uri,
+            )
+            return
+
+        items: list[dict[str, Any]] = parent_endpoint_dict
+        for item in items:
             # Add the item's id to the list
             parent_id = self.get_id_value(item["data"], parent_endpoint)
             if parent_id is None:
@@ -209,11 +217,14 @@ class CiscoClientMERAKI(CiscoClientController):
                     f"{parent_endpoint_uri}/{parent_id}{children_endpoint['endpoint']}"
                 )
 
-                data = self.fetch_data(children_endpoint_uri)
+                data, err_data = self.fetch_data_with_error(children_endpoint_uri)
 
                 # Process the children endpoint data and get the updated dictionary
                 children_endpoint_dict = self.process_endpoint_data(
-                    children_endpoint, children_endpoint_dict, data
+                    children_endpoint,
+                    children_endpoint_dict,
+                    data,
+                    err_data,
                 )
 
                 if children_endpoint.get("children"):
@@ -223,14 +234,30 @@ class CiscoClientMERAKI(CiscoClientController):
                         children_endpoint_dict[children_endpoint["name"]],
                     )
 
-                for index, value in enumerate(parent_endpoint_dict):
+                for index, value in enumerate(items):
                     value_data = value.get("data")
                     if not isinstance(value_data, dict):
                         value_data = {}
                     if self.get_id_value(value_data, parent_endpoint) == parent_id:
-                        parent_endpoint_dict[index].setdefault("children", {})[
+                        items[index].setdefault("children", {})[
                             children_endpoint["name"]
                         ] = children_endpoint_dict[children_endpoint["name"]]
+
+    def fetch_data_with_error(
+        self, uri: str
+    ) -> tuple[dict[str, Any] | list[Any] | None, dict[str, Any] | None]:
+        try:
+            metadata = {
+                "tags": ["no tag"],
+                "operation": "no operation",
+            }
+            data = self.session.get_pages(metadata, uri)
+            return data, None
+        except APIError as e:
+            return None, {
+                "status_code": e.status,
+                "message": e.message,
+            }
 
     @staticmethod
     def get_id_value(i: dict[str, Any], endpoint: dict[str, Any]) -> str | int | None:
