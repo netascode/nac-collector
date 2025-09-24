@@ -78,3 +78,6 @@ tmp/
 .ruff_cache/
 
 logs/
+*.json
+*.zip
+.DS_Store

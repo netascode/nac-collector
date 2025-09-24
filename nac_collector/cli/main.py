@@ -14,6 +14,7 @@ from nac_collector.controller.catalystcenter import CiscoClientCATALYSTCENTER
 from nac_collector.controller.fmc import CiscoClientFMC
 from nac_collector.controller.ise import CiscoClientISE
 from nac_collector.controller.ndo import CiscoClientNDO
+from nac_collector.controller.ndfc import CiscoClientNDFC
 from nac_collector.controller.sdwan import CiscoClientSDWAN
 from nac_collector.device.iosxe import CiscoClientIOSXE
 from nac_collector.device.iosxr import CiscoClientIOSXR
@@ -54,6 +55,7 @@ class Solution(str, Enum):
     NDO = "NDO"
     FMC = "FMC"
     CATALYSTCENTER = "CATALYSTCENTER"
+    NDFC = "NDFC"
     IOSXE = "IOSXE"
     IOSXR = "IOSXR"
     NXOS = "NXOS"
@@ -161,6 +163,20 @@ def main(
             "-d",
             "--devices-file",
             help="Path to devices inventory YAML file (for device-based solutions)",
+        ),
+    ] = None,
+    domain: Annotated[
+        str,
+        typer.Option(
+            "--domain",
+            help="Domain for NDFC authentication (default: local)",
+        ),
+    ] = "local",
+    fabric_name: Annotated[
+        str | None,
+        typer.Option(
+            "--fabric-name",
+            help="Fabric name for NDFC data collection",
         ),
     ] = None,
     version: Annotated[
@@ -281,6 +297,8 @@ def main(
             cisco_client_class = CiscoClientFMC
         elif solution == Solution.CATALYSTCENTER:
             cisco_client_class = CiscoClientCATALYSTCENTER
+        elif solution == Solution.NDFC:
+            cisco_client_class = CiscoClientNDFC
 
         # Validate required credentials for controller-based solutions
         if not username:
@@ -297,16 +315,37 @@ def main(
             console.print("[red]URL is required for controller-based solutions[/red]")
             raise typer.Exit(1)
 
-        if cisco_client_class:
-            client = cisco_client_class(
-                username=username,
-                password=password,
-                base_url=url,
-                max_retries=MAX_RETRIES,
-                retry_after=RETRY_AFTER,
-                timeout=timeout,
-                ssl_verify=False,
+        # Validate NDFC-specific requirements
+        if solution == Solution.NDFC and not fabric_name:
+            console.print(
+                "[red]--fabric-name is required for NDFC solution[/red]"
             )
+            raise typer.Exit(1)
+
+        if cisco_client_class:
+            # Create client with solution-specific parameters
+            if solution == Solution.NDFC:
+                client = cisco_client_class(
+                    username=username,
+                    password=password,
+                    base_url=url,
+                    max_retries=MAX_RETRIES,
+                    retry_after=RETRY_AFTER,
+                    timeout=timeout,
+                    ssl_verify=False,
+                    domain=domain,
+                    fabric_name=fabric_name,
+                )
+            else:
+                client = cisco_client_class(
+                    username=username,
+                    password=password,
+                    base_url=url,
+                    max_retries=MAX_RETRIES,
+                    retry_after=RETRY_AFTER,
+                    timeout=timeout,
+                    ssl_verify=False,
+                )
 
             # Authenticate
             if not client.authenticate():

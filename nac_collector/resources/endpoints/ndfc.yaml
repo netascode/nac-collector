@@ -1,0 +1,77 @@
+---
+# NDFC (Nexus Dashboard Fabric Controller) API Endpoints Configuration
+# This file defines the endpoints to collect data from NDFC controllers
+
+endpoints:
+  # Get MSD fabric-associations
+  - name: MSD_Fabric_Associations
+    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/control/fabrics/msd/fabric-associations
+
+  # Fabric configuration (Note: %v will be replaced by fabric_name parameter)
+  - name: Fabric_Configuration
+    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/control/fabrics/%v
+
+  # Workflow for collecting policies bound to switches in a fabric:
+
+  # Get all switches discovered in the fabric
+  - name: Discovered_Switches
+    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/control/fabrics/%v/inventory
+    children:  
+      # Interfaces configuration
+      - name: AccessEthernetPorts
+        endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface?filter=underlayPolicies%3D%3Dint_access_host%26%26sysName%3D%3D{{hostName}}&navId={{fabricID}}
+      - name: TrunkEthernetPorts
+        endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface?filter=underlayPolicies%3D%3Dint_trunk_host%26%26sysName%3D%3D{{hostName}}&navId={{fabricID}}
+
+
+  # "vtep_vip" -> this field can not be mapped (no API endpoint available)
+
+  # GET VPC CONFIGURATION.
+  # 1. Get all VPC pairs (all fabrics) then filter by discovered switch serial numbers (if peerOneId is in discovered switches, include the VPC pair)
+  - name: VPC_Pairs
+    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/vpcpair?navId={{fabricID}}
+    children:
+      # 2. For each VPC pair, get the combined serial number of vPC Pair
+      - name: VPC_Combined_Serial_Number
+        endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/interface/vpcpair_serial_number?serial_number={{peerOneId}}
+
+      # 3. For each VPC pair, get policies bound to the VPC pair filtering by the combined serial number
+      - name: VPC_Combined_Serial_Number
+        endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/interface
+
+
+  # Get all policies in the fabric (will be filtered by discovered switch serial numbers)
+  # Note: All policies are fetched and then filtered client-side based on discovered switch serial numbers
+  - name: Policies
+    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/control/policies/pagination?fabricName=%v
+
+  # VRF configuration
+  - name: VRF_Configuration
+    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/top-down/fabrics/%v/vrfs
+    children:
+      - name: VRF_Attachments
+        endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/top-down/fabrics/%v/vrfs/attachments?vrf-names={{vrf_name}}
+
+  # Network configuration
+  - name: Network_Configuration
+    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/top-down/fabrics/%v/networks
+    children:
+      - name: Network_Attachments
+        endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/top-down/fabrics/%v/networks/{{network_name}}/attachments
+
+
+# Optional: Filter configuration
+filters:
+  exclude_templates:
+    - "Default_VRF_Universal"
+    - "Default_Network_Universal"
+    - "NA"
+    - "Default_VRF_Extension_Universal"
+    - "Default_Network_Extension_Universal"
+
+# Collection settings
+settings:
+  max_retries: 3
+  retry_delay: 2
+  timeout: 30
+  batch_size: 10
