@@ -1,112 +1,21 @@
-- name: file_policy
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/filepolicies
-- name: ftd_platform_settings
-  endpoint: 
-    /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/ftdplatformsettingspolicies
+- name: access_control_policy
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/accesspolicies
   children:
-  - name: ftd_platform_settings_http_access
-    endpoint: /httpaccesssettings
-  - name: ftd_platform_settings_syslog_logging_setup
-    endpoint: /syslog/basicloggingsetups
-  - name: ftd_platform_settings_syslog_email_setup
-    endpoint: /syslog/loggingemailsetups
-  - name: ftd_platform_settings_ssh_access
-    endpoint: /sshaccesssettings
-  - name: ftd_platform_settings_syslog_settings
-    endpoint: /syslog/syslogsettings
-    children:
-    - name: ftd_platform_settings_syslog_settings_syslog_id
-      endpoint: /syslogids
-  - name: ftd_platform_settings_syslog_logging_destination
-    endpoint: /syslog/loggingdestinations
-  - name: ftd_platform_settings_time_synchronization
-    endpoint: /ntpsettings
-  - name: ftd_platform_settings_snmp
-    endpoint: /snmpsettings
-  - name: ftd_platform_settings_syslog_rate_limit
-    endpoint: /syslog/ratelimits
-  - name: ftd_platform_settings_icmp_access
-    endpoint: /icmpsettings
-  - name: ftd_platform_settings_dns
-    endpoint: /dnssettings
-  - name: ftd_platform_settings_trusted_dns_servers
-    endpoint: /trusteddnssettings
-  - name: ftd_platform_settings_banner
-    endpoint: /bannersettings
-  - name: ftd_platform_settings_syslog_event_list
-    endpoint: /syslog/eventlists
-  - name: ftd_platform_settings_syslog_servers
-    endpoint: /syslog/servers
-- name: port
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/protocolportobjects
-- name: ports
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/protocolportobjects
-- name: interface_group
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/interfacegroups
-- name: vpn_ra
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/ravpns
-  children:
-  - name: vpn_ra_ldap_attribute_map
-    endpoint: /ldapattributemaps
-  - name: vpn_ra_ipsec_crypto_map
-    endpoint: /ipseccryptomaps
-  - name: vpn_ra_secure_client_customization
-    endpoint: /secureclientcustomizationsettings
-  - name: vpn_ra_certificate_map
-    endpoint: /certificatemapsettings
-  - name: vpn_ra_ipsec_ike_parameters
-    endpoint: /ipsecadvancedsettings
-  - name: vpn_ra_address_assignment_policy
-    endpoint: /addressassignmentsettings
-  - name: vpn_ra_load_balancing
-    endpoint: /loadbalancesettings
-  - name: vpn_ra_connection_profiles
-    endpoint: /connectionprofiles
-- name: host
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/hosts
-- name: hosts
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/hosts
-- name: standard_community_list
-  endpoint: 
-    /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/standardcommunitylists
-- name: standard_community_lists
-  endpoint: 
-    /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/standardcommunitylists
-- name: network_groups
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/networkgroups
-- name: network_group
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/networkgroups
-- name: ipv6_prefix_list
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ipv6prefixlists
-- name: ipv6_prefix_lists
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ipv6prefixlists
-- name: vlan_tag
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/vlantags
-- name: vlan_tags
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/vlantags
-- name: expanded_community_list
-  endpoint: 
-    /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/expandedcommunitylists
-- name: expanded_community_lists
-  endpoint: 
-    /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/expandedcommunitylists
-- name: icmpv6_objects
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/icmpv6objects
-- name: icmpv6_object
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/icmpv6objects
-- name: sla_monitor
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/slamonitors
-- name: sla_monitors
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/slamonitors
-- name: vlan_tag_groups
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/vlangrouptags
-- name: vlan_tag_group
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/vlangrouptags
+  - name: access_category
+    endpoint: /categories
+  - name: access_rule
+    endpoint: /accessrules
+  - name: access_rules
+    endpoint: /accessrules
 - name: device
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/devices/devicerecords
   children:
+  - name: device_vti_interface
+    endpoint: /virtualtunnelinterfaces
   - name: device_etherchannel_interface
     endpoint: /etherchannelinterfaces
+  - name: device_vtep_policy
+    endpoint: /vteppolicies
   - name: device_vrf
     endpoint: /routing/virtualrouters
     children:
@@ -114,173 +23,311 @@
       endpoint: /ipv4staticroutes
     - name: device_vrf_ipv6_static_route
       endpoint: /ipv6staticroutes
-  - name: device_ipv4_static_route
-    endpoint: /routing/ipv4staticroutes
   - name: device_bgp
     endpoint: /routing/bgp
-  - name: device_bfd
-    endpoint: /routing/bfdpolicies
   - name: device_physical_interface
     endpoint: /physicalinterfaces
-  - name: device_bridge_group_interface
-    endpoint: /bridgegroupinterfaces
-  - name: device_vni_interface
-    endpoint: /vniinterfaces
-  - name: device_vti_interface
-    endpoint: /virtualtunnelinterfaces
   - name: device_subinterface
     endpoint: /subinterfaces
-  - name: device_ipv6_static_route
-    endpoint: /routing/ipv6staticroutes
-  - name: device_loopback_interface
-    endpoint: /loopbackinterfaces
-  - name: device_vtep_policy
-    endpoint: /vteppolicies
+  - name: device_ipv4_static_route
+    endpoint: /routing/ipv4staticroutes
   - name: device_bgp_general_settings
     endpoint: /routing/bgpgeneralsettings
-- name: secure_client_customization
-  endpoint: 
-    /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/secureclientcustomizations
-- name: fqdn_objects
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/fqdns
-- name: fqdn_object
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/fqdns
-- name: ikev1_policies
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ikev1policies
-- name: range
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ranges
-- name: ranges
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ranges
-- name: bfd_template
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/bfdtemplates
-- name: application_filter
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/applicationfilters
-- name: application_filters
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/applicationfilters
-- name: external_certificate
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/externalcertificates
-- name: certificate_map
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/certificatemaps
-- name: certificate_maps
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/certificatemaps
-- name: extended_acl
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/extendedaccesslists
-- name: vpn_s2s
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/ftds2svpns
-  children:
-  - name: vpn_s2s_ipsec_settings
-    endpoint: /ipsecsettings
-  - name: vpn_s2s_endpoints
-    endpoint: /endpoints
-  - name: vpn_s2s_ike_settings
-    endpoint: /ikesettings
-  - name: vpn_s2s_advanced_settings
-    endpoint: /advancedsettings
-- name: access_control_policy
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/accesspolicies
-  children:
-  - name: access_category
-    endpoint: /categories
-  - name: access_rules
-    endpoint: /accessrules
-  - name: access_rule
-    endpoint: /accessrules
-- name: time_range
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/timeranges
-- name: time_ranges
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/timeranges
-- name: prefilter_policy
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/prefilterpolicies
-- name: realm_ad_ldap
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/realms
-- name: realm_local
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/realms
-- name: secure_client_custom_attribute
-  endpoint: 
-    /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/anyconnectcustomattributes
-- name: networks
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/networks
-- name: network
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/networks
-- name: secure_client_profile
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/anyconnectprofiles
-- name: service_access
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/serviceaccessobjects
-- name: secure_client_external_browser_package
-  endpoint: 
-    /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/anyconnectexternalbrowserpackages
-- name: ikev2_policies
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ikev2policies
+  - name: device_loopback_interface
+    endpoint: /loopbackinterfaces
+  - name: device_ipv6_static_route
+    endpoint: /routing/ipv6staticroutes
+  - name: device_vni_interface
+    endpoint: /vniinterfaces
+  - name: device_bridge_group_interface
+    endpoint: /bridgegroupinterfaces
+  - name: device_bfd
+    endpoint: /routing/bfdpolicies
+- name: security_intelligence_network_feed
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/sinetworkfeeds
+- name: security_intelligence_network_feeds
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/sinetworkfeeds
 - name: security_intelligence_url_feeds
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/siurlfeeds
 - name: security_intelligence_url_feed
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/siurlfeeds
-- name: ipv6_address_pool
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ipv6addresspools
+- name: vlan_tags
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/vlantags
+- name: vlan_tag
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/vlantags
+- name: ftd_platform_settings
+  endpoint: 
+    /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/ftdplatformsettingspolicies
+  children:
+  - name: ftd_platform_settings_syslog_servers
+    endpoint: /syslog/servers
+  - name: ftd_platform_settings_http_access
+    endpoint: /httpaccesssettings
+  - name: ftd_platform_settings_syslog_settings
+    endpoint: /syslog/syslogsettings
+    children:
+    - name: ftd_platform_settings_syslog_settings_syslog_id
+      endpoint: /syslogids
+  - name: ftd_platform_settings_syslog_logging_setup
+    endpoint: /syslog/basicloggingsetups
+  - name: ftd_platform_settings_trusted_dns_servers
+    endpoint: /trusteddnssettings
+  - name: ftd_platform_settings_time_synchronization
+    endpoint: /ntpsettings
+  - name: ftd_platform_settings_banner
+    endpoint: /bannersettings
+  - name: ftd_platform_settings_syslog_logging_destination
+    endpoint: /syslog/loggingdestinations
+  - name: ftd_platform_settings_syslog_event_list
+    endpoint: /syslog/eventlists
+  - name: ftd_platform_settings_snmp
+    endpoint: /snmpsettings
+  - name: ftd_platform_settings_ssh_access
+    endpoint: /sshaccesssettings
+  - name: ftd_platform_settings_dns
+    endpoint: /dnssettings
+  - name: ftd_platform_settings_icmp_access
+    endpoint: /icmpsettings
+  - name: ftd_platform_settings_syslog_rate_limit
+    endpoint: /syslog/ratelimits
+  - name: ftd_platform_settings_syslog_email_setup
+    endpoint: /syslog/loggingemailsetups
 - name: ipv6_address_pools
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ipv6addresspools
+- name: ipv6_address_pool
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ipv6addresspools
+- name: sla_monitors
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/slamonitors
+- name: sla_monitor
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/slamonitors
+- name: service_access
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/serviceaccessobjects
 - name: network_analysis_policy
   endpoint: 
     /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/networkanalysispolicies
+- name: resource_profiles
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/resourceprofiles
+- name: host
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/hosts
+- name: hosts
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/hosts
+- name: ipv4_address_pools
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ipv4addresspools
+- name: ipv4_address_pool
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ipv4addresspools
+- name: internal_certificate
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/internalcertificates
+- name: dns_server_group
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/dnsservergroups
+- name: dns_server_groups
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/dnsservergroups
+- name: single_sign_on_server
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ssoservers
+- name: sgt
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/securitygrouptags
+- name: sgts
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/securitygrouptags
+- name: vpn_s2s
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/ftds2svpns
+  children:
+  - name: vpn_s2s_endpoints
+    endpoint: /endpoints
+  - name: vpn_s2s_advanced_settings
+    endpoint: /advancedsettings
+  - name: vpn_s2s_ipsec_settings
+    endpoint: /ipsecsettings
+  - name: vpn_s2s_ike_settings
+    endpoint: /ikesettings
+- name: time_ranges
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/timeranges
+- name: time_range
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/timeranges
+- name: route_map
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/routemaps
+- name: device_deploy
+  endpoint: 
+    /api/fmc_config/v1/domain/{DOMAIN_UUID}/deployment/deploymentrequests
+- name: tunnel_zone
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/tunneltags
+- name: tunnel_zones
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/tunneltags
+- name: smart_license
+  endpoint: /api/fmc_platform/v1/license/smartlicenses
+- name: vpn_ra
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/ravpns
+  children:
+  - name: vpn_ra_secure_client_customization
+    endpoint: /secureclientcustomizationsettings
+  - name: vpn_ra_ipsec_ike_parameters
+    endpoint: /ipsecadvancedsettings
+  - name: vpn_ra_certificate_map
+    endpoint: /certificatemapsettings
+  - name: vpn_ra_ipsec_crypto_map
+    endpoint: /ipseccryptomaps
+  - name: vpn_ra_ldap_attribute_map
+    endpoint: /ldapattributemaps
+  - name: vpn_ra_connection_profiles
+    endpoint: /connectionprofiles
+  - name: vpn_ra_load_balancing
+    endpoint: /loadbalancesettings
+  - name: vpn_ra_address_assignment_policy
+    endpoint: /addressassignmentsettings
+- name: as_path
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/aspathlists
+- name: as_paths
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/aspathlists
+- name: chassis
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/chassis/fmcmanagedchassis
+  children:
+  - name: chassis_subinterface
+    endpoint: /subinterfaces
+  - name: chassis_etherchannel_interface
+    endpoint: /etherchannelinterfaces
+  - name: chassis_logical_device
+    endpoint: /logicaldevices
+  - name: chassis_physical_interface
+    endpoint: /physicalinterfaces
+- name: networks
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/networks
+- name: network
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/networks
+- name: radius_server_group
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/radiusservergroups
+- name: expanded_community_list
+  endpoint: 
+    /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/expandedcommunitylists
+- name: expanded_community_lists
+  endpoint: 
+    /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/expandedcommunitylists
+- name: bfd_template
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/bfdtemplates
+- name: secure_client_posture_package
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/hostscanpackages
+- name: intrusion_policy
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/intrusionpolicies
+- name: port_group
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/portobjectgroups
+- name: port_groups
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/portobjectgroups
+- name: ipv6_prefix_lists
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ipv6prefixlists
+- name: ipv6_prefix_list
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ipv6prefixlists
+- name: ikev2_policies
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ikev2policies
+- name: secure_client_profile
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/anyconnectprofiles
+- name: policy_list
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/policylists
+- name: icmpv6_objects
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/icmpv6objects
+- name: icmpv6_object
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/icmpv6objects
+- name: dynamic_access_policy
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/dynamicaccesspolicies
+- name: secure_client_external_browser_package
+  endpoint: 
+    /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/anyconnectexternalbrowserpackages
+- name: range
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ranges
+- name: ranges
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ranges
+- name: certificate_enrollment
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/certenrollments
+- name: ftd_nat_policy
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/ftdnatpolicies
+  children:
+  - name: ftd_manual_nat_rule
+    endpoint: /manualnatrules
+  - name: ftd_auto_nat_rule
+    endpoint: /autonatrules
 - name: icmpv4_objects
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/icmpv4objects
 - name: icmpv4_object
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/icmpv4objects
-- name: ftd_nat_policy
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/ftdnatpolicies
-  children:
-  - name: ftd_auto_nat_rule
-    endpoint: /autonatrules
-  - name: ftd_manual_nat_rule
-    endpoint: /manualnatrules
-- name: port_groups
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/portobjectgroups
-- name: port_group
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/portobjectgroups
-- name: radius_server_group
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/radiusservergroups
-- name: health_policy
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/healthpolicies
-- name: route_map
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/routemaps
-- name: ipv4_prefix_list
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ipv4prefixlists
-- name: ipv4_prefix_lists
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ipv4prefixlists
 - name: policy_assignment
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/assignment/policyassignments
+- name: ipv4_prefix_lists
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ipv4prefixlists
+- name: ipv4_prefix_list
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ipv4prefixlists
+- name: prefilter_policy
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/prefilterpolicies
+- name: url_group
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/urlgroups
+- name: url_groups
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/urlgroups
+- name: network_group
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/networkgroups
+- name: network_groups
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/networkgroups
+- name: security_zone
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/securityzones
+- name: security_zones
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/securityzones
+- name: interface_group
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/interfacegroups
+- name: ikev2_ipsec_proposals
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ikev2ipsecproposals
+- name: application_filters
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/applicationfilters
+- name: application_filter
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/applicationfilters
+- name: port
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/protocolportobjects
+- name: ports
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/protocolportobjects
+- name: secure_client_image
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/anyconnectpackages
+- name: standard_community_list
+  endpoint: 
+    /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/standardcommunitylists
+- name: standard_community_lists
+  endpoint: 
+    /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/standardcommunitylists
 - name: device_cluster
   endpoint: 
     /api/fmc_config/v1/domain/{DOMAIN_UUID}/deviceclusters/ftddevicecluster
   children:
   - name: device_cluster_health_monitor
     endpoint: /clusterhealthmonitorsettings
+- name: ikev1_policies
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ikev1policies
+- name: group_policy
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/grouppolicies
+- name: certificate_maps
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/certificatemaps
+- name: certificate_map
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/certificatemaps
+- name: dynamic_objects
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/dynamicobjects
+- name: fqdn_objects
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/fqdns
+- name: fqdn_object
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/fqdns
 - name: internal_certificate_authority
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/internalcas
-- name: urls
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/urls
-- name: url
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/urls
-- name: dns_server_groups
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/dnsservergroups
-- name: dns_server_group
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/dnsservergroups
-- name: secure_client_image
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/anyconnectpackages
-- name: url_groups
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/urlgroups
-- name: url_group
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/urlgroups
-- name: as_paths
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/aspathlists
-- name: as_path
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/aspathlists
-- name: security_intelligence_network_feed
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/sinetworkfeeds
-- name: security_intelligence_network_feeds
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/sinetworkfeeds
-- name: secure_client_posture_package
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/hostscanpackages
+- name: vlan_tag_group
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/vlangrouptags
+- name: vlan_tag_groups
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/vlangrouptags
+- name: standard_acl
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/standardaccesslists
+- name: file_policy
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/filepolicies
+- name: geolocation
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/geolocations
+- name: secure_client_customization
+  endpoint: 
+    /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/secureclientcustomizations
+- name: realm_ad_ldap
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/realms
+- name: realm_local
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/realms
+- name: ikev1_ipsec_proposals
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ikev1ipsecproposals
+- name: external_certificate
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/externalcertificates
 - name: device_ha_pair
   endpoint: 
     /api/fmc_config/v1/domain/{DOMAIN_UUID}/devicehapairs/ftddevicehapairs
@@ -289,70 +336,23 @@
     endpoint: /failoverinterfacemacaddressconfigs
   - name: device_ha_pair_monitoring
     endpoint: /monitoredinterfaces
-- name: ikev2_ipsec_proposals
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ikev2ipsecproposals
-- name: security_zones
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/securityzones
-- name: security_zone
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/securityzones
-- name: ipv4_address_pool
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ipv4addresspools
-- name: ipv4_address_pools
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ipv4addresspools
-- name: resource_profiles
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/resourceprofiles
-- name: certificate_enrollment
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/certenrollments
-- name: tunnel_zones
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/tunneltags
-- name: tunnel_zone
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/tunneltags
-- name: standard_acl
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/standardaccesslists
-- name: sgts
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/securitygrouptags
-- name: sgt
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/securitygrouptags
-- name: geolocation
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/geolocations
-- name: chassis
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/chassis/fmcmanagedchassis
-  children:
-  - name: chassis_logical_device
-    endpoint: /logicaldevices
-  - name: chassis_etherchannel_interface
-    endpoint: /etherchannelinterfaces
-  - name: chassis_subinterface
-    endpoint: /subinterfaces
-  - name: chassis_physical_interface
-    endpoint: /physicalinterfaces
-- name: ikev1_ipsec_proposals
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ikev1ipsecproposals
-- name: dynamic_objects
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/dynamicobjects
-- name: device_deploy
+- name: trusted_certificate_authority
   endpoint: 
-    /api/fmc_config/v1/domain/{DOMAIN_UUID}/deployment/deploymentrequests
+    /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/externalcacertificates
+- name: secure_client_custom_attribute
+  endpoint: 
+    /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/anyconnectcustomattributes
 - name: extended_community_list
   endpoint: 
     /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/extendedcommunitylists
 - name: extended_community_lists
   endpoint: 
     /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/extendedcommunitylists
-- name: group_policy
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/grouppolicies
-- name: policy_list
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/policylists
-- name: smart_license
-  endpoint: /api/fmc_platform/v1/license/smartlicenses
-- name: dynamic_access_policy
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/dynamicaccesspolicies
-- name: internal_certificate
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/internalcertificates
-- name: trusted_certificate_authority
-  endpoint: 
-    /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/externalcacertificates
-- name: single_sign_on_server
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ssoservers
-- name: intrusion_policy
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/intrusionpolicies
+- name: urls
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/urls
+- name: url
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/urls
+- name: health_policy
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/healthpolicies
+- name: extended_acl
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/extendedaccesslists
