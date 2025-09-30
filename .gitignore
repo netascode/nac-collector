@@ -78,3 +78,7 @@ tmp/
 .ruff_cache/
 
 logs/
+
+# Output files from nac-collector
+*.zip
+*.json
