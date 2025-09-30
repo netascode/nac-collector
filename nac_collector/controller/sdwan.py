@@ -44,6 +44,9 @@ class CiscoClientSDWAN(CiscoClientController):
         """
         Perform token-based authentication.
 
+        Handles URLs with SSO bypass paths (e.g., /login.html) by using them
+        for authentication but extracting the base URL for API calls.
+
         Returns:
             bool: True if authentication is successful, False otherwise.
         """
@@ -63,8 +66,19 @@ class CiscoClientSDWAN(CiscoClientController):
             logger.error("No valid JSESSION ID returned")
             jsessionid = None
 
+        # Extract base URL for API calls, removing common login paths
+        # This handles SSO bypass URLs like https://vmanage.../login.html
+        api_base_url = self.base_url
+        for login_path in ["/login.html", "/login", "/index.html"]:
+            if api_base_url.endswith(login_path):
+                api_base_url = api_base_url[: -len(login_path)]
+                logger.debug(
+                    f"Detected SSO bypass path, using base URL: {api_base_url}"
+                )
+                break
+
         headers = {"Cookie": jsessionid} if jsessionid else {}
-        url = self.base_url + "/dataservice/client/token"
+        url = api_base_url + "/dataservice/client/token"
         response = httpx.get(
             url=url, headers=headers, verify=self.ssl_verify, timeout=self.timeout
         )
@@ -84,7 +98,7 @@ class CiscoClientSDWAN(CiscoClientController):
                     "X-XSRF-TOKEN": response.text,
                 }
             )
-            self.base_url = self.base_url + "/dataservice"
+            self.base_url = api_base_url + "/dataservice"
             return True
 
         logger.error(

@@ -20,6 +20,10 @@ from nac_collector.device.iosxr import CiscoClientIOSXR
 from nac_collector.device.nxos import CiscoClientNXOS
 from nac_collector.device_inventory import load_devices_from_file
 from nac_collector.endpoint_resolver import EndpointResolver
+from nac_collector.onepassword_helper import (
+    OnePasswordError,
+    get_credentials_from_op,
+)
 
 console = Console()
 logger = logging.getLogger("main")
@@ -131,6 +135,14 @@ def main(
             help="Base URL for the service",
         ),
     ] = None,
+    op_item: Annotated[
+        str | None,
+        typer.Option(
+            "--op-item",
+            envvar="NAC_OP_ITEM",
+            help="1Password item reference (name, UUID, or share link) to retrieve credentials",
+        ),
+    ] = None,
     verbosity: Annotated[
         LogLevel,
         typer.Option("-v", "--verbosity", help="Log level"),
@@ -176,6 +188,26 @@ def main(
     start_time = time.time()
 
     configure_logging(verbosity)
+
+    # Retrieve credentials from 1Password if op_item is provided
+    if op_item:
+        try:
+            op_username, op_password, op_url = get_credentials_from_op(op_item)
+
+            # Use 1Password credentials if not overridden by explicit options
+            if op_username and not username:
+                username = op_username
+                logger.debug("Using username from 1Password")
+            if op_password and not password:
+                password = op_password
+                logger.debug("Using password from 1Password")
+            if op_url and not url:
+                url = op_url
+                logger.debug("Using URL from 1Password")
+
+        except OnePasswordError as e:
+            console.print(f"[red]1Password error: {e}[/red]")
+            raise typer.Exit(1) from e
 
     # Define device-based solutions
     DEVICE_BASED_SOLUTIONS = [Solution.IOSXE, Solution.IOSXR, Solution.NXOS]

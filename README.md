@@ -39,6 +39,8 @@ Options:
                         [env var: NAC_PASSWORD]
   * --url TEXT          Base URL for the service (required for controller-based solutions)
                         [env var: NAC_URL]
+  --op-item TEXT        1Password item reference to retrieve credentials
+                        [env var: NAC_OP_ITEM]
   -v, --verbosity [CRITICAL|ERROR|WARNING|INFO|DEBUG]
                         Log level [default: WARNING]
   -f, --fetch-latest    Fetch the latest endpoint definitions from
@@ -53,12 +55,47 @@ Options:
   --help                Show this message and exit
 ```
 
-Set environment variables pointing to supported solution instance:
+### Authentication Options
+
+nac-collector supports three methods of providing credentials (in order of precedence):
+
+1. **1Password CLI Integration** (recommended for security)
+2. **Command-line options** (`--username`, `--password`, `--url`)
+3. **Environment variables** (`NAC_USERNAME`, `NAC_PASSWORD`, `NAC_URL`)
+
+#### Using 1Password CLI
+
+Store credentials in 1Password and reference them with `--op-item`:
+
+```shell
+# Using item name
+nac-collector -s SDWAN --op-item "vManage Production"
+
+# Using environment variable
+export NAC_OP_ITEM="vManage Production"
+nac-collector -s SDWAN
+
+# Override specific fields from 1Password
+nac-collector -s SDWAN --op-item "vManage" --url "https://custom-url.com"
+```
+
+**Prerequisites:**
+- Install [1Password CLI](https://developer.1password.com/docs/cli/get-started/)
+- Sign in with `op signin`
+- Ensure your 1Password item contains `username`, `password`, and `url` fields
+
+#### Using Environment Variables
 
 ```shell
 export NAC_USERNAME=admin
 export NAC_PASSWORD=Cisco123
 export NAC_URL=https://10.1.1.1
+```
+
+#### Using Command-line Options
+
+```shell
+nac-collector -s SDWAN --username admin --password Cisco123 --url https://10.1.1.1
 ```
 
 ## Examples
