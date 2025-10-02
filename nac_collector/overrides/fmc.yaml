@@ -1,0 +1,49 @@
+# Add the following endpoints to list generated based on the terraform provider
+add:
+  - data_path: [access_control_policy, accessrules]
+    endpoint: /accessrules
+  - data_path: [access_control_policy, categories]
+    endpoint: /categories
+  - data_path: [ftd_nat_policy, autonatrules]
+    endpoint: /autonatrules
+  - data_path: [ftd_nat_policy, manualnatrules]
+    endpoint: /manualnatrules
+  - data_path: [file_policy, filerules]
+    endpoint: /filerules
+  - data_path: [prefilter_policy, prefilterrules]
+    endpoint: /prefilterrules
+
+# Remove the following endpoints from the list generated based on the terraform provider
+remove:
+  - data_path: [application]
+  - data_path: [application_business_relevance]
+  - data_path: [application_category]
+  - data_path: [application_filter]
+  - data_path: [application_risk]
+  - data_path: [application_tag]
+  - data_path: [application_type]
+  - data_path: [device_deploy]
+  - data_path: [file_category]
+  - data_path: [file_type]
+  - data_path: [fqdn_object]
+  - data_path: [host]
+  - data_path: [icmpv4_object]
+  - data_path: [icmpv6_object]
+  - data_path: [ipv4_address_pool]
+  - data_path: [ipv6_address_pool]
+  - data_path: [network]
+  - data_path: [network_group]
+  - data_path: [policy_assignment]
+  - data_path: [port]
+  - data_path: [port_group]
+  - data_path: [range]
+  - data_path: [security_zone]
+  - data_path: [sgt]
+  - data_path: [snmp_alert]
+  - data_path: [syslog_alert]
+  - data_path: [time_range]
+  - data_path: [tunnel_zone]
+  - data_path: [url]
+  - data_path: [url_group]
+  - data_path: [vlan_tag]
+  - data_path: [vlan_tag_group]
