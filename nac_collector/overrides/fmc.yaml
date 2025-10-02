@@ -1,20 +1,13 @@
-# Add the following endpoints to list generated based on the terraform provider
+# Add the following endpoints to list generated based on the terraform provider metadata
 add:
-  - data_path: [access_control_policy, accessrules]
-    endpoint: /accessrules
-  - data_path: [access_control_policy, categories]
-    endpoint: /categories
-  - data_path: [ftd_nat_policy, autonatrules]
-    endpoint: /autonatrules
-  - data_path: [ftd_nat_policy, manualnatrules]
-    endpoint: /manualnatrules
   - data_path: [file_policy, filerules]
     endpoint: /filerules
   - data_path: [prefilter_policy, prefilterrules]
     endpoint: /prefilterrules
 
-# Remove the following endpoints from the list generated based on the terraform provider
+# Remove the following endpoints from the list generated based on the terraform provider metadata
 remove:
+  - data_path: [access_control_policy, access_rule]
   - data_path: [application]
   - data_path: [application_business_relevance]
   - data_path: [application_category]
@@ -22,7 +15,12 @@ remove:
   - data_path: [application_risk]
   - data_path: [application_tag]
   - data_path: [application_type]
+  - data_path: [as_path]
+  - data_path: [certificate_map]
   - data_path: [device_deploy]
+  - data_path: [dns_server_group]
+  - data_path: [expanded_community_list]
+  - data_path: [extended_community_list]
   - data_path: [file_category]
   - data_path: [file_type]
   - data_path: [fqdn_object]
@@ -30,16 +28,23 @@ remove:
   - data_path: [icmpv4_object]
   - data_path: [icmpv6_object]
   - data_path: [ipv4_address_pool]
+  - data_path: [ipv4_prefix_list]
   - data_path: [ipv6_address_pool]
+  - data_path: [ipv6_prefix_list]
   - data_path: [network]
   - data_path: [network_group]
   - data_path: [policy_assignment]
   - data_path: [port]
   - data_path: [port_group]
   - data_path: [range]
+  - data_path: [realm_local]
+  - data_path: [security_intelligence_network_feed]
+  - data_path: [security_intelligence_url_feed]
   - data_path: [security_zone]
   - data_path: [sgt]
+  - data_path: [sla_monitor]
   - data_path: [snmp_alert]
+  - data_path: [standard_community_list]
   - data_path: [syslog_alert]
   - data_path: [time_range]
   - data_path: [tunnel_zone]

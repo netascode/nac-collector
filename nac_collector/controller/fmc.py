@@ -1,5 +1,6 @@
 import copy
 import json
+import time
 import logging
 from typing import Any
 
@@ -275,7 +276,7 @@ class CiscoClientFMC(CiscoClientController):
 
         return str(id_value) if id_value is not None else None
     
-    def get_request(self, url):
+    def get_request(self, url) -> httpx.Response | None:
         """
         Send a GET request to a specific URL and handle a 429 status code. Overrides the default cisco_client.get_request method.
 
@@ -283,17 +284,15 @@ class CiscoClientFMC(CiscoClientController):
             url (str): The URL to send the GET request to.
 
         Returns:
-            response (requests.Response): The response from the GET request.
+            response (httpx.Response): The response from the GET request.
         """
 
         for _ in range(self.max_retries):
             try:
                 # Send a GET request to the URL
-                response = self.session.get(
-                    url, verify=self.ssl_verify, timeout=self.timeout
-                )
+                response = self.client.get(url)
 
-            except requests.exceptions.Timeout:
+            except httpx.TimeoutException:
                 self.logger.error(
                     "GET %s timed out after %s seconds.", url, self.timeout
                 )
@@ -316,12 +315,10 @@ class CiscoClientFMC(CiscoClientController):
             else:
                 try:
                     response_json = response.json()
-                    # Check if the response contains an error message
                     error_message = response_json["error"]["messages"][0]["description"]
                     # Check if the error message is in the list of acceptable errors
                     if error_message in self.acceptable_errors:
-                        empty_response = requests.Response()
-                        empty_response.status_code = 200
+                        empty_response = httpx.Response(status_code=200)
                         empty_response._content = b'{}'
                         return empty_response
                 finally:

@@ -176,7 +176,6 @@ class GithubRepoWrapper:
         if os.path.exists(overrides_file):
             endpoints_list = self._process_overrides(overrides_file, endpoints_list)
 
-
         self._delete_repo()
 
         return endpoints_list
