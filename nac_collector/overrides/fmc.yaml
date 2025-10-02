@@ -1,8 +1,8 @@
 # Add the following endpoints to list generated based on the terraform provider metadata
 add:
-  - data_path: [file_policy, filerules]
+  - data_path: [file_policy, file_rules]
     endpoint: /filerules
-  - data_path: [prefilter_policy, prefilterrules]
+  - data_path: [prefilter_policy, prefilter_rules]
     endpoint: /prefilterrules
 
 # Remove the following endpoints from the list generated based on the terraform provider metadata

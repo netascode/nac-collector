@@ -267,7 +267,7 @@
 - name: prefilter_policy
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/prefilterpolicies
   children:
-  - name: prefilterrules
+  - name: prefilter_rules
     endpoint: /prefilterrules
 - name: group_policy
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/grouppolicies
@@ -280,7 +280,7 @@
 - name: file_policy
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/filepolicies
   children:
-  - name: filerules
+  - name: file_rules
     endpoint: /filerules
 - name: internal_certificate_authority
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/internalcas
