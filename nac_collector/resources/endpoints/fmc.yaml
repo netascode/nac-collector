@@ -288,3 +288,5 @@
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/radiusservergroups
 - name: secure_client_profile
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/anyconnectprofiles
+- name: domains
+  endpoint: /api/fmc_platform/v1/info/domain

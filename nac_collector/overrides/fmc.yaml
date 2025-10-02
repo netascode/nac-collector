@@ -4,6 +4,8 @@ add:
     endpoint: /filerules
   - data_path: [prefilter_policy, prefilter_rules]
     endpoint: /prefilterrules
+  - data_path: [domains]
+    endpoint: /api/fmc_platform/v1/info/domain
 
 # Remove the following endpoints from the list generated based on the terraform provider metadata
 remove:
