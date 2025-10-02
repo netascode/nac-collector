@@ -7,27 +7,53 @@ on:
       - main
 
 jobs:
+  security:
+    name: Security
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install bandit
+        run: uv tool install bandit[toml]
+
+      - name: Run bandit security scan
+        run: bandit -r nac_collector/ -ll -f json -o bandit-security-report.json
+        
+      - name: Upload security report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bandit-security-report
+          path: bandit-security-report.json
+
   lint:
     name: Lint
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - name: Python Setup
-        uses: actions/setup-python@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
         with:
-          python-version: "3.11"
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.13
+
+      - name: Install dependencies
+        run: uv sync --extra dev
 
       - name: Pre-commit Checks
-        uses: pre-commit/action@v3.0.1
-
-      # - name: Type Checks
-      #   run: |
-      #     pip install poetry
-      #     poetry install
-      #     poetry run mypy nac_collector
+        run: uv run pre-commit run --all-files
 
   test:
     name: Tests
@@ -36,36 +62,37 @@ jobs:
     strategy:
       matrix:
         python:
-          - "3.8"
-          - "3.9"
           - "3.10"
           - "3.11"
           - "3.12"
+          - "3.13"
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - name: Python Setup
-        uses: actions/setup-python@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
         with:
-          python-version: ${{ matrix.python }}
+          enable-cache: true
 
-      - name: Test
+      - name: Set up Python
+        run: uv python install ${{ matrix.python }}
+
+      - name: Install dependencies and run tests
         run: |
-          pip install poetry
-          poetry install
-          poetry run pytest
+          uv sync --extra dev
+          uv run pytest
 
   notification:
     name: Notification
     if: always() && github.event_name != 'pull_request'
-    needs: [lint, test]
+    needs: [security, lint, test]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: Check Job Success
         run: |
-          if [ ${{ needs.lint.result }} == 'success' ] && [ ${{ needs.test.result }} == 'success' ]; then
+          if [ ${{ needs.security.result }} == 'success' ] && [ ${{ needs.lint.result }} == 'success' ] && [ ${{ needs.test.result }} == 'success' ]; then
             echo "All jobs succeeded"
             echo "jobSuccess=success" >> $GITHUB_ENV
           else

@@ -1,0 +1,418 @@
+import copy
+import json
+import logging
+from typing import Any
+
+import httpx
+from rich.progress import (
+    BarColumn,
+    Progress,
+    SpinnerColumn,
+    TaskProgressColumn,
+    TextColumn,
+)
+
+from nac_collector.controller.base import CiscoClientController
+
+logger = logging.getLogger("main")
+
+
+class CiscoClientFMC(CiscoClientController):
+    """
+    This class inherits from the abstract class CiscoClientController. It's used for authenticating
+    with the Cisco FMC API and retrieving data from various endpoints.
+    There is two stage authentication.
+     - username/password is used to obtain authentication token
+     - token is used to authenticate subsequent queries
+    """
+
+    FMC_AUTH_ENDPOINTS = ["/api/fmc_platform/v1/auth/generatetoken"]
+    SOLUTION = "fmc"
+
+    def __init__(
+        self,
+        username: str,
+        password: str,
+        base_url: str,
+        max_retries: int,
+        retry_after: int,
+        timeout: int,
+        ssl_verify: bool,
+    ) -> None:
+        super().__init__(
+            username, password, base_url, max_retries, retry_after, timeout, ssl_verify
+        )
+        self.x_auth_refresh_token: str | None = None
+        self.domains: list[str] = []
+        self.acceptable_errors: list[str] = [
+            "Virtual Routing is not supported on the selected platform",
+            "BFD is not supported on the selected platform",
+            "Request cannot be processed because Identity Service Engine is disabled"
+        ]
+
+    def authenticate(self) -> bool:
+        """
+        Perform basic authentication.
+
+        Returns:
+            bool: True if authentication is successful, False otherwise.
+        """
+
+        for api in self.FMC_AUTH_ENDPOINTS:
+            auth_url = f"{self.base_url}{api}"
+
+            headers = {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            }
+
+            response = httpx.post(
+                auth_url,
+                auth=(self.username, self.password),
+                headers=headers,
+                verify=self.ssl_verify,
+                timeout=self.timeout,
+            )
+
+            if response and response.status_code == 204:
+                logger.info("Authentication Successful for URL: %s", auth_url)
+                # Create a client after successful authentication
+                self.client = httpx.Client(
+                    verify=self.ssl_verify,
+                    timeout=self.timeout,
+                )
+                self.client.headers.update(
+                    {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                        "X-auth-access-token": response.headers.get(
+                            "X-auth-access-token", ""
+                        ),
+                    }
+                )
+                self.x_auth_refresh_token = response.headers.get("X-auth-refresh-token")
+
+                # Save a list of UUIDs of all available domains
+                domains_header = response.headers.get("DOMAINS")
+                if domains_header:
+                    self.domains = [
+                        x["uuid"]
+                        for x in json.loads(domains_header)
+                        if isinstance(x, dict) and "uuid" in x
+                    ]
+                return True
+
+            logger.error(
+                "Authentication failed with status code: %s",
+                response.status_code,
+            )
+
+        # If all authentication endpoints failed
+        return False
+
+    def process_endpoint_data(
+        self,
+        endpoint: dict[str, Any],
+        endpoint_dict: dict[str, Any],
+        data: dict[str, Any] | list[Any] | None,
+    ) -> dict[str, Any]:
+        """
+        Process the data for a given endpoint and update the endpoint_dict.
+
+        Parameters:
+            endpoint (dict): The endpoint configuration.
+            endpoint_dict (dict): The dictionary to store processed data.
+            data (dict or list): The data fetched from the endpoint.
+
+        Returns:
+            dict: The updated endpoint dictionary with processed data.
+        """
+
+        if data is None:
+            endpoint_dict[endpoint["name"]].append(
+                {"data": {}, "endpoint": endpoint["endpoint"]}
+            )
+
+        elif isinstance(data, list):
+            endpoint_dict[endpoint["name"]].append(
+                {"data": data, "endpoint": endpoint["endpoint"]}
+            )
+
+        elif data.get("items", None):
+            items = data.get("items")
+            if items is not None:
+                for i in items:
+                    endpoint_dict[endpoint["name"]].append(
+                        {
+                            "data": i,
+                            "endpoint": f"{endpoint['endpoint']}/{self.get_id_value(i)}",
+                        }
+                    )
+
+        return endpoint_dict  # Return the processed endpoint dictionary
+
+    def get_from_endpoints_data(
+        self, endpoints_data: list[dict[str, Any]]
+    ) -> dict[str, Any]:
+        """
+        Retrieve data from a list of endpoint definitions provided as data structure.
+
+        Parameters:
+            endpoints_data (list[dict[str, Any]]): List of endpoint definitions with name and endpoint keys.
+
+        Returns:
+            dict: The final dictionary containing the data retrieved from the endpoints.
+        """
+        # Initialize an empty dictionary
+        final_dict = {}
+
+        # Recreate endpoints per-domain
+        endpoints = self.resolve_domains(endpoints_data, self.domains)
+
+        # Iterate over all endpoints
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            TaskProgressColumn(),
+            console=None,
+        ) as progress:
+            task = progress.add_task("Processing endpoints", total=len(endpoints))
+            for endpoint in endpoints:
+                progress.advance(task)
+                logger.info("Processing endpoint: %s", endpoint)
+
+                endpoint_dict = CiscoClientController.create_endpoint_dict(endpoint)
+
+                data = self.fetch_data(endpoint["endpoint"])
+
+                endpoint_dict = self.process_endpoint_data(
+                    endpoint, endpoint_dict, data
+                )
+
+                if endpoint.get("children"):
+                    parent_endpoint_ids = []
+
+                    for item in endpoint_dict[endpoint["name"]]:
+                        # Add the item's id to the list
+                        try:
+                            parent_endpoint_ids.append(item["data"]["id"])
+                        except KeyError:
+                            continue
+
+                    for children_endpoint in endpoint["children"]:
+                        logger.info(
+                            "Processing children endpoint: %s",
+                            endpoint["endpoint"]
+                            + "/%v"
+                            + children_endpoint["endpoint"],
+                        )
+
+                        for id_ in parent_endpoint_ids:
+                            children_endpoint_dict = (
+                                CiscoClientController.create_endpoint_dict(
+                                    children_endpoint
+                                )
+                            )
+
+                            # Replace '%v' in the endpoint with the id
+                            children_joined_endpoint = (
+                                endpoint["endpoint"]
+                                + "/"
+                                + id_
+                                + children_endpoint["endpoint"]
+                            )
+
+                            data = self.fetch_data(children_joined_endpoint)
+
+                            # Process the children endpoint data and get the updated dictionary
+                            children_endpoint_dict = self.process_endpoint_data(
+                                children_endpoint, children_endpoint_dict, data
+                            )
+
+                            for index, value in enumerate(
+                                endpoint_dict[endpoint["name"]]
+                            ):
+                                if value.get("data").get("id") == id_:
+                                    endpoint_dict[endpoint["name"]][index].setdefault(
+                                        "children", {}
+                                    )[
+                                        children_endpoint["name"]
+                                    ] = children_endpoint_dict[
+                                        children_endpoint["name"]
+                                    ]
+
+                # Save results to dictionary
+                # Due to domain expansion, it may happen that same endpoint["name"] will occur multiple times
+                if endpoint["name"] not in final_dict:
+                    final_dict.update(endpoint_dict)
+                else:
+                    final_dict[endpoint["name"]].extend(endpoint_dict[endpoint["name"]])
+
+        return final_dict
+
+    @staticmethod
+    def get_id_value(i: dict[str, Any]) -> str | None:
+        """
+        Attempts to get the 'id' or 'name' value from a dictionary.
+
+        Parameters:
+            i (dict): The dictionary to get the 'id' or 'name' value from.
+
+        Returns:
+            str or None: The 'id' or 'name' value if it exists, None otherwise.
+        """
+        try:
+            id_value = i["id"]
+        except KeyError:
+            try:
+                id_value = i["uuid"]
+            except KeyError:
+                try:
+                    id_value = i["name"]
+                except KeyError:
+                    id_value = None
+
+        return str(id_value) if id_value is not None else None
+    
+    def get_request(self, url):
+        """
+        Send a GET request to a specific URL and handle a 429 status code. Overrides the default cisco_client.get_request method.
+
+        Parameters:
+            url (str): The URL to send the GET request to.
+
+        Returns:
+            response (requests.Response): The response from the GET request.
+        """
+
+        for _ in range(self.max_retries):
+            try:
+                # Send a GET request to the URL
+                response = self.session.get(
+                    url, verify=self.ssl_verify, timeout=self.timeout
+                )
+
+            except requests.exceptions.Timeout:
+                self.logger.error(
+                    "GET %s timed out after %s seconds.", url, self.timeout
+                )
+                continue
+
+            if response.status_code == 429:
+                # If the status code is 429 (Too Many Requests), wait for a certain amount of time before retrying
+                self.retry_after = int(
+                    response.headers.get("Retry-After", self.retry_after)
+                )  # Default to retry_after if 'Retry-After' header is not present
+                self.logger.info(
+                    "GET %s rate limited. Retrying in %s seconds.",
+                    url,
+                    self.retry_after,
+                )
+                time.sleep(self.retry_after)
+            elif response.status_code == 200:
+                # If the status code is 200 (OK), return the response
+                return response
+            else:
+                try:
+                    response_json = response.json()
+                    # Check if the response contains an error message
+                    error_message = response_json["error"]["messages"][0]["description"]
+                    # Check if the error message is in the list of acceptable errors
+                    if error_message in self.acceptable_errors:
+                        empty_response = requests.Response()
+                        empty_response.status_code = 200
+                        empty_response._content = b'{}'
+                        return empty_response
+                finally:
+                    # If the status code is neither 429 nor 200, log an error and continue to the next iteration
+                    self.logger.error(
+                        "GET %s returned an unexpected status code: %s, message: %s",
+                        url,
+                        response.status_code,
+                        response.text
+                    )
+                    response = []
+        # If the status code is 429 after max_retries attempts,
+        # or if no successful response was received, return the last response
+        return response
+
+    def fetch_data(
+        self, endpoint: str, expanded: bool = True, limit: int = 1000
+    ) -> dict[str, Any] | None:
+        """
+        Fetches all data from a given endpoint (supports paging)
+
+        Parameters:
+            endpoint (str): Endpoint to collect data from
+            expanded (bool): Download objects in expanded form
+            limit (int): Maximum number of items obtained via single call (<=1000)
+
+        Returns:
+            dict: Merged dict with all objects
+        """
+
+        endpoint_url = f"{endpoint}?expanded={expanded}&limit={limit}"
+        output = super().fetch_data(endpoint_url)
+
+        if not output:
+            return None
+
+        if "paging" in output and "next" in output["paging"]:
+            data = {"paging": output["paging"]}
+            while True:
+                next_url_params = data["paging"]["next"][0].split("?")[1]
+                next_data = super().fetch_data(endpoint + "?" + next_url_params)
+                if next_data is None:
+                    break
+                data = next_data
+                output["items"].extend(data["items"])
+                if "next" not in data["paging"]:
+                    break
+
+        # Check if returned data structure has domain information
+        try:
+            output["items"][0]["metadata"]["domain"]["id"]
+        # If it doesn't, return data as is
+        except KeyError:
+            return output
+
+        # If returned data structure has domain information
+        # Filter output by the domain
+        # Child domains will include objects from parent domain, which we need to exclude
+        filtered = {
+            "items": [
+                x for x in output["items"] if x["metadata"]["domain"]["id"] in endpoint
+            ]
+        }
+
+        return filtered
+
+    def resolve_domains(
+        self, endpoints: list[dict[str, Any]], domains: list[str]
+    ) -> list[dict[str, Any]]:
+        """
+        Replace endpoint containing domain reference '{DOMAIN_UUID}' with one per domain.
+
+        Parameters:
+            endpoints (list): List of endpoints
+            domains (list): List of domains' UUIDs
+
+        Returns:
+            list: Per-domain list of endpoints
+        """
+
+        new_endpoints = []
+        for endpoint in endpoints:
+            # Endpoint is NOT domain specific
+            if "{DOMAIN_UUID}" not in endpoint["endpoint"]:
+                new_endpoints.append(copy.deepcopy(endpoint))
+                continue
+
+            # Endpoint is domain specific
+            base_endpoint = endpoint["endpoint"]
+            for domain in domains:
+                endpoint["endpoint"] = base_endpoint.replace("{DOMAIN_UUID}", domain)
+                new_endpoints.append(copy.deepcopy(endpoint))
+
+        return new_endpoints

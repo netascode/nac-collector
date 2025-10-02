@@ -1,9 +1,17 @@
 import logging
 import os
 import shutil
+from pathlib import Path
+from typing import Any
 
-import click
 from git import Repo
+from rich.progress import (
+    BarColumn,
+    Progress,
+    SpinnerColumn,
+    TaskProgressColumn,
+    TextColumn,
+)
 from ruamel.yaml import YAML
 
 logger = logging.getLogger("main")
@@ -31,9 +39,9 @@ class GithubRepoWrapper:
                          and saves it to a new YAML file.
     """
 
-    def __init__(self, repo_url, clone_dir, solution):
+    def __init__(self, repo_url: str, clone_dir: str | Path, solution: str) -> None:
         self.repo_url = repo_url
-        self.clone_dir = clone_dir
+        self.clone_dir = str(clone_dir)
         self.solution = solution
         self.logger = logging.getLogger(__name__)
         self.logger.debug("Initializing GithubRepoWrapper")
@@ -43,9 +51,10 @@ class GithubRepoWrapper:
         self.yaml.default_flow_style = False  # Use block style
         self.yaml.indent(sequence=2)
 
-    def _clone_repo(self):
+    def _clone_repo(self) -> None:
         # Check if the directory exists and is not empty
-        if os.path.exists(self.clone_dir) and os.listdir(self.clone_dir):
+        clone_path = Path(self.clone_dir)
+        if clone_path.exists() and any(clone_path.iterdir()):
             self.logger.debug("Directory exists and is not empty. Deleting directory.")
             # Delete the directory and its contents
             shutil.rmtree(self.clone_dir)
@@ -63,7 +72,7 @@ class GithubRepoWrapper:
             self.clone_dir,
         )
 
-    def get_definitions(self):
+    def get_definitions(self) -> list[dict[str, Any]]:
         """
         This method inspects YAML files in a specific directory, extracts endpoint information,
         and saves it to a new YAML file. It specifically looks for files ending with '.yaml'
@@ -76,33 +85,61 @@ class GithubRepoWrapper:
         If the method encounters a directory named 'feature_templates', it appends a specific
         endpoint format to the endpoints list and a corresponding dictionary to the endpoints_list list.
 
-        After traversing all files and directories, it saves the endpoints_list list to a new
-        YAML file named 'endpoints_{self.solution}.yaml' and then deletes the cloned repository.
+        After traversing all files and directories, it processes the endpoints_list and deletes
+        the cloned repository.
 
-        This method does not return any value.
+        Returns:
+            list[dict[str, Any]]: List of endpoint definitions with name and endpoint keys.
         """
-        definitions_dir = os.path.join(self.clone_dir, "gen", "definitions")
+        definitions_dir = Path(self.clone_dir) / "gen" / "definitions"
         self.logger.info("Inspecting YAML files in %s", definitions_dir)
         endpoints = []
         endpoints_list = []
 
         for root, _, files in os.walk(definitions_dir):
             # Iterate over all endpoints
-            with click.progressbar(
-                files, label="Processing terraform provider definitions"
-            ) as files_bar:
-                for file in files_bar:
+            with Progress(
+                SpinnerColumn(),
+                TextColumn("[progress.description]{task.description}"),
+                BarColumn(),
+                TaskProgressColumn(),
+                console=None,
+            ) as progress:
+                task = progress.add_task(
+                    "Processing terraform provider definitions", total=len(files)
+                )
+                for file in files:
+                    progress.advance(task)
                     # Exclude *_update_rank used in ISE from inspecting
                     if file.endswith(".yaml") and not file.endswith("update_rank.yaml"):
-                        with open(os.path.join(root, file), "r", encoding="utf-8") as f:
+                        with (Path(root) / file).open(encoding="utf-8") as f:
                             data = self.yaml.load(f)
-                            if "rest_endpoint" in data:
+                            if data.get("no_read") is not None and data.get("no_read"):
+                                continue
+                            if data.get("no_resource") is not None and data.get(
+                                "no_resource"
+                            ):
+                                continue
+                            if "rest_endpoint" in data or "get_rest_endpoint" in data:
+                                # exception for SDWAN localized_policy,cli_device_template,centralized_policy,security_policy
+                                if file.split(".yaml")[0] in [
+                                    "localized_policy",
+                                    "cli_device_template",
+                                    "centralized_policy",
+                                    "security_policy",
+                                ]:
+                                    endpoint = data["rest_endpoint"]
+                                else:
+                                    endpoint = (
+                                        data.get("get_rest_endpoint")
+                                        if data.get("get_rest_endpoint") is not None
+                                        else data["rest_endpoint"]
+                                    )
                                 self.logger.info(
                                     "Found rest_endpoint: %s in file: %s",
-                                    data["rest_endpoint"],
+                                    endpoint,
                                     file,
                                 )
-                                endpoints.append(data["rest_endpoint"])
                                 # for SDWAN feature_device_templates
                                 if file.split(".yaml")[0] == "feature_device_template":
                                     endpoints_list.append(
@@ -115,7 +152,7 @@ class GithubRepoWrapper:
                                     endpoints_list.append(
                                         {
                                             "name": file.split(".yaml")[0],
-                                            "endpoint": data["rest_endpoint"],
+                                            "endpoint": endpoint,
                                         }
                                     )
 
@@ -139,12 +176,14 @@ class GithubRepoWrapper:
         if os.path.exists(overrides_file):
             endpoints_list = self._process_overrides(overrides_file, endpoints_list)
 
-        # Save endpoints to a YAML file
-        self._save_to_yaml(endpoints_list)
 
         self._delete_repo()
 
-    def parent_children(self, endpoints_list):
+        return endpoints_list
+
+    def parent_children(
+        self, endpoints_list: list[dict[str, str]]
+    ) -> list[dict[str, Any]]:
         """
         Adjusts the endpoints_list list to include parent-child relationships
         for endpoints containing `%v` and `%s`. It separates the endpoints into parent and
@@ -160,10 +199,10 @@ class GithubRepoWrapper:
         modified_endpoints = []
 
         # Dictionary to hold parents and their children based on paths
-        parent_map = {}
+        parent_map: dict[str, Any] = {}
 
         # Function to split endpoint and register it in the hierarchy
-        def register_endpoint(parts, name):
+        def register_endpoint(parts: list[str], name: str) -> None:
             current_level = parent_map
             base_endpoint = parts[0]
 
@@ -181,7 +220,12 @@ class GithubRepoWrapper:
             # Add the name to the list of names for this segment
             # This is to handle a case where there are two endpoint_data
             # with different name but same endpoint url
-            if name not in current_level["names"]:
+            if "names" not in current_level:
+                current_level["names"] = []
+            if (
+                isinstance(current_level["names"], list)
+                and name not in current_level["names"]
+            ):
                 current_level["names"].append(name)
 
         # Process each endpoint
@@ -215,7 +259,7 @@ class GithubRepoWrapper:
             register_endpoint(parts, name)
 
         # Convert the hierarchical map to a list format
-        def build_hierarchy(node):
+        def build_hierarchy(node: dict[str, Any]) -> list[dict[str, Any]]:
             """
             Recursively build the YAML structure from the hierarchical dictionary.
             """
@@ -233,6 +277,20 @@ class GithubRepoWrapper:
         modified_endpoints = build_hierarchy(parent_map)
 
         return modified_endpoints
+
+    def _delete_repo(self):
+        """
+        This private method is responsible for deleting the cloned GitHub repository
+        from the local machine. It's called after the necessary data has been extracted
+        from the repository.
+
+        This method does not return any value.
+        """
+        # Check if the directory exists
+        if Path(self.clone_dir).exists():
+            # Delete the directory and its contents
+            shutil.rmtree(self.clone_dir)
+        self.logger.info("Deleted repository")
 
     def _process_overrides(self, overrides_file, endpoints_list):
         """
@@ -275,34 +333,3 @@ class GithubRepoWrapper:
                     element["children"] = []
                 return self._traverse_endpoint_list(element["children"], data_path[1:])
             
-    def _delete_repo(self):
-        """
-        This private method is responsible for deleting the cloned GitHub repository
-        from the local machine. It's called after the necessary data has been extracted
-        from the repository.
-
-        This method does not return any value.
-        """
-        # Check if the directory exists
-        if os.path.exists(self.clone_dir):
-            # Delete the directory and its contents
-            shutil.rmtree(self.clone_dir)
-        self.logger.info("Deleted repository")
-
-    def _save_to_yaml(self, data):
-        """
-        Saves the given data to a YAML file named 'endpoints_{solution}.yaml'.
-
-        Args:
-            data (list): The data to be saved into the YAML file.
-
-        This method does not return any value.
-        """
-        filename = f"endpoints_{self.solution}.yaml"
-        try:
-            with open(filename, "w", encoding="utf-8") as f:
-                self.yaml.dump(data, f)
-            self.logger.info("Saved endpoints to %s", filename)
-        except Exception as e:
-            self.logger.error("Failed to save YAML file %s: %s", filename, str(e))
-            raise

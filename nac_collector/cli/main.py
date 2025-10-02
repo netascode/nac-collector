@@ -1,76 +1,174 @@
 import logging
-import sys
 import time
+from enum import Enum
+from typing import Annotated
 
-import click
-import errorhandler
+import typer
+from rich.console import Console
+from rich.logging import RichHandler
 
 import nac_collector
-from nac_collector.cisco_client_fmc import CiscoClientFMC
-from nac_collector.cisco_client_ise import CiscoClientISE
-from nac_collector.cisco_client_catalystcenter import CiscoClientCATALYSTCENTER
-from nac_collector.cisco_client_ndo import CiscoClientNDO
-from nac_collector.cisco_client_sdwan import CiscoClientSDWAN
-from nac_collector.constants import GIT_TMP, MAX_RETRIES, RETRY_AFTER
-from nac_collector.github_repo_wrapper import GithubRepoWrapper
+from nac_collector.constants import MAX_RETRIES, RETRY_AFTER, TIMEOUT
+from nac_collector.controller.base import CiscoClientController
+from nac_collector.controller.catalystcenter import CiscoClientCATALYSTCENTER
+from nac_collector.controller.fmc import CiscoClientFMC
+from nac_collector.controller.ise import CiscoClientISE
+from nac_collector.controller.ndo import CiscoClientNDO
+from nac_collector.controller.sdwan import CiscoClientSDWAN
+from nac_collector.device.iosxe import CiscoClientIOSXE
+from nac_collector.device.iosxr import CiscoClientIOSXR
+from nac_collector.device.nxos import CiscoClientNXOS
+from nac_collector.device_inventory import load_devices_from_file
+from nac_collector.endpoint_resolver import EndpointResolver
 
-from . import options
-
-logger = logging.getLogger(__name__)
-
-error_handler = errorhandler.ErrorHandler()
-
-
-def configure_logging(level: str) -> None:
-    if level == "DEBUG":
-        lev = logging.DEBUG
-    elif level == "INFO":
-        lev = logging.INFO
-    elif level == "WARNING":
-        lev = logging.WARNING
-    elif level == "ERROR":
-        lev = logging.ERROR
-    else:
-        lev = logging.CRITICAL
-    logger = logging.getLogger()
-    handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(
-        logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    )
-    logger.addHandler(handler)
-    logger.setLevel(lev)
-    error_handler.reset()
+console = Console()
+logger = logging.getLogger("main")
+error_occurred = False
 
 
-@click.command(context_settings=dict(help_option_names=["-h", "--help"]))
-@click.version_option(nac_collector.__version__)
-@click.option(
-    "-v",
-    "--verbosity",
-    metavar="LVL",
-    is_eager=True,
-    type=click.Choice(["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"]),
-    help="Either CRITICAL, ERROR, WARNING, INFO or DEBUG",
-    default="WARNING",
-)
-@options.solution
-@options.username
-@options.password
-@options.url
-@options.git_provider
-@options.endpoints_file
-@options.timeout
-@options.output
+class LogLevel(str, Enum):
+    """Supported log levels."""
+
+    CRITICAL = "CRITICAL"
+    ERROR = "ERROR"
+    WARNING = "WARNING"
+    INFO = "INFO"
+    DEBUG = "DEBUG"
+
+
+class ErrorTrackingHandler(logging.Handler):
+    """Custom handler to track if errors occurred."""
+
+    def emit(self, record: logging.LogRecord) -> None:
+        """Set error flag if error or critical log is emitted."""
+        global error_occurred
+        if record.levelno >= logging.ERROR:
+            error_occurred = True
+
+
+class Solution(str, Enum):
+    """Supported solutions."""
+
+    SDWAN = "SDWAN"
+    ISE = "ISE"
+    NDO = "NDO"
+    FMC = "FMC"
+    CATALYSTCENTER = "CATALYSTCENTER"
+    IOSXE = "IOSXE"
+    IOSXR = "IOSXR"
+    NXOS = "NXOS"
+
+
+def configure_logging(level: LogLevel) -> None:
+    """Configure logging with Rich handler."""
+    global error_occurred
+    error_occurred = False  # Reset error flag
+
+    level_map = {
+        LogLevel.DEBUG: logging.DEBUG,
+        LogLevel.INFO: logging.INFO,
+        LogLevel.WARNING: logging.WARNING,
+        LogLevel.ERROR: logging.ERROR,
+        LogLevel.CRITICAL: logging.CRITICAL,
+    }
+
+    root_logger = logging.getLogger()
+    # Clear existing handlers
+    root_logger.handlers.clear()
+
+    # Add Rich handler
+    handler = RichHandler(console=console, show_time=True, show_path=False)
+    handler.setFormatter(logging.Formatter("%(message)s"))
+    root_logger.addHandler(handler)
+
+    # Add error tracking handler
+    error_tracker = ErrorTrackingHandler()
+    error_tracker.setLevel(logging.ERROR)
+    root_logger.addHandler(error_tracker)
+
+    root_logger.setLevel(level_map[level])
+
+
+def version_callback(value: bool) -> None:
+    """Show version and exit."""
+    if value:
+        console.print(f"nac-collector version: {nac_collector.__version__}")
+        raise typer.Exit()
+
+
 def main(
-    verbosity: str,
-    solution: str,
-    username: str,
-    password: str,
-    url: str,
-    git_provider: bool,
-    endpoints_file: str,
-    timeout: int,
-    output: str,
+    solution: Annotated[
+        Solution,
+        typer.Option(
+            "-s",
+            "--solution",
+            help="Choose a solution",
+        ),
+    ],
+    username: Annotated[
+        str | None,
+        typer.Option(
+            "-u",
+            "--username",
+            envvar="NAC_USERNAME",
+            help="Username for authentication",
+        ),
+    ] = None,
+    password: Annotated[
+        str | None,
+        typer.Option(
+            "-p",
+            "--password",
+            envvar="NAC_PASSWORD",
+            help="Password for authentication",
+        ),
+    ] = None,
+    url: Annotated[
+        str | None,
+        typer.Option(
+            "--url",
+            envvar="NAC_URL",
+            help="Base URL for the service",
+        ),
+    ] = None,
+    verbosity: Annotated[
+        LogLevel,
+        typer.Option("-v", "--verbosity", help="Log level"),
+    ] = LogLevel.WARNING,
+    fetch_latest: Annotated[
+        bool,
+        typer.Option(
+            "-f",
+            "--fetch-latest",
+            help="Fetch the latest endpoint definitions from upstream sources",
+        ),
+    ] = False,
+    endpoints_file: Annotated[
+        str | None,
+        typer.Option("-e", "--endpoints-file", help="Path to the endpoints YAML file"),
+    ] = None,
+    timeout: Annotated[
+        int,
+        typer.Option("-t", "--timeout", help="Request timeout in seconds"),
+    ] = TIMEOUT,
+    output: Annotated[
+        str | None,
+        typer.Option("-o", "--output", help="Path to the output ZIP archive"),
+    ] = None,
+    devices_file: Annotated[
+        str | None,
+        typer.Option(
+            "-d",
+            "--devices-file",
+            help="Path to devices inventory YAML file (for device-based solutions)",
+        ),
+    ] = None,
+    version: Annotated[
+        bool | None,
+        typer.Option(
+            "--version", callback=version_callback, help="Show version and exit"
+        ),
+    ] = None,
 ) -> None:
     """A CLI tool to collect various network configurations."""
 
@@ -79,59 +177,169 @@ def main(
 
     configure_logging(verbosity)
 
-    if git_provider:
-        wrapper = GithubRepoWrapper(
-            repo_url=f"https://github.com/CiscoDevNet/terraform-provider-{solution.lower()}.git",
-            clone_dir=GIT_TMP,
-            solution=solution.lower(),
+    # Define device-based solutions
+    DEVICE_BASED_SOLUTIONS = [Solution.IOSXE, Solution.IOSXR, Solution.NXOS]
+
+    # Check for incompatible option combinations
+    if fetch_latest and solution == Solution.NDO:
+        console.print(
+            "[red]--fetch-latest option is not supported with NDO solution. The NDO solution uses a different repository structure that is incompatible with fetching from upstream.[/red]"
         )
-        wrapper.get_definitions()
+        raise typer.Exit(1)
 
-    endpoints_yaml_file = endpoints_file or f"endpoints_{solution.lower()}.yaml"
-    output_file = output or f"{solution.lower()}.json"
+    output_file = output or "nac-collector.zip"
 
-    if solution == "SDWAN":
-        cisco_client = CiscoClientSDWAN
-    elif solution == "ISE":
-        cisco_client = CiscoClientISE
-    elif solution == "NDO":
-        cisco_client = CiscoClientNDO
-    elif solution == "FMC":
-        cisco_client = CiscoClientFMC
-    elif solution == "CATALYSTCENTER":
-        cisco_client = CiscoClientCATALYSTCENTER
+    # Handle device-based solutions
+    if solution in DEVICE_BASED_SOLUTIONS:
+        # Validate devices file is provided
+        if not devices_file:
+            console.print(
+                f"[red]--devices-file is required for {solution.value} solution[/red]"
+            )
+            raise typer.Exit(1)
 
-    if cisco_client:
-        client = cisco_client(
-            username=username,
-            password=password,
-            base_url=url,
-            max_retries=MAX_RETRIES,
-            retry_after=RETRY_AFTER,
-            timeout=timeout,
-            ssl_verify=False,
+        # Load devices
+        devices = load_devices_from_file(devices_file)
+        if not devices:
+            console.print(
+                "[red]Failed to load devices from file or no devices found[/red]"
+            )
+            raise typer.Exit(1)
+
+        # Device-based solutions don't need endpoints file
+        if endpoints_file:
+            console.print(
+                f"[yellow]Warning: --endpoints-file is ignored for {solution.value} "
+                f"(device-based solutions use built-in endpoints)[/yellow]"
+            )
+
+        # Create appropriate client based on solution
+        if solution == Solution.IOSXE:
+            iosxe_client = CiscoClientIOSXE(
+                devices=devices,
+                default_username=username or "",
+                default_password=password or "",
+                max_retries=MAX_RETRIES,
+                retry_after=RETRY_AFTER,
+                timeout=timeout,
+                ssl_verify=False,
+            )
+            # Collect from all devices and write to archive
+            iosxe_client.collect_and_write_to_archive(output_file)
+        elif solution == Solution.IOSXR:
+            iosxr_client = CiscoClientIOSXR(
+                devices=devices,
+                default_username=username or "",
+                default_password=password or "",
+                max_retries=MAX_RETRIES,
+                retry_after=RETRY_AFTER,
+                timeout=timeout,
+                ssl_verify=False,
+            )
+            # Collect from all devices and write to archive
+            iosxr_client.collect_and_write_to_archive(output_file)
+        elif solution == Solution.NXOS:
+            nxos_client = CiscoClientNXOS(
+                devices=devices,
+                default_username=username or "",
+                default_password=password or "",
+                max_retries=MAX_RETRIES,
+                retry_after=RETRY_AFTER,
+                timeout=timeout,
+                ssl_verify=False,
+            )
+            # Collect from all devices and write to archive
+            nxos_client.collect_and_write_to_archive(output_file)
+
+    # Handle existing controller-based solutions
+    else:
+        # Resolve endpoint data using centralized resolver
+        endpoints_data = EndpointResolver.resolve_endpoint_data(
+            solution=solution.value.lower(),
+            explicit_file=endpoints_file,
+            use_git_provider=fetch_latest,
         )
 
-        # Authenticate
-        if not client.authenticate():
-            print("Authentication failed. Exiting...")
-            return
+        if endpoints_data is None:
+            console.print(
+                f"[red]No endpoint data found for solution: {solution.value}[/red]"
+            )
+            console.print("[yellow]Available options:[/yellow]")
+            console.print("1. Use --endpoints-file to specify a custom file")
+            console.print("2. Use --fetch-latest to fetch from upstream sources")
+            console.print("3. Ensure packaged resources are available")
+            raise typer.Exit(1)
 
-        final_dict = client.get_from_endpoints(endpoints_yaml_file)
-        client.write_to_json(final_dict, output_file)
+        cisco_client_class: type[CiscoClientController] | None = None
+        if solution == Solution.SDWAN:
+            cisco_client_class = CiscoClientSDWAN
+        elif solution == Solution.ISE:
+            cisco_client_class = CiscoClientISE
+        elif solution == Solution.NDO:
+            cisco_client_class = CiscoClientNDO
+        elif solution == Solution.FMC:
+            cisco_client_class = CiscoClientFMC
+        elif solution == Solution.CATALYSTCENTER:
+            cisco_client_class = CiscoClientCATALYSTCENTER
+
+        # Validate required credentials for controller-based solutions
+        if not username:
+            console.print(
+                "[red]Username is required for controller-based solutions[/red]"
+            )
+            raise typer.Exit(1)
+        if not password:
+            console.print(
+                "[red]Password is required for controller-based solutions[/red]"
+            )
+            raise typer.Exit(1)
+        if not url:
+            console.print("[red]URL is required for controller-based solutions[/red]")
+            raise typer.Exit(1)
+
+        if cisco_client_class:
+            client = cisco_client_class(
+                username=username,
+                password=password,
+                base_url=url,
+                max_retries=MAX_RETRIES,
+                retry_after=RETRY_AFTER,
+                timeout=timeout,
+                ssl_verify=False,
+            )
+
+            # Authenticate
+            if not client.authenticate():
+                console.print("[red]Authentication failed. Exiting...[/red]")
+                raise typer.Exit(1)
+
+            # Use resolved endpoint data
+            final_dict = client.get_from_endpoints_data(endpoints_data)
+            client.write_to_archive(final_dict, output_file, solution.value.lower())
 
     # Record the stop time
     stop_time = time.time()
 
     # Calculate the total execution time
     total_time = stop_time - start_time
-    print(f"Total execution time: {total_time:.2f} seconds")
+    logger.info(f"Total execution time: {total_time:.2f} seconds")
 
-    exit()
+    exit_app()
 
 
-def exit() -> None:
-    if error_handler.fired:
-        sys.exit(1)
+def exit_app() -> None:
+    """Exit the application with appropriate exit code."""
+    global error_occurred
+    if error_occurred:
+        raise typer.Exit(1)
     else:
-        sys.exit(0)
+        raise typer.Exit(0)
+
+
+def app() -> None:
+    """Run the application."""
+    typer.run(main)
+
+
+if __name__ == "__main__":
+    app()
