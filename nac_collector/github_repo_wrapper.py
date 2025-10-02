@@ -173,7 +173,7 @@ class GithubRepoWrapper:
 
         # Check if there are any overrides to process (add/remove endpoints from the list)
         overrides_file = os.path.join("nac_collector", "overrides", f"{self.solution}.yaml")
-        if os.path.exists(overrides_file):
+        if os.path.isfile(overrides_file):
             endpoints_list = self._process_overrides(overrides_file, endpoints_list)
 
         self._delete_repo()
@@ -277,7 +277,7 @@ class GithubRepoWrapper:
 
         return modified_endpoints
 
-    def _delete_repo(self):
+    def _delete_repo(self) -> None:
         """
         This private method is responsible for deleting the cloned GitHub repository
         from the local machine. It's called after the necessary data has been extracted
@@ -291,7 +291,7 @@ class GithubRepoWrapper:
             shutil.rmtree(self.clone_dir)
         self.logger.info("Deleted repository")
 
-    def _process_overrides(self, overrides_file, endpoints_list):
+    def _process_overrides(self, overrides_file: str, endpoints_list: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """
         This method reads YAML file (located at overrides_file) with overrides, based on which it would
         add or remove endpoints from the endpoints_list.
@@ -317,7 +317,7 @@ class GithubRepoWrapper:
 
         return endpoints_list
 
-    def _traverse_endpoint_list(self, endpoints_list, data_path):
+    def _traverse_endpoint_list(self, endpoints_list: list[dict[str, Any]], data_path: list[str]) -> list[dict[str, Any]]:
         """
         This method explores the endpoints_list to find the correct location specified by data_path.
         data_path: list of strings representing the path to traverse e.g [access_control_policy, accessrules]
