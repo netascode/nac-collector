@@ -45,11 +45,6 @@ class CiscoClientFMC(CiscoClientController):
         )
         self.x_auth_refresh_token: str | None = None
         self.domains: list[str] = []
-        self.acceptable_errors: list[str] = [
-            "Virtual Routing is not supported on the selected platform",
-            "BFD is not supported on the selected platform",
-            "Request cannot be processed because Identity Service Engine is disabled"
-        ]
 
     def authenticate(self) -> bool:
         """
@@ -275,64 +270,6 @@ class CiscoClientFMC(CiscoClientController):
                     id_value = None
 
         return str(id_value) if id_value is not None else None
-    
-    def get_request(self, url) -> httpx.Response | None:
-        """
-        Send a GET request to a specific URL and handle a 429 status code. Overrides the default cisco_client.get_request method.
-
-        Parameters:
-            url (str): The URL to send the GET request to.
-
-        Returns:
-            response (httpx.Response): The response from the GET request.
-        """
-
-        for _ in range(self.max_retries):
-            try:
-                # Send a GET request to the URL
-                response = self.client.get(url)
-
-            except httpx.TimeoutException:
-                self.logger.error(
-                    "GET %s timed out after %s seconds.", url, self.timeout
-                )
-                continue
-
-            if response.status_code == 429:
-                # If the status code is 429 (Too Many Requests), wait for a certain amount of time before retrying
-                self.retry_after = int(
-                    response.headers.get("Retry-After", self.retry_after)
-                )  # Default to retry_after if 'Retry-After' header is not present
-                self.logger.info(
-                    "GET %s rate limited. Retrying in %s seconds.",
-                    url,
-                    self.retry_after,
-                )
-                time.sleep(self.retry_after)
-            elif response.status_code == 200:
-                # If the status code is 200 (OK), return the response
-                return response
-            else:
-                try:
-                    response_json = response.json()
-                    error_message = response_json["error"]["messages"][0]["description"]
-                    # Check if the error message is in the list of acceptable errors
-                    if error_message in self.acceptable_errors:
-                        empty_response = httpx.Response(status_code=200)
-                        empty_response._content = b'{}'
-                        return empty_response
-                finally:
-                    # If the status code is neither 429 nor 200, log an error and continue to the next iteration
-                    self.logger.error(
-                        "GET %s returned an unexpected status code: %s, message: %s",
-                        url,
-                        response.status_code,
-                        response.text
-                    )
-                    response = []
-        # If the status code is 429 after max_retries attempts,
-        # or if no successful response was received, return the last response
-        return response
 
     def fetch_data(
         self, endpoint: str, expanded: bool = True, limit: int = 1000
