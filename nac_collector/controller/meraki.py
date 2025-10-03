@@ -11,6 +11,7 @@ from rich.progress import (
     TextColumn,
 )
 
+from nac_collector.cli import console
 from nac_collector.controller.base import CiscoClientController
 
 logger = logging.getLogger("main")
@@ -149,11 +150,9 @@ class CiscoClientMERAKI(CiscoClientController):
             TextColumn("[progress.description]{task.description}"),
             BarColumn(),
             TaskProgressColumn(),
-            console=None,
+            console=console,
         ) as progress:
-            task = progress.add_task("Processing endpoints", total=len(endpoints_data))
             for endpoint in endpoints_data:
-                progress.advance(task)
                 endpoint_dict = CiscoClientController.create_endpoint_dict(endpoint)
 
                 data, err_data = self.fetch_data_with_error(endpoint["endpoint"])
@@ -167,7 +166,10 @@ class CiscoClientMERAKI(CiscoClientController):
 
                 if endpoint.get("children"):
                     self.get_from_children_endpoints(
-                        endpoint, endpoint["endpoint"], endpoint_dict[endpoint["name"]]
+                        endpoint,
+                        endpoint["endpoint"],
+                        endpoint_dict[endpoint["name"]],
+                        progress,
                     )
 
                 # Save results to dictionary
@@ -180,12 +182,13 @@ class CiscoClientMERAKI(CiscoClientController):
         parent_endpoint: dict[str, Any],
         parent_endpoint_uri: str,
         parent_endpoint_dict: list[dict[str, Any]] | dict[str, Any],
+        progress: Progress,
     ) -> None:
         parent_endpoint_ids = []
         if isinstance(parent_endpoint_dict, dict):
             logger.info(
                 "Skipping fetching children of %s (%s) as it returned no data",
-                parent_endpoint,
+                parent_endpoint["name"],
                 parent_endpoint_uri,
             )
             return
@@ -202,13 +205,18 @@ class CiscoClientMERAKI(CiscoClientController):
             # Use the parent as the root in the URI, ignoring the parent's parent.
             parent_endpoint_uri = parent_endpoint["endpoint"]
 
-        for children_endpoint in parent_endpoint["children"]:
-            logger.info(
-                "Processing children endpoint: %s",
-                f"{parent_endpoint_uri}/%v{children_endpoint['endpoint']}",
+        children_endpoints_task = progress.add_task(
+            f"Fetching children of {parent_endpoint_uri}"
+        )
+        for children_endpoint in progress.track(
+            parent_endpoint["children"], task_id=children_endpoints_task
+        ):
+            children_endpoint_task = progress.add_task(
+                f"Fetching {children_endpoint['endpoint']} for each {parent_endpoint['name']}"
             )
-
-            for parent_id in parent_endpoint_ids:
+            for parent_id in progress.track(
+                parent_endpoint_ids, task_id=children_endpoint_task
+            ):
                 children_endpoint_dict = CiscoClientController.create_endpoint_dict(
                     children_endpoint
                 )
@@ -232,6 +240,7 @@ class CiscoClientMERAKI(CiscoClientController):
                         children_endpoint,
                         children_endpoint_uri,
                         children_endpoint_dict[children_endpoint["name"]],
+                        progress,
                     )
 
                 for index, value in enumerate(items):
@@ -242,6 +251,10 @@ class CiscoClientMERAKI(CiscoClientController):
                         items[index].setdefault("children", {})[
                             children_endpoint["name"]
                         ] = children_endpoint_dict[children_endpoint["name"]]
+
+            progress.remove_task(children_endpoint_task)
+
+        progress.remove_task(children_endpoints_task)
 
     def fetch_data_with_error(
         self, uri: str

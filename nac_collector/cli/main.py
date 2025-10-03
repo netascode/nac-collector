@@ -4,10 +4,10 @@ from enum import Enum
 from typing import Annotated
 
 import typer
-from rich.console import Console
 from rich.logging import RichHandler
 
 import nac_collector
+from nac_collector.cli import console
 from nac_collector.constants import MAX_RETRIES, RETRY_AFTER, TIMEOUT
 from nac_collector.controller.base import CiscoClientController
 from nac_collector.controller.catalystcenter import CiscoClientCATALYSTCENTER
@@ -22,7 +22,6 @@ from nac_collector.device.nxos import CiscoClientNXOS
 from nac_collector.device_inventory import load_devices_from_file
 from nac_collector.endpoint_resolver import EndpointResolver
 
-console = Console()
 logger = logging.getLogger("main")
 error_occurred = False
 
