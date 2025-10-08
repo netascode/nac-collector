@@ -103,6 +103,12 @@ nac-collector -s CATALYSTCENTER --username USERNAME --password PASSWORD --url UR
 
 Catalyst Center contains some custom logic, explained in [README_catalyst_center.md](README_catalyst_center.md).
 
+### Meraki
+
+```sh
+nac-collector -s MERAKI --username none --password "$MERAKI_API_KEY" --url 'https://api.meraki.com/api/v1' -v INFO --fetch-latest
+```
+
 ### IOSXE (Device-Based Collection)
 
 IOSXE uses a device-based architecture where configuration is collected directly from individual devices using RESTCONF API or SSH. This requires a device inventory file instead of a single controller URL.
