@@ -49,7 +49,6 @@ class CiscoClientMERAKI(CiscoClientController):
             timeout,
             ssl_verify,
         )
-        self.x_auth_refresh_token = None
 
     def authenticate(self) -> bool:
         """
