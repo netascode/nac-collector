@@ -1,4 +1,5 @@
 import logging
+import os
 from typing import Any
 
 from meraki.exceptions import APIError
@@ -49,6 +50,8 @@ class CiscoClientMERAKI(CiscoClientController):
             timeout,
             ssl_verify,
         )
+
+        self.allowed_org_ids = os.getenv("NAC_MERAKI_ORG_IDS", "").split()
 
     def authenticate(self) -> bool:
         """
@@ -156,6 +159,8 @@ class CiscoClientMERAKI(CiscoClientController):
 
                 data, err_data = self.fetch_data_with_error(endpoint["endpoint"])
 
+                data = self.filter_organizations(endpoint, data)
+
                 endpoint_dict = self.process_endpoint_data(
                     endpoint,
                     endpoint_dict,
@@ -175,6 +180,24 @@ class CiscoClientMERAKI(CiscoClientController):
                 final_dict.update(endpoint_dict)
 
         return final_dict
+
+    def filter_organizations(
+        self, endpoint: dict[str, Any], data: dict[str, Any] | list[Any] | None
+    ) -> dict[str, Any] | list[Any] | None:
+        if endpoint["name"] != "organization":
+            return data
+
+        if not isinstance(data, list):
+            return data
+
+        if len(self.allowed_org_ids) == 0:
+            return data
+
+        return [
+            org
+            for org in data
+            if self.get_id_value(org, endpoint) in self.allowed_org_ids
+        ]
 
     def get_from_children_endpoints(
         self,

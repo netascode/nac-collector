@@ -106,6 +106,9 @@ Catalyst Center contains some custom logic, explained in [README_catalyst_center
 ### Meraki
 
 ```sh
+# Optional: only collect from the given organizations
+export NAC_MERAKI_ORG_IDS="1234567 3456789"
+
 nac-collector -s MERAKI --username none --password "$MERAKI_API_KEY" --url 'https://api.meraki.com/api/v1' -v INFO --fetch-latest
 ```
 
