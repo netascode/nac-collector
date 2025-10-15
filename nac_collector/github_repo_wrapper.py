@@ -143,7 +143,7 @@ class GithubRepoWrapper:
                                     endpoint,
                                     file,
                                 )
-                                entry = {
+                                entry: dict[str, Any] = {
                                     "name": file.split(".yaml")[0],
                                 }
                                 # for SDWAN feature_device_templates
@@ -152,8 +152,11 @@ class GithubRepoWrapper:
                                 else:
                                     entry["endpoint"] = endpoint
                                 if self.solution == "meraki":
+                                    has_own_id = self.has_own_id(data)
+                                    if has_own_id:
+                                        entry["has_own_id"] = True
                                     id_name = self.get_id_attr_name(data)
-                                    if id_name is not None:
+                                    if has_own_id and id_name is not None:
                                         entry["id_name"] = id_name
                                 endpoints_list.append(entry)
 
@@ -198,6 +201,20 @@ class GithubRepoWrapper:
         self._delete_repo()
 
         return endpoints_list
+
+    def has_own_id(self, provider_definition: dict[str, Any]) -> bool | None:
+        """
+        Return True if the resource in the provider definition has its own ID,
+        i.e. is not a singleton.
+        """
+
+        # rest_endpoint doesn't always have the resource's own ID at the end,
+        # so use spec_endpoint instead.
+        raw_spec_endpoint = provider_definition.get("spec_endpoint")
+        if raw_spec_endpoint is None or not isinstance(raw_spec_endpoint, str):
+            return None
+        spec_endpoint: str = raw_spec_endpoint
+        return spec_endpoint.endswith("}")
 
     def get_id_attr_name(self, provider_definition: dict[str, Any]) -> str | None:
         id_name = provider_definition.get("id_name")
