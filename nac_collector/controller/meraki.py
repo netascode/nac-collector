@@ -80,6 +80,7 @@ class CiscoClientMERAKI(CiscoClientController):
         endpoint_dict: dict[str, Any],
         data: dict[str, Any] | list[Any] | None,
         err_data: dict[str, Any] | None,
+        parent_ids: list[str | int],
     ) -> dict[str, Any]:
         """
         Process the data for a given endpoint and update the endpoint_dict.
@@ -87,7 +88,8 @@ class CiscoClientMERAKI(CiscoClientController):
         Parameters:
             endpoint (dict): The endpoint configuration.
             endpoint_dict (dict): The dictionary to store processed data.
-            data (dict or list): The data fetched from the endpoint.
+            data (dict or list or None): The data fetched from the endpoint (mutually exclusive with err_data).
+            err_data (dict or None): The error message fetched from the endpoint (mutually exclusive with data).
 
         Returns:
             dict: The updated endpoint dictionary with processed data.
@@ -98,37 +100,52 @@ class CiscoClientMERAKI(CiscoClientController):
                 "error": err_data,
                 "endpoint": endpoint["endpoint"],
             }
+            return endpoint_dict
 
-        elif isinstance(data, list):
-            for i in data:
-                endpoint_dict[endpoint["name"]].append(
-                    {
-                        "data": i,
-                        # TODO If get_id_value() return None, this just gets put into the string as "/None".
-                        "endpoint": f"{endpoint['endpoint']}/{self.get_id_value(i, endpoint)}",
-                    }
-                )
+        # The response is a single resource instance.
+        if isinstance(data, dict) and "items" not in data:
+            endpoint_dict[endpoint["name"]] = self.process_single_resource_data(
+                data, endpoint, parent_ids
+            )
+            return endpoint_dict
 
-        elif data.get("items", None):
-            items = data.get("items")
+        # The response has multiple resource instances.
+
+        if isinstance(data, list):
+            items = data
+        else:
+            items = data["items"]
             if not isinstance(items, list):
                 items = []
-            for i in items:
-                endpoint_dict[endpoint["name"]].append(
-                    {
-                        "data": i,
-                        # TODO If get_id_value() return None, this just gets put into the string as "/None".
-                        "endpoint": f"{endpoint['endpoint']}/{self.get_id_value(i, endpoint)}",
-                    }
-                )
 
-        else:
-            endpoint_dict[endpoint["name"]] = {
-                "data": data,
-                "endpoint": endpoint["endpoint"],
-            }
+        for item in items:
+            endpoint_dict[endpoint["name"]].append(
+                self.process_single_resource_data(item, endpoint, parent_ids)
+            )
 
         return endpoint_dict  # Return the processed endpoint dictionary
+
+    @staticmethod
+    def process_single_resource_data(
+        data: dict[str, Any], endpoint: dict[str, Any], parent_ids: list[str | int]
+    ) -> dict[str, Any]:
+        result = {
+            "data": data,
+            "endpoint": endpoint["endpoint"],
+        }
+
+        terraform_import_ids = None
+        if CiscoClientMERAKI.endpoint_has_own_id(endpoint):
+            id = CiscoClientMERAKI.get_id_value(data, endpoint)
+            # TODO If get_id_value() return None, this just gets put into the string as "/None".
+            result["endpoint"] = f"{endpoint['endpoint']}/{id}"
+            if id is not None:
+                terraform_import_ids = parent_ids + [id]
+        else:
+            terraform_import_ids = parent_ids
+        result["terraform_import_ids"] = terraform_import_ids
+
+        return result
 
     def get_from_endpoints_data(
         self, endpoints_data: list[dict[str, Any]]
@@ -166,6 +183,7 @@ class CiscoClientMERAKI(CiscoClientController):
                     endpoint_dict,
                     data,
                     err_data,
+                    [],
                 )
 
                 if endpoint.get("children"):
@@ -173,6 +191,7 @@ class CiscoClientMERAKI(CiscoClientController):
                         endpoint,
                         endpoint["endpoint"],
                         endpoint_dict[endpoint["name"]],
+                        [],
                         progress,
                     )
 
@@ -204,9 +223,9 @@ class CiscoClientMERAKI(CiscoClientController):
         parent_endpoint: dict[str, Any],
         parent_endpoint_uri: str,
         parent_endpoint_dict: list[dict[str, Any]] | dict[str, Any],
+        grandparent_endpoints_ids: list[str | int],
         progress: Progress,
     ) -> None:
-        parent_endpoint_ids = []
         if isinstance(parent_endpoint_dict, dict):
             logger.info(
                 "Skipping fetching children of %s (%s) as it returned no data",
@@ -216,6 +235,8 @@ class CiscoClientMERAKI(CiscoClientController):
             return
 
         items: list[dict[str, Any]] = parent_endpoint_dict
+
+        parent_endpoint_ids = []
         for item in items:
             # Add the item's id to the list
             parent_id = self.get_id_value(item["data"], parent_endpoint)
@@ -226,6 +247,8 @@ class CiscoClientMERAKI(CiscoClientController):
         if parent_endpoint.get("root"):
             # Use the parent as the root in the URI, ignoring the parent's parent.
             parent_endpoint_uri = parent_endpoint["endpoint"]
+            # Ignore the parent's parent's ID.
+            grandparent_endpoints_ids = []
 
         children_endpoints_task = progress.add_task(
             f"Fetching children of {parent_endpoint_uri}"
@@ -255,6 +278,7 @@ class CiscoClientMERAKI(CiscoClientController):
                     children_endpoint_dict,
                     data,
                     err_data,
+                    grandparent_endpoints_ids + [parent_id],
                 )
 
                 if children_endpoint.get("children"):
@@ -262,6 +286,7 @@ class CiscoClientMERAKI(CiscoClientController):
                         children_endpoint,
                         children_endpoint_uri,
                         children_endpoint_dict[children_endpoint["name"]],
+                        grandparent_endpoints_ids + [parent_id],
                         progress,
                     )
 
@@ -295,18 +320,30 @@ class CiscoClientMERAKI(CiscoClientController):
             }
 
     @staticmethod
+    def endpoint_has_own_id(endpoint: dict[str, Any]) -> bool:
+        result: bool = endpoint.get("has_own_id", False)
+        return result
+
+    @staticmethod
+    def endpoint_id_property(endpoint: dict[str, Any]) -> str:
+        result: str = endpoint.get("id_name", "id")
+        return result
+
+    @staticmethod
     def get_id_value(i: dict[str, Any], endpoint: dict[str, Any]) -> str | int | None:
         """
-        Attempts to get the 'id' or 'name' value from a dictionary.
+        Attempts to get the ID from an API resource's response.
 
         Parameters:
-            i (dict): The dictionary to get the 'id' or 'name' value from.
+            i (dict): The resource response.
             endpoint (dict): The endpoint configuration.
 
         Returns:
-            str or None: The 'id' or 'name' value if it exists, None otherwise.
+            str or int or None: The ID if it exists (str or int),
+                                None if the endpoint does not have its own ID or the ID field is missing.
         """
-        id_name = endpoint.get("id_name", "id")
+
+        id_name = CiscoClientMERAKI.endpoint_id_property(endpoint)
         try:
             return (
                 i[id_name]
