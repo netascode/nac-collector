@@ -192,6 +192,7 @@ class CiscoClientMERAKI(CiscoClientController):
                         endpoint["endpoint"],
                         endpoint_dict[endpoint["name"]],
                         [],
+                        {},
                         progress,
                     )
 
@@ -224,6 +225,7 @@ class CiscoClientMERAKI(CiscoClientController):
         parent_endpoint_uri: str,
         parent_endpoint_dict: list[dict[str, Any]] | dict[str, Any],
         grandparent_endpoints_ids: list[str | int],
+        grandparent_conditions: dict[str, Any],
         progress: Progress,
     ) -> None:
         if isinstance(parent_endpoint_dict, dict):
@@ -236,13 +238,20 @@ class CiscoClientMERAKI(CiscoClientController):
 
         items: list[dict[str, Any]] = parent_endpoint_dict
 
-        parent_endpoint_ids = []
+        parent_instances = []
         for item in items:
             # Add the item's id to the list
             parent_id = self.get_id_value(item["data"], parent_endpoint)
             if parent_id is None:
                 continue
-            parent_endpoint_ids.append(parent_id)
+            conditions = self.get_parent_conditions(
+                item["data"], parent_endpoint, grandparent_conditions
+            )
+            parent_instance = {
+                "id": parent_id,
+                "conditions": conditions,
+            }
+            parent_instances.append(parent_instance)
 
         if parent_endpoint.get("root"):
             # Use the parent as the root in the URI, ignoring the parent's parent.
@@ -259,15 +268,29 @@ class CiscoClientMERAKI(CiscoClientController):
             children_endpoint_task = progress.add_task(
                 f"Fetching {children_endpoint['endpoint']} for each {parent_endpoint['name']}"
             )
-            for parent_id in progress.track(
-                parent_endpoint_ids, task_id=children_endpoint_task
+            for parent_instance in progress.track(
+                parent_instances, task_id=children_endpoint_task
             ):
-                children_endpoint_dict = CiscoClientController.create_endpoint_dict(
-                    children_endpoint
-                )
-
+                parent_id = parent_instance["id"]
+                parent_conditions = parent_instance["conditions"]
                 children_endpoint_uri = (
                     f"{parent_endpoint_uri}/{parent_id}{children_endpoint['endpoint']}"
+                )
+
+                should_skip, reason = self.should_skip_by_parent_conditions(
+                    children_endpoint, parent_conditions
+                )
+                if should_skip:
+                    logger.info(
+                        "Skipping fetching %s (%s): %s",
+                        children_endpoint["name"],
+                        children_endpoint_uri,
+                        reason,
+                    )
+                    continue
+
+                children_endpoint_dict = CiscoClientController.create_endpoint_dict(
+                    children_endpoint
                 )
 
                 data, err_data = self.fetch_data_with_error(children_endpoint_uri)
@@ -287,6 +310,7 @@ class CiscoClientMERAKI(CiscoClientController):
                         children_endpoint_uri,
                         children_endpoint_dict[children_endpoint["name"]],
                         grandparent_endpoints_ids + [parent_id],
+                        parent_conditions,
                         progress,
                     )
 
@@ -352,3 +376,44 @@ class CiscoClientMERAKI(CiscoClientController):
             )
         except KeyError:
             return None
+
+    @staticmethod
+    def get_parent_conditions(
+        parent_data: dict[str, Any],
+        parent_endpoint: dict[str, Any],
+        grandparent_conditions: dict[str, Any],
+    ) -> dict[str, Any]:
+        result = grandparent_conditions.copy()
+
+        if parent_endpoint["name"] == "device":
+            result["device_type"] = parent_data.get("productType")
+            result["device_model"] = parent_data.get("model")
+
+        return result
+
+    @staticmethod
+    def should_skip_by_parent_conditions(
+        children_endpoint: dict[str, Any], parent_conditions: dict[str, Any]
+    ) -> tuple[bool, str]:
+        allowed_device_types = children_endpoint.get("allowed_device_types")
+        device_type = parent_conditions.get("device_type")
+        if (
+            allowed_device_types is not None
+            and device_type is not None
+            and device_type not in allowed_device_types
+        ):
+            return True, f"the endpoint is not applicable for device type {device_type}"
+
+        allowed_device_models = children_endpoint.get("allowed_device_models")
+        device_model = parent_conditions.get("device_model")
+        if allowed_device_models is not None and device_model is not None:
+            if not any(
+                device_model.startswith(allowed_model_prefix)
+                for allowed_model_prefix in allowed_device_models
+            ):
+                return (
+                    True,
+                    f"the endpoint is not applicable for device model {device_model}",
+                )
+
+        return False, ""
