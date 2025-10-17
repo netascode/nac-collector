@@ -14,6 +14,8 @@ from rich.progress import (
 )
 from ruamel.yaml import YAML
 
+from nac_collector.resource_manager import ResourceManager
+
 logger = logging.getLogger("main")
 
 
@@ -199,6 +201,12 @@ class GithubRepoWrapper:
             self.move_meraki_root_to_child(endpoints_list, "/devices", "/organizations")
 
         self._delete_repo()
+
+        if self.solution == "meraki":
+            overrides = ResourceManager.get_packaged_endpoint_data(
+                f"{self.solution}_overrides"
+            )
+            self.add_overrides_to_endpoints(endpoints_list, overrides)
 
         return endpoints_list
 
@@ -404,3 +412,26 @@ class GithubRepoWrapper:
             # Delete the directory and its contents
             shutil.rmtree(self.clone_dir)
         self.logger.info("Deleted repository")
+
+    @staticmethod
+    def add_overrides_to_endpoints(
+        endpoints: list[dict[str, Any]], overrides: list[dict[str, Any]] | None
+    ) -> None:
+        if overrides is None:
+            return
+
+        for endpoint in endpoints:
+            try:
+                override_endpoint = next(
+                    override
+                    for override in overrides
+                    if override["name"] == endpoint["name"]
+                )
+                for key, value in override_endpoint.items():
+                    endpoint[key] = value
+            except StopIteration:
+                pass
+
+            GithubRepoWrapper.add_overrides_to_endpoints(
+                endpoint.get("children", []), overrides
+            )

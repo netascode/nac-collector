@@ -386,6 +386,10 @@
     children:
     - name: cellular_gateway_port_forwarding_rules
       endpoint: /cellularGateway/portForwardingRules
+      allowed_device_types:
+      - cellularGateway
+      allowed_device_models:
+      - MG
     - name: appliance_radio_settings
       endpoint: /appliance/radio/settings
     - name: switch_routing_static_route

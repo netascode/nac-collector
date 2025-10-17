@@ -1,0 +1,36 @@
+# Endpoint overrides YAML format:
+# A flat list of endpoints (no tree with "children").
+# "name" refers to an endpoint anywhere in the main endpoint tree.
+# any other keys replace the corresponding keys in the endpoint.
+
+# To apply modifications in this file,
+# regenerate the endpoints YAML with "uv run ./scripts/update_endpoints.py".
+
+# Note: for switches, the error message says "This endpoint only supports MS devices",
+# but no error is returned for MS and C devices, not just MS devices.
+- name: switch_port
+  allowed_device_types: [switch]
+- name: switch_warm_spare
+  allowed_device_types: [switch]
+- name: switch_routing_interface
+  allowed_device_types: [switch]
+- name: switch_routing_static_route
+  allowed_device_types: [switch]
+- name: wireless_device_bluetooth_settings
+  allowed_device_models: [MR]
+- name: appliance_radio_settings
+  allowed_device_models: [MX]
+- name: cellular_gateway_port_forwarding_rules
+  allowed_device_models: [MG]
+- name: cellular_gateway_lan
+  allowed_device_models: [MG]
+- name: camera_video_settings
+  allowed_device_models: [MV]
+- name: camera_custom_analytics
+  allowed_device_models: [MV]
+- name: camera_quality_retention
+  allowed_device_models: [MV]
+- name: camera_device_wireless_profiles
+  allowed_device_models: [MV]
+- name: camera_sense
+  allowed_device_models: [MV]
