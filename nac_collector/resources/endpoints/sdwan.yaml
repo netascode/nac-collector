@@ -1,13 +1,62 @@
-- name: feature_templates
-  endpoint: /template/feature/object/%i
-- name: ipv4_prefix_list_policy_object
-  endpoint: /template/policy/list/prefix/
+- name: system_feature_profile
+  endpoint: /v1/feature-profile/sdwan/system
+  children:
+  - name: system_flexible_port_speed
+    endpoint: /flexible-port-speed
+  - name: system_aaa
+    endpoint: /aaa
+  - name: system_remote_access
+    endpoint: /remote-access
+  - name: system_ntp
+    endpoint: /ntp
+  - name: system_security
+    endpoint: /security
+  - name: system_bfd
+    endpoint: /bfd
+  - name: system_banner
+    endpoint: /banner
+  - name: system_perfomance_monitoring
+    endpoint: /perfmonitor
+  - name: system_global
+    endpoint: /global
+  - name: system_ipv6_device_access
+    endpoint: /ipv6-device-access-policy
+  - name: system_basic
+    endpoint: /basic
+  - name: system_snmp
+    endpoint: /snmp
+  - name: system_omp
+    endpoint: /omp
+  - name: system_logging
+    endpoint: /logging
+  - name: system_mrf
+    endpoint: /mrf
+  - name: system_ipv4_device_access
+    endpoint: /ipv4-device-access-policy
 - name: transport_feature_profile
   endpoint: /v1/feature-profile/sdwan/transport
   children:
   - name: transport_wan_vpn
     endpoint: /wan/vpn
     children:
+    - name: transport_wan_vpn_interface_ethernet
+      endpoint: /interface/ethernet
+      children:
+      - name: 
+          transport_wan_vpn_interface_ethernet_feature_associate_ipv6_tracker_group
+        endpoint: /ipv6-trackergroup
+      - name: transport_wan_vpn_interface_ethernet_feature_associate_tracker
+        endpoint: /tracker
+      - name: 
+          transport_wan_vpn_interface_ethernet_feature_associate_tracker_group
+        endpoint: /trackergroup
+      - name: 
+          transport_wan_vpn_interface_ethernet_feature_associate_ipv6_tracker
+        endpoint: /ipv6-tracker
+    - name: transport_wan_vpn_feature_associate_routing_ospfv3_ipv6
+      endpoint: /routing/ospfv3/ipv6
+    - name: transport_wan_vpn_feature_associate_routing_ospfv3_ipv4
+      endpoint: /routing/ospfv3/ipv4
     - name: transport_wan_vpn_interface_cellular
       endpoint: /interface/cellular
       children:
@@ -18,324 +67,156 @@
         endpoint: /tracker
     - name: transport_wan_vpn_feature_associate_routing_ospf
       endpoint: /routing/ospf
-    - name: transport_wan_vpn_interface_ipsec
-      endpoint: /interface/ipsec
-      children:
-      - name: transport_wan_vpn_interface_ipsec_feature_associate_tracker
-        endpoint: /tracker
-    - name: transport_wan_vpn_interface_ethernet
-      endpoint: /interface/ethernet
-      children:
-      - name: transport_wan_vpn_interface_ethernet_feature_associate_tracker
-        endpoint: /tracker
-      - name: 
-          transport_wan_vpn_interface_ethernet_feature_associate_ipv6_tracker_group
-        endpoint: /ipv6-trackergroup
-      - name: 
-          transport_wan_vpn_interface_ethernet_feature_associate_ipv6_tracker
-        endpoint: /ipv6-tracker
-      - name: 
-          transport_wan_vpn_interface_ethernet_feature_associate_tracker_group
-        endpoint: /trackergroup
     - name: transport_wan_vpn_interface_gre
       endpoint: /interface/gre
       children:
       - name: transport_wan_vpn_interface_gre_feature_associate_tracker
         endpoint: /tracker
-    - name: transport_wan_vpn_feature_associate_routing_ospfv3_ipv6
-      endpoint: /routing/ospfv3/ipv6
     - name: transport_wan_vpn_feature_associate_routing_bgp
       endpoint: /routing/bgp
-    - name: transport_wan_vpn_feature_associate_routing_ospfv3_ipv4
-      endpoint: /routing/ospfv3/ipv4
+    - name: transport_wan_vpn_interface_ipsec
+      endpoint: /interface/ipsec
+      children:
+      - name: transport_wan_vpn_interface_ipsec_feature_associate_tracker
+        endpoint: /tracker
     - name: transport_wan_vpn_interface_t1_e1_serial
       endpoint: /interface/serial
-  - name: transport_routing_ospfv3_ipv6
-    endpoint: /routing/ospfv3/ipv6
-  - name: transport_gps
-    endpoint: /gps
-  - name: transport_ipv4_acl
-    endpoint: /ipv4-acl
-  - name: transport_route_policy
-    endpoint: /route-policy
+  - name: transport_ipv6_acl
+    endpoint: /ipv6-acl
   - name: transport_ipv6_tracker_group
     endpoint: /ipv6-trackergroup
+  - name: transport_routing_ospfv3_ipv4
+    endpoint: /routing/ospfv3/ipv4
+  - name: transport_t1_e1_controller
+    endpoint: /t1-e1-controller
   - name: transport_management_vpn
     endpoint: /management/vpn
     children:
     - name: transport_management_vpn_interface_ethernet
       endpoint: /interface/ethernet
-  - name: transport_routing_ospfv3_ipv4
-    endpoint: /routing/ospfv3/ipv4
-  - name: transport_tracker
-    endpoint: /tracker
-  - name: transport_ipv6_tracker
-    endpoint: /ipv6-tracker
-  - name: transport_ipv6_acl
-    endpoint: /ipv6-acl
-  - name: transport_t1_e1_controller
-    endpoint: /t1-e1-controller
-  - name: transport_tracker_group
-    endpoint: /trackergroup
-  - name: transport_routing_ospf
-    endpoint: /routing/ospf
-  - name: transport_routing_bgp
-    endpoint: /routing/bgp
+  - name: transport_route_policy
+    endpoint: /route-policy
   - name: transport_cellular_profile
     endpoint: /cellular-profile
+  - name: transport_ipv6_tracker
+    endpoint: /ipv6-tracker
+  - name: transport_routing_ospf
+    endpoint: /routing/ospf
+  - name: transport_routing_ospfv3_ipv6
+    endpoint: /routing/ospfv3/ipv6
+  - name: transport_routing_bgp
+    endpoint: /routing/bgp
   - name: transport_cellular_controller
     endpoint: /cellular-controller
-- name: hub_and_spoke_topology_policy_definition
-  endpoint: /template/policy/definition/hubandspoke/
-- name: route_policy_definition
-  endpoint: /template/policy/definition/vedgeroute/
+  - name: transport_gps
+    endpoint: /gps
+  - name: transport_tracker
+    endpoint: /tracker
+  - name: transport_tracker_group
+    endpoint: /trackergroup
+  - name: transport_ipv4_acl
+    endpoint: /ipv4-acl
+- name: tag
+  endpoint: /v1/tags
 - name: ipv6_device_acl_policy_definition
   endpoint: /template/policy/definition/deviceaccesspolicyv6/
-- name: device
-  endpoint: /device
-- name: configuration_group
-  endpoint: /v1/config-group/
-- name: application_list_policy_object
-  endpoint: /template/policy/list/app/
-- name: color_list_policy_object
-  endpoint: /template/policy/list/color/
-- name: standard_community_list_policy_object
-  endpoint: /template/policy/list/community/
-- name: policy_object_feature_profile
-  endpoint: /v1/feature-profile/sdwan/policy-object
-  children:
-  - name: policy_object_standard_community_list
-    endpoint: /standard-community
-  - name: policy_object_security_url_block_list
-    endpoint: /security-urllist
-  - name: policy_object_security_url_allow_list
-    endpoint: /security-urllist
-  - name: policy_object_security_data_ipv4_prefix_list
-    endpoint: /security-data-ip-prefix
-  - name: policy_object_extended_community_list
-    endpoint: /ext-community
-  - name: policy_object_class_map
-    endpoint: /class
-  - name: policy_object_data_ipv6_prefix_list
-    endpoint: /data-ipv6-prefix
-  - name: policy_object_security_fqdn_list
-    endpoint: /security-fqdn
-  - name: policy_object_security_port_list
-    endpoint: /security-port
-  - name: policy_object_data_ipv4_prefix_list
-    endpoint: /data-prefix
-  - name: policy_object_security_ips_signature
-    endpoint: /security-ipssignature
-  - name: policy_object_mirror
-    endpoint: /mirror
-  - name: policy_object_expanded_community_list
-    endpoint: /expanded-community
-  - name: policy_object_policer
-    endpoint: /policer
-  - name: policy_object_preferred_color_group
-    endpoint: /preferred-color-group
-  - name: policy_object_as_path_list
-    endpoint: /as-path
-  - name: policy_object_security_geolocation_list
-    endpoint: /security-geolocation
-  - name: policy_object_vpn_group
-    endpoint: /vpn-group
-  - name: policy_object_tloc_list
-    endpoint: /tloc
-  - name: policy_object_app_probe_class
-    endpoint: /app-probe
-  - name: policy_object_security_local_application_list
-    endpoint: /security-localapp
-  - name: policy_object_security_local_domain_list
-    endpoint: /security-localdomain
-  - name: policy_object_application_list
-    endpoint: /app-list
-  - name: policy_object_sla_class_list
-    endpoint: /sla-class
-  - name: policy_object_ipv6_prefix_list
-    endpoint: /ipv6-prefix
-  - name: policy_object_ipv4_prefix_list
-    endpoint: /prefix
-  - name: policy_object_color_list
-    endpoint: /color
-  - name: policy_object_security_identity_list
-    endpoint: /security-identity
-  - name: policy_object_security_scalable_group_tag_list
-    endpoint: /security-scalablegrouptag
-- name: embedded_security_feature_profile
-  endpoint: /v1/feature-profile/sdwan/embedded-security
-- name: class_map_policy_object
-  endpoint: /template/policy/list/class/
-- name: data_fqdn_prefix_list_policy_object
-  endpoint: /template/policy/list/fqdn/
-- name: block_url_list_policy_object
-  endpoint: /template/policy/list/urlblacklist/
-- name: ipv6_prefix_list_policy_object
-  endpoint: /template/policy/list/ipv6prefix/
 - name: service_feature_profile
   endpoint: /v1/feature-profile/sdwan/service
   children:
   - name: service_lan_vpn
     endpoint: /lan/vpn
     children:
-    - name: service_lan_vpn_interface_ipsec
-      endpoint: /interface/ipsec
-      children:
-      - name: service_lan_vpn_ethernet_ipsec_feature_associate_dhcp_server
-        endpoint: /dhcp-server
+    - name: service_lan_vpn_feature_associate_routing_ospfv3_ipv4
+      endpoint: /routing/ospfv3/ipv4
     - name: service_lan_vpn_interface_ethernet
       endpoint: /interface/ethernet
       children:
       - name: service_lan_vpn_ethernet_interface_feature_associate_tracker
         endpoint: /tracker
-      - name: service_lan_vpn_ethernet_interface_feature_associate_dhcp_server
-        endpoint: /dhcp-server
       - name: service_lan_vpn_ethernet_interface_feature_associate_tracker_group
         endpoint: /trackergroup
-    - name: service_lan_vpn_feature_associate_routing_ospfv3_ipv4
-      endpoint: /routing/ospfv3/ipv4
+      - name: service_lan_vpn_ethernet_interface_feature_associate_dhcp_server
+        endpoint: /dhcp-server
+    - name: service_lan_vpn_feature_associate_routing_eigrp
+      endpoint: /routing/eigrp
+    - name: service_lan_vpn_feature_associate_mulitcast
+      endpoint: /routing/multicast
+    - name: service_lan_vpn_feature_associate_routing_bgp
+      endpoint: /routing/bgp
+    - name: service_lan_vpn_feature_associate_routing_ospf
+      endpoint: /routing/ospf
+    - name: service_lan_vpn_feature_associate_routing_ospfv3_ipv6
+      endpoint: /routing/ospfv3/ipv6
+    - name: service_lan_vpn_interface_ipsec
+      endpoint: /interface/ipsec
+      children:
+      - name: service_lan_vpn_ethernet_ipsec_feature_associate_dhcp_server
+        endpoint: /dhcp-server
     - name: service_lan_vpn_interface_svi
       endpoint: /interface/svi
       children:
       - name: service_lan_vpn_ethernet_svi_feature_associate_dhcp_server
         endpoint: /dhcp-server
-    - name: service_lan_vpn_feature_associate_routing_eigrp
-      endpoint: /routing/eigrp
-    - name: service_lan_vpn_feature_associate_routing_ospf
-      endpoint: /routing/ospf
-    - name: service_lan_vpn_feature_associate_routing_ospfv3_ipv6
-      endpoint: /routing/ospfv3/ipv6
-    - name: service_lan_vpn_feature_associate_routing_bgp
-      endpoint: /routing/bgp
-    - name: service_lan_vpn_feature_associate_mulitcast
-      endpoint: /routing/multicast
     - name: service_lan_vpn_interface_gre
       endpoint: /interface/gre
-  - name: service_ipv4_acl
-    endpoint: /ipv4-acl
   - name: service_routing_ospf
     endpoint: /routing/ospf
+  - name: service_object_tracker_group
+    endpoint: /objecttrackergroup
+  - name: service_route_policy
+    endpoint: /route-policy
+  - name: service_tracker
+    endpoint: /tracker
+  - name: service_ipv4_acl
+    endpoint: /ipv4-acl
+  - name: service_object_tracker
+    endpoint: /objecttracker
+  - name: service_routing_ospfv3_ipv4
+    endpoint: /routing/ospfv3/ipv4
+  - name: service_switchport
+    endpoint: /switchport
+  - name: service_routing_bgp
+    endpoint: /routing/bgp
+  - name: service_dhcp_server
+    endpoint: /dhcp-server
+  - name: service_routing_eigrp
+    endpoint: /routing/eigrp
+  - name: service_multicast
+    endpoint: /routing/multicast
+  - name: service_routing_ospfv3_ipv6
+    endpoint: /routing/ospfv3/ipv6
   - name: service_wireless_lan
     endpoint: /wirelesslan
   - name: service_tracker_group
     endpoint: /trackergroup
-  - name: service_route_policy
-    endpoint: /route-policy
-  - name: service_routing_ospfv3_ipv6
-    endpoint: /routing/ospfv3/ipv6
-  - name: service_switchport
-    endpoint: /switchport
-  - name: service_routing_eigrp
-    endpoint: /routing/eigrp
-  - name: service_object_tracker
-    endpoint: /objecttracker
-  - name: service_routing_bgp
-    endpoint: /routing/bgp
-  - name: service_multicast
-    endpoint: /routing/multicast
-  - name: service_dhcp_server
-    endpoint: /dhcp-server
-  - name: service_routing_ospfv3_ipv4
-    endpoint: /routing/ospfv3/ipv4
   - name: service_ipv6_acl
     endpoint: /ipv6-acl
-  - name: service_tracker
-    endpoint: /tracker
-  - name: service_object_tracker_group
-    endpoint: /objecttrackergroup
-- name: mesh_topology_policy_definition
-  endpoint: /template/policy/definition/mesh/
-- name: url_filtering_definition
-  endpoint: /template/policy/definition/urlfiltering/
-- name: security_policy
-  endpoint: /template/policy/security/
-- name: traffic_data_policy_definition
-  endpoint: /template/policy/definition/data/
-- name: data_ipv4_prefix_list_policy_object
-  endpoint: /template/policy/list/dataprefix/
-- name: tls_ssl_profile_policy_definition
-  endpoint: /template/policy/definition/sslutdprofile/
-- name: custom_control_topology_policy_definition
-  endpoint: /template/policy/definition/control/
-- name: advanced_malware_protection_policy_definition
-  endpoint: /template/policy/definition/advancedMalwareProtection/
-- name: tloc_list_policy_object
-  endpoint: /template/policy/list/tloc/
-- name: application_aware_routing_policy_definition
-  endpoint: /template/policy/definition/approute/
-- name: sla_class_policy_object
-  endpoint: /template/policy/list/sla/
-- name: sig_security_feature_profile
-  endpoint: /v1/feature-profile/sdwan/sig-security
-- name: policy_group
-  endpoint: /v1/policy-group/
+- name: application_list_policy_object
+  endpoint: /template/policy/list/app/
+- name: route_policy_definition
+  endpoint: /template/policy/definition/vedgeroute/
 - name: app_probe_class_policy_object
   endpoint: /template/policy/list/appprobe/
-- name: feature_device_template
-  endpoint: /template/device/object/%i
-- name: dns_security_policy_definition
-  endpoint: /template/policy/definition/dnssecurity/
-- name: ipv6_acl_policy_definition
-  endpoint: /template/policy/definition/aclv6/
-- name: rewrite_rule_policy_definition
-  endpoint: /template/policy/definition/rewriterule/
+- name: configuration_group
+  endpoint: /v1/config-group/
 - name: object_group_policy_definition
   endpoint: /template/policy/definition/securitygroup/
-- name: domain_list_policy_object
-  endpoint: /template/policy/list/localdomain/
-- name: mirror_policy_object
-  endpoint: /template/policy/list/mirror/
-- name: protocol_list_policy_object
-  endpoint: /template/policy/list/protocolname/
-- name: local_application_list_policy_object
-  endpoint: /template/policy/list/localapp/
-- name: site_list_policy_object
-  endpoint: /template/policy/list/site/
-- name: vpn_list_policy_object
-  endpoint: /template/policy/list/vpn/
-- name: extended_community_list_policy_object
-  endpoint: /template/policy/list/extcommunity/
-- name: tag
-  endpoint: /v1/tags
-- name: preferred_color_group_policy_object
-  endpoint: /template/policy/list/preferredcolorgroup/
-- name: geo_location_list_policy_object
-  endpoint: /template/policy/list/geolocation/
-- name: policer_policy_object
-  endpoint: /template/policy/list/policer/
-- name: vedge_inventory
-  endpoint: /device/vedgeinventory/detail
-- name: region_list_policy_object
-  endpoint: /template/policy/list/region/
-- name: data_ipv6_prefix_list_policy_object
-  endpoint: /template/policy/list/dataipv6prefix/
-- name: cli_feature_profile
-  endpoint: /v1/feature-profile/sdwan/cli
-  children:
-  - name: cli_config_feature
-    endpoint: /config
-- name: zone_based_firewall_policy_definition
-  endpoint: /template/policy/definition/zonebasedfw/
-- name: qos_map_policy_definition
-  endpoint: /template/policy/definition/qosmap/
-- name: port_list_policy_object
-  endpoint: /template/policy/list/port/
-- name: allow_url_list_policy_object
-  endpoint: /template/policy/list/urlwhitelist/
+- name: traffic_data_policy_definition
+  endpoint: /template/policy/definition/data/
+- name: data_fqdn_prefix_list_policy_object
+  endpoint: /template/policy/list/fqdn/
+- name: application_aware_routing_policy_definition
+  endpoint: /template/policy/definition/approute/
 - name: localized_policy
   endpoint: /template/policy/vedge/
-- name: intrusion_prevention_policy_definition
-  endpoint: /template/policy/definition/intrusionprevention/
-- name: rule_set_policy_definition
-  endpoint: /template/policy/definition/ruleset/
-- name: ipv4_acl_policy_definition
-  endpoint: /template/policy/definition/acl/
-- name: centralized_policy
-  endpoint: /template/policy/vsmart/
-- name: vpn_membership_policy_definition
-  endpoint: /template/policy/definition/vpnmembershipgroup/
-- name: ips_signature_list_policy_object
-  endpoint: /template/policy/list/ipssignature/
+- name: port_list_policy_object
+  endpoint: /template/policy/list/port/
+- name: ipv4_device_acl_policy_definition
+  endpoint: /template/policy/definition/deviceaccesspolicy/
+- name: extended_community_list_policy_object
+  endpoint: /template/policy/list/extcommunity/
+- name: custom_control_topology_policy_definition
+  endpoint: /template/policy/definition/control/
 - name: other_feature_profile
   endpoint: /v1/feature-profile/sdwan/other
   children:
@@ -343,10 +224,28 @@
     endpoint: /thousandeyes
   - name: other_ucse
     endpoint: /ucse
-- name: advanced_inspection_profile_policy_definition
-  endpoint: /template/policy/definition/advancedinspectionprofile/
-- name: cli_device_template
-  endpoint: /template/device/
+- name: color_list_policy_object
+  endpoint: /template/policy/list/color/
+- name: standard_community_list_policy_object
+  endpoint: /template/policy/list/community/
+- name: policer_policy_object
+  endpoint: /template/policy/list/policer/
+- name: tls_ssl_profile_policy_definition
+  endpoint: /template/policy/definition/sslutdprofile/
+- name: embedded_security_feature_profile
+  endpoint: /v1/feature-profile/sdwan/embedded-security
+- name: ipv4_prefix_list_policy_object
+  endpoint: /template/policy/list/prefix/
+- name: site_list_policy_object
+  endpoint: /template/policy/list/site/
+- name: ips_signature_list_policy_object
+  endpoint: /template/policy/list/ipssignature/
+- name: block_url_list_policy_object
+  endpoint: /template/policy/list/urlblacklist/
+- name: cflowd_policy_definition
+  endpoint: /template/policy/definition/cflowd/
+- name: data_ipv6_prefix_list_policy_object
+  endpoint: /template/policy/list/dataipv6prefix/
 - name: application_priority_feature_profile
   endpoint: /v1/feature-profile/sdwan/application-priority
   children:
@@ -354,53 +253,154 @@
     endpoint: /traffic-policy
   - name: application_priority_qos
     endpoint: /qos-policy
-- name: cflowd_policy_definition
-  endpoint: /template/policy/definition/cflowd/
+- name: dns_security_policy_definition
+  endpoint: /template/policy/definition/dnssecurity/
+- name: advanced_inspection_profile_policy_definition
+  endpoint: /template/policy/definition/advancedinspectionprofile/
+- name: url_filtering_definition
+  endpoint: /template/policy/definition/urlfiltering/
+- name: preferred_color_group_policy_object
+  endpoint: /template/policy/list/preferredcolorgroup/
+- name: domain_list_policy_object
+  endpoint: /template/policy/list/localdomain/
+- name: sla_class_policy_object
+  endpoint: /template/policy/list/sla/
+- name: ipv6_acl_policy_definition
+  endpoint: /template/policy/definition/aclv6/
+- name: device
+  endpoint: /device
+- name: cli_device_template
+  endpoint: /template/device/
+- name: vpn_list_policy_object
+  endpoint: /template/policy/list/vpn/
+- name: ipv6_prefix_list_policy_object
+  endpoint: /template/policy/list/ipv6prefix/
+- name: security_policy
+  endpoint: /template/policy/security/
+- name: rule_set_policy_definition
+  endpoint: /template/policy/definition/ruleset/
+- name: rewrite_rule_policy_definition
+  endpoint: /template/policy/definition/rewriterule/
 - name: as_path_list_policy_object
   endpoint: /template/policy/list/aspath/
-- name: expanded_community_list_policy_object
-  endpoint: /template/policy/list/expandedcommunity/
-- name: zone_list_policy_object
-  endpoint: /template/policy/list/zone/
-- name: ipv4_device_acl_policy_definition
-  endpoint: /template/policy/definition/deviceaccesspolicy/
-- name: system_feature_profile
-  endpoint: /v1/feature-profile/sdwan/system
-  children:
-  - name: system_basic
-    endpoint: /basic
-  - name: system_ipv4_device_access
-    endpoint: /ipv4-device-access-policy
-  - name: system_global
-    endpoint: /global
-  - name: system_mrf
-    endpoint: /mrf
-  - name: system_ipv6_device_access
-    endpoint: /ipv6-device-access-policy
-  - name: system_banner
-    endpoint: /banner
-  - name: system_logging
-    endpoint: /logging
-  - name: system_aaa
-    endpoint: /aaa
-  - name: system_bfd
-    endpoint: /bfd
-  - name: system_remote_access
-    endpoint: /remote-access
-  - name: system_snmp
-    endpoint: /snmp
-  - name: system_omp
-    endpoint: /omp
-  - name: system_security
-    endpoint: /security
-  - name: system_ntp
-    endpoint: /ntp
-  - name: system_flexible_port_speed
-    endpoint: /flexible-port-speed
-  - name: system_perfomance_monitoring
-    endpoint: /perfmonitor
+- name: mesh_topology_policy_definition
+  endpoint: /template/policy/definition/mesh/
+- name: local_application_list_policy_object
+  endpoint: /template/policy/list/localapp/
+- name: hub_and_spoke_topology_policy_definition
+  endpoint: /template/policy/definition/hubandspoke/
+- name: sig_security_feature_profile
+  endpoint: /v1/feature-profile/sdwan/sig-security
+- name: mirror_policy_object
+  endpoint: /template/policy/list/mirror/
+- name: vedge_inventory
+  endpoint: /device/vedgeinventory/detail
+- name: qos_map_policy_definition
+  endpoint: /template/policy/definition/qosmap/
+- name: advanced_malware_protection_policy_definition
+  endpoint: /template/policy/definition/advancedMalwareProtection/
 - name: dns_security_feature_profile
   endpoint: /v1/feature-profile/sdwan/dns-security
   children:
   - name: dns_security
     endpoint: /dns
+- name: allow_url_list_policy_object
+  endpoint: /template/policy/list/urlwhitelist/
+- name: cli_feature_profile
+  endpoint: /v1/feature-profile/sdwan/cli
+  children:
+  - name: cli_config_feature
+    endpoint: /config
+- name: class_map_policy_object
+  endpoint: /template/policy/list/class/
+- name: expanded_community_list_policy_object
+  endpoint: /template/policy/list/expandedcommunity/
+- name: protocol_list_policy_object
+  endpoint: /template/policy/list/protocolname/
+- name: zone_based_firewall_policy_definition
+  endpoint: /template/policy/definition/zonebasedfw/
+- name: tloc_list_policy_object
+  endpoint: /template/policy/list/tloc/
+- name: vpn_membership_policy_definition
+  endpoint: /template/policy/definition/vpnmembershipgroup/
+- name: region_list_policy_object
+  endpoint: /template/policy/list/region/
+- name: data_ipv4_prefix_list_policy_object
+  endpoint: /template/policy/list/dataprefix/
+- name: feature_device_template
+  endpoint: /template/device/object/%i
+- name: intrusion_prevention_policy_definition
+  endpoint: /template/policy/definition/intrusionprevention/
+- name: policy_object_feature_profile
+  endpoint: /v1/feature-profile/sdwan/policy-object
+  children:
+  - name: policy_object_tloc_list
+    endpoint: /tloc
+  - name: policy_object_security_geolocation_list
+    endpoint: /security-geolocation
+  - name: policy_object_vpn_group
+    endpoint: /vpn-group
+  - name: policy_object_app_probe_class
+    endpoint: /app-probe
+  - name: policy_object_security_ips_signature
+    endpoint: /security-ipssignature
+  - name: policy_object_security_fqdn_list
+    endpoint: /security-fqdn
+  - name: policy_object_ipv4_prefix_list
+    endpoint: /prefix
+  - name: policy_object_security_url_block_list
+    endpoint: /security-urllist
+  - name: policy_object_security_url_allow_list
+    endpoint: /security-urllist
+  - name: policy_object_preferred_color_group
+    endpoint: /preferred-color-group
+  - name: policy_object_application_list
+    endpoint: /app-list
+  - name: policy_object_security_data_ipv4_prefix_list
+    endpoint: /security-data-ip-prefix
+  - name: policy_object_color_list
+    endpoint: /color
+  - name: policy_object_as_path_list
+    endpoint: /as-path
+  - name: policy_object_mirror
+    endpoint: /mirror
+  - name: policy_object_security_local_domain_list
+    endpoint: /security-localdomain
+  - name: policy_object_data_ipv4_prefix_list
+    endpoint: /data-prefix
+  - name: policy_object_sla_class_list
+    endpoint: /sla-class
+  - name: policy_object_standard_community_list
+    endpoint: /standard-community
+  - name: policy_object_extended_community_list
+    endpoint: /ext-community
+  - name: policy_object_security_port_list
+    endpoint: /security-port
+  - name: policy_object_data_ipv6_prefix_list
+    endpoint: /data-ipv6-prefix
+  - name: policy_object_security_identity_list
+    endpoint: /security-identity
+  - name: policy_object_expanded_community_list
+    endpoint: /expanded-community
+  - name: policy_object_security_local_application_list
+    endpoint: /security-localapp
+  - name: policy_object_ipv6_prefix_list
+    endpoint: /ipv6-prefix
+  - name: policy_object_class_map
+    endpoint: /class
+  - name: policy_object_security_scalable_group_tag_list
+    endpoint: /security-scalablegrouptag
+  - name: policy_object_policer
+    endpoint: /policer
+- name: geo_location_list_policy_object
+  endpoint: /template/policy/list/geolocation/
+- name: ipv4_acl_policy_definition
+  endpoint: /template/policy/definition/acl/
+- name: zone_list_policy_object
+  endpoint: /template/policy/list/zone/
+- name: centralized_policy
+  endpoint: /template/policy/vsmart/
+- name: policy_group
+  endpoint: /v1/policy-group/
+- name: feature_templates
+  endpoint: /template/feature/object/%i
