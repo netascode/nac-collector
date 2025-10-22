@@ -336,6 +336,8 @@
   children:
   - name: policy_object_tloc_list
     endpoint: /tloc
+  - name: policy_object_unified_advanced_malware_protection
+    endpoint: /unified/advanced-malware-protection
   - name: policy_object_security_geolocation_list
     endpoint: /security-geolocation
   - name: policy_object_vpn_group
@@ -346,6 +348,8 @@
     endpoint: /security-ipssignature
   - name: policy_object_security_fqdn_list
     endpoint: /security-fqdn
+  - name: policy_object_unified_tls_ssl_profile
+    endpoint: /unified/ssl-decryption-profile
   - name: policy_object_ipv4_prefix_list
     endpoint: /prefix
   - name: policy_object_security_url_block_list
@@ -366,12 +370,16 @@
     endpoint: /mirror
   - name: policy_object_security_local_domain_list
     endpoint: /security-localdomain
+  - name: policy_object_unified_advanced_inspection_profile
+    endpoint: /unified/advanced-inspection-profile
   - name: policy_object_data_ipv4_prefix_list
     endpoint: /data-prefix
   - name: policy_object_sla_class_list
     endpoint: /sla-class
   - name: policy_object_standard_community_list
     endpoint: /standard-community
+  - name: policy_object_unified_tls_ssl_decryption
+    endpoint: /unified/ssl-decryption
   - name: policy_object_extended_community_list
     endpoint: /ext-community
   - name: policy_object_security_port_list
@@ -380,8 +388,14 @@
     endpoint: /data-ipv6-prefix
   - name: policy_object_security_identity_list
     endpoint: /security-identity
+  - name: policy_object_unified_intrusion_prevention
+    endpoint: /unified/intrusion-prevention
   - name: policy_object_expanded_community_list
     endpoint: /expanded-community
+  - name: policy_object_unified_url_filtering
+    endpoint: /unified/url-filtering
+  - name: policy_object_security_protocol_list
+    endpoint: /security-protocolname
   - name: policy_object_security_local_application_list
     endpoint: /security-localapp
   - name: policy_object_ipv6_prefix_list
