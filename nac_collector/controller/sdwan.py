@@ -1,3 +1,4 @@
+import json
 import logging
 from typing import Any
 
@@ -277,7 +278,7 @@ class CiscoClientSDWAN(CiscoClientController):
 
                 response = self.post_request(
                     self.base_url + "/template/device/config/input/",
-                    data,
+                    json.dumps(data),
                 )
                 if response is None:
                     continue

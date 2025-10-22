@@ -103,6 +103,22 @@ nac-collector -s CATALYSTCENTER --username USERNAME --password PASSWORD --url UR
 
 Catalyst Center contains some custom logic, explained in [README_catalyst_center.md](README_catalyst_center.md).
 
+### NDO
+
+```sh
+# With environment variables
+uv run nac-collector -s NDO -v DEBUG
+
+# Without environment variables
+uv run nac-collector -s NDO --username USERNAME --password PASSWORD --domain DOMAIN --url URL -v DEBUG
+```
+
+Using installed package:
+
+```sh
+nac-collector -s NDO -v DEBUG
+```
+
 ### Meraki
 
 ```sh

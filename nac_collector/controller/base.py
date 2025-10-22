@@ -133,13 +133,13 @@ class CiscoClientController(ABC):
         # or if no successful response was received, return the last response
         return response
 
-    def post_request(self, url: str, data: dict[str, Any]) -> httpx.Response | None:
+    def post_request(self, url: str, data: Any) -> httpx.Response | None:
         """
         Send a POST request to a specific URL and handle a 429 status code.
 
         Parameters:
             url (str): The URL to send the POST request to.
-            data (dict): The data to send in the body of the POST request.
+            data (Any): The data to send in the body of the POST request.
 
         Returns:
             response (httpx.Response): The response from the POST request.
