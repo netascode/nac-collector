@@ -171,13 +171,6 @@ class GithubRepoWrapper:
         # Adjust endpoints with potential parent-children relationships
         endpoints_list = self.parent_children(endpoints_list)
 
-        # Check if there are any overrides to process (add/remove endpoints from the list)
-        overrides_file = os.path.join(
-            "nac_collector", "overrides", f"{self.solution}.yaml"
-        )
-        if os.path.isfile(overrides_file):
-            endpoints_list = self._process_overrides(overrides_file, endpoints_list)
-
         self._delete_repo()
 
         return endpoints_list
@@ -292,60 +285,3 @@ class GithubRepoWrapper:
             # Delete the directory and its contents
             shutil.rmtree(self.clone_dir)
         self.logger.info("Deleted repository")
-
-    def _process_overrides(
-        self, overrides_file: str, endpoints_list: list[dict[str, Any]]
-    ) -> list[dict[str, Any]]:
-        """
-        This method reads YAML file (located at overrides_file) with overrides, based on which it would
-        add or remove endpoints from the endpoints_list.
-
-        Returns updated endpoint_list
-        """
-        with open(overrides_file, encoding="utf-8") as f:
-            overrides = self.yaml.load(f)
-
-        for add in overrides.get("add", []):
-            add_point = self._traverse_endpoint_list(
-                endpoints_list, add["data_path"][:-1]
-            )
-            add_point.append(
-                {
-                    "name": add["data_path"][-1],
-                    "endpoint": add["endpoint"],
-                }
-            )
-
-        for remove in overrides.get("remove", []):
-            remove_point = self._traverse_endpoint_list(
-                endpoints_list, remove["data_path"][:-1]
-            )
-            for entry in remove_point:
-                if entry["name"] == remove["data_path"][-1]:
-                    remove_point.remove(entry)
-                    break
-
-        return endpoints_list
-
-    def _traverse_endpoint_list(
-        self, endpoints_list: list[dict[str, Any]], data_path: list[str]
-    ) -> list[dict[str, Any]]:
-        """
-        This method explores the endpoints_list to find the correct location specified by data_path.
-        data_path: list of strings representing the path to traverse e.g [access_control_policy, accessrules]
-
-        It returns the list of endpoints at that location.
-        """
-        if len(data_path) == 0:
-            return endpoints_list
-        # Search for the next element in the current level
-        for element in endpoints_list:
-            if element["name"] == data_path[0]:
-                if "children" not in element:
-                    element["children"] = []
-                return self._traverse_endpoint_list(element["children"], data_path[1:])
-        # If the element is not found, create it
-        endpoints_list.append({"name": data_path[0], "children": []})
-        return self._traverse_endpoint_list(
-            endpoints_list[-1]["children"], data_path[1:]
-        )
