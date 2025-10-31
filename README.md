@@ -114,6 +114,21 @@ nac-collector -s FMC --username USERNAME --password PASSWORD --url URL -v DEBUG 
 ```
 
 It is recommended to use the pre-populated endpoints list (via the `-e` option) instead of the auto-generated list (using `--fetch-latest`)
+### NDO
+
+```sh
+# With environment variables
+uv run nac-collector -s NDO -v DEBUG
+
+# Without environment variables
+uv run nac-collector -s NDO --username USERNAME --password PASSWORD --domain DOMAIN --url URL -v DEBUG
+```
+
+Using installed package:
+
+```sh
+nac-collector -s NDO -v DEBUG
+```
 
 ### IOSXE (Device-Based Collection)
 

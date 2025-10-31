@@ -23,13 +23,14 @@ class CiscoClientNDO(CiscoClientController):
         self,
         username: str,
         password: str,
+        domain: str,
         base_url: str,
         max_retries: int,
         retry_after: int,
         timeout: int,
         ssl_verify: bool,
     ) -> None:
-        self.domain = "DefaultAuth"
+        self.domain = domain
         super().__init__(
             username, password, base_url, max_retries, retry_after, timeout, ssl_verify
         )
