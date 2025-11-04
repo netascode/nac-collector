@@ -103,6 +103,17 @@ nac-collector -s CATALYSTCENTER --username USERNAME --password PASSWORD --url UR
 
 Catalyst Center contains some custom logic, explained in [README_catalyst_center.md](README_catalyst_center.md).
 
+### FMC
+
+```sh
+# With environment variables
+nac-collector -s FMC -v DEBUG -e nac_collector/resources/endpoints/fmc.yaml
+
+# Without environment variables
+nac-collector -s FMC --username USERNAME --password PASSWORD --url URL -v DEBUG -e nac_collector/resources/endpoints/fmc.yaml
+```
+
+It is recommended to use the pre-populated endpoints list (via the `-e` option) instead of the auto-generated list (using `--fetch-latest`)
 ### NDO
 
 ```sh
