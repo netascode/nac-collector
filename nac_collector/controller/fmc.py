@@ -159,6 +159,17 @@ class CiscoClientFMC(CiscoClientController):
                         }
                     )
 
+            elif endpoint["name"] == "prefilter_policy":
+                for i in data.get("items", []):
+                    if i["name"] == "Default Prefilter Policy":
+                        i["metadata"]["readOnly"] = {"state": True}
+                    endpoint_dict[endpoint["name"]].append(
+                        {
+                            "data": i,
+                            "endpoint": f"{endpoint['endpoint']}/{self.get_id_value(i)}",
+                        }
+                    )
+
             else:
                 for i in data.get("items", []):
                     endpoint_dict[endpoint["name"]].append(
