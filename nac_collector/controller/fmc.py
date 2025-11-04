@@ -124,25 +124,42 @@ class CiscoClientFMC(CiscoClientController):
         """
 
         if data is None:
-            endpoint_dict[endpoint["name"]].append(
-                {"data": {}, "endpoint": endpoint["endpoint"]}
-            )
+            # Transparent FTD devices have Global VRF, which is not returned by API
+            if endpoint["name"] == "device_vrf":
+                endpoint_dict[endpoint["name"]].append(
+                    {
+                        "data": {
+                            "description": "This is a Global Virtual Router",
+                            "name": "Global",
+                        },
+                        "endpoint": endpoint["endpoint"],
+                    }
+                )
+            else:
+                endpoint_dict[endpoint["name"]] = []
 
         elif isinstance(data, list):
             endpoint_dict[endpoint["name"]].append(
-                {"data": data, "endpoint": endpoint["endpoint"]}
+                {
+                    "data": data,
+                    "endpoint": endpoint["endpoint"],
+                }
             )
 
-        elif data.get("items", None):
-            items = data.get("items")
-            if items is not None:
-                for i in items:
-                    endpoint_dict[endpoint["name"]].append(
-                        {
-                            "data": i,
-                            "endpoint": f"{endpoint['endpoint']}/{self.get_id_value(i)}",
-                        }
-                    )
+        elif "items" in data:
+            for i in data.get("items", []):
+                endpoint_dict[endpoint["name"]].append(
+                    {
+                        "data": i,
+                        "endpoint": f"{endpoint['endpoint']}/{self.get_id_value(i)}",
+                    }
+                )
+
+        elif "items" not in data and data["paging"]["count"] == 0:
+            pass
+
+        else:
+            raise ValueError("Unexpected data format received from endpoint")
 
         return endpoint_dict  # Return the processed endpoint dictionary
 
@@ -185,57 +202,7 @@ class CiscoClientFMC(CiscoClientController):
                     endpoint, endpoint_dict, data
                 )
 
-                if endpoint.get("children"):
-                    parent_endpoint_ids = []
-
-                    for item in endpoint_dict[endpoint["name"]]:
-                        # Add the item's id to the list
-                        try:
-                            parent_endpoint_ids.append(item["data"]["id"])
-                        except KeyError:
-                            continue
-
-                    for children_endpoint in endpoint["children"]:
-                        logger.info(
-                            "Processing children endpoint: %s",
-                            endpoint["endpoint"]
-                            + "/%v"
-                            + children_endpoint["endpoint"],
-                        )
-
-                        for id_ in parent_endpoint_ids:
-                            children_endpoint_dict = (
-                                CiscoClientController.create_endpoint_dict(
-                                    children_endpoint
-                                )
-                            )
-
-                            # Replace '%v' in the endpoint with the id
-                            children_joined_endpoint = (
-                                endpoint["endpoint"]
-                                + "/"
-                                + id_
-                                + children_endpoint["endpoint"]
-                            )
-
-                            data = self.fetch_data(children_joined_endpoint)
-
-                            # Process the children endpoint data and get the updated dictionary
-                            children_endpoint_dict = self.process_endpoint_data(
-                                children_endpoint, children_endpoint_dict, data
-                            )
-
-                            for index, value in enumerate(
-                                endpoint_dict[endpoint["name"]]
-                            ):
-                                if value.get("data").get("id") == id_:
-                                    endpoint_dict[endpoint["name"]][index].setdefault(
-                                        "children", {}
-                                    )[
-                                        children_endpoint["name"]
-                                    ] = children_endpoint_dict[
-                                        children_endpoint["name"]
-                                    ]
+                self.process_children(endpoint, endpoint_dict)
 
                 # Save results to dictionary
                 # Due to domain expansion, it may happen that same endpoint["name"] will occur multiple times
@@ -245,6 +212,68 @@ class CiscoClientFMC(CiscoClientController):
                     final_dict[endpoint["name"]].extend(endpoint_dict[endpoint["name"]])
 
         return final_dict
+
+    def process_children(
+        self,
+        endpoint: dict[str, Any],
+        endpoint_dict: dict[str, Any],
+        parent_full_endpoint: str = "",
+    ) -> None:
+        if not endpoint.get("children"):
+            return
+
+        parent_endpoint_ids = []
+
+        for item in endpoint_dict[endpoint["name"]]:
+            # Add the item's id to the list
+            try:
+                parent_endpoint_ids.append(item["data"]["id"])
+            except KeyError:
+                continue
+
+        for children_endpoint in endpoint["children"]:
+            logger.info(
+                "Processing children endpoint: %s",
+                endpoint["endpoint"] + "/%v" + children_endpoint["endpoint"],
+            )
+
+            for id_ in parent_endpoint_ids:
+                children_endpoint_dict = CiscoClientController.create_endpoint_dict(
+                    children_endpoint
+                )
+
+                # Build the full endpoint path
+                # Use parent_full_endpoint if provided (for nested children), otherwise use endpoint["endpoint"]
+                base_endpoint = (
+                    parent_full_endpoint
+                    if parent_full_endpoint != ""
+                    else endpoint["endpoint"]
+                )
+                children_joined_endpoint = (
+                    base_endpoint + "/" + id_ + children_endpoint["endpoint"]
+                )
+
+                data = self.fetch_data(children_joined_endpoint)
+
+                # Process the children endpoint data and get the updated dictionary
+                children_endpoint_dict = self.process_endpoint_data(
+                    children_endpoint, children_endpoint_dict, data
+                )
+
+                for index, value in enumerate(endpoint_dict[endpoint["name"]]):
+                    if value.get("data").get("id") == id_:
+                        endpoint_dict[endpoint["name"]][index].setdefault(
+                            "children", {}
+                        )[children_endpoint["name"]] = children_endpoint_dict[
+                            children_endpoint["name"]
+                        ]
+
+                        # Pass the full accumulated path for nested children
+                        self.process_children(
+                            children_endpoint,
+                            endpoint_dict[endpoint["name"]][index]["children"],
+                            children_joined_endpoint,
+                        )
 
     @staticmethod
     def get_id_value(i: dict[str, Any]) -> str | None:
