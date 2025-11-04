@@ -147,13 +147,26 @@ class CiscoClientFMC(CiscoClientController):
             )
 
         elif "items" in data:
-            for i in data.get("items", []):
-                endpoint_dict[endpoint["name"]].append(
-                    {
-                        "data": i,
-                        "endpoint": f"{endpoint['endpoint']}/{self.get_id_value(i)}",
-                    }
-                )
+            # STG object ANY should have readOnly state set to True
+            if endpoint["name"] == "sgt":
+                for i in data.get("items", []):
+                    if i["name"] == "ANY":
+                        i["metadata"]["readOnly"]["state"] = True
+                    endpoint_dict[endpoint["name"]].append(
+                        {
+                            "data": i,
+                            "endpoint": f"{endpoint['endpoint']}/{self.get_id_value(i)}",
+                        }
+                    )
+
+            else:
+                for i in data.get("items", []):
+                    endpoint_dict[endpoint["name"]].append(
+                        {
+                            "data": i,
+                            "endpoint": f"{endpoint['endpoint']}/{self.get_id_value(i)}",
+                        }
+                    )
 
         elif "items" not in data and data["paging"]["count"] == 0:
             pass
