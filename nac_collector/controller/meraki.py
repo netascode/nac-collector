@@ -51,7 +51,7 @@ class CiscoClientMERAKI(CiscoClientController):
             ssl_verify,
         )
 
-        self.allowed_org_ids = os.getenv("NAC_MERAKI_ORG_IDS", "").split()
+        self.allowed_org_ids = os.getenv("NAC_MERAKI_ORG_IDS", "").split(",")
 
     def authenticate(self) -> bool:
         """
