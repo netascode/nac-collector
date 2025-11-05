@@ -1,3 +1,93 @@
+#!/usr/bin/env python3
+
+"""
+Categorize API errors from a Meraki nac-collector output,
+to guide developers adding exclusions to omit expected errors from the output.
+
+nac_collector/resources/endpoints/meraki_overrides.yaml
+can be used to add exclusions
+to e.g. make Meraki nac-collector not request some device-based endpoints
+for given device types.
+
+Usage:
+uv run nac-collector <...>
+unzip -o nac-collector.zip # To obtain meraki.json
+uv run ./scripts/show_meraki_errors.py meraki.json
+
+Example output (trimmed down to 2 example endpoints):
+{
+    "sm_target_group": [
+        {
+            "error": {
+                "status_code": 400,
+                "message": {
+                    "errors": [
+                        "This combined network does not contain a Systems Manager network"
+                    ]
+                }
+            },
+            "count": 4
+        }
+    ],
+    "device_cellular_sims": [
+        {
+            "error": null,
+            "count": 1,
+            "conditions": [
+                {
+                    "conditions": {
+                        "product_type": "cellularGateway",
+                        "abbreviated_model": "MG"
+                    },
+                    "count": 1
+                }
+            ]
+        },
+        {
+            "error": {
+                "status_code": 400,
+                "message": {
+                    "errors": [
+                        "This device does not support SIM configurations."
+                    ]
+                }
+            },
+            "count": 6,
+            "conditions": [
+                {
+                    "conditions": {
+                        "product_type": "appliance",
+                        "abbreviated_model": "MX"
+                    },
+                    "count": 1
+                },
+                {
+                    "conditions": {
+                        "product_type": "wireless",
+                        "abbreviated_model": "MR"
+                    },
+                    "count": 1
+                },
+                {
+                    "conditions": {
+                        "product_type": "switch",
+                        "abbreviated_model": "MS"
+                    },
+                    "count": 1
+                },
+                {
+                    "conditions": {
+                        "product_type": "switch",
+                        "abbreviated_model": "C"
+                    },
+                    "count": 3
+                }
+            ]
+        }
+    ]
+}
+"""
+
 import json
 import re
 import sys
