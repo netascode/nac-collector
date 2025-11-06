@@ -1,6 +1,7 @@
 import copy
 import json
 import logging
+import re
 from typing import Any
 
 import httpx
@@ -44,6 +45,8 @@ class CiscoClientFMC(CiscoClientController):
         )
         self.x_auth_refresh_token: str | None = None
         self.domains: list[str] = []
+        # Map domain UUID to domain name
+        self.domain_map: dict[str, str] = {}
 
     def authenticate(self) -> bool:
         """
@@ -88,13 +91,11 @@ class CiscoClientFMC(CiscoClientController):
                 self.x_auth_refresh_token = response.headers.get("X-auth-refresh-token")
 
                 # Save a list of UUIDs of all available domains
-                domains_header = response.headers.get("DOMAINS")
-                if domains_header:
-                    self.domains = [
-                        x["uuid"]
-                        for x in json.loads(domains_header)
-                        if isinstance(x, dict) and "uuid" in x
-                    ]
+                self.domain_map = {
+                    x["uuid"]: x["name"]
+                    for x in json.loads(response.headers.get("DOMAINS"))
+                }
+                self.domains = list(self.domain_map.keys())
                 return True
 
             logger.error(
@@ -159,10 +160,63 @@ class CiscoClientFMC(CiscoClientController):
                         }
                     )
 
+            # Prefilter Policy object Default Prefilter Policy should have readOnly state set to True
             elif endpoint["name"] == "prefilter_policy":
                 for i in data.get("items", []):
                     if i["name"] == "Default Prefilter Policy":
                         i["metadata"]["readOnly"] = {"state": True}
+                    endpoint_dict[endpoint["name"]].append(
+                        {
+                            "data": i,
+                            "endpoint": f"{endpoint['endpoint']}/{self.get_id_value(i)}",
+                        }
+                    )
+
+            # Those objects are read-only but don't have it marked in metadata
+            elif endpoint["name"] in [
+                "variable_set",
+                "file_type",
+                "file_category",
+                "application",
+                "application_business_relevance",
+                "application_category",
+                "application_risk",
+                "application_type",
+                "application_tag",
+            ]:
+                for i in data.get("items", []):
+                    if "metadata" in i:
+                        i["metadata"]["readOnly"] = {"state": True}
+                    else:
+                        i["metadata"] = {"readOnly": {"state": True}}
+                    endpoint_dict[endpoint["name"]].append(
+                        {
+                            "data": i,
+                            "endpoint": f"{endpoint['endpoint']}/{self.get_id_value(i)}",
+                        }
+                    )
+
+            # Those resources have missing domain info, try to extract it from endpoint URL
+            # if fai
+            elif endpoint["name"] in ["application_filter", "time_range"]:
+                domain_pattern = re.compile("domain/(?P<id>.*?)/")
+                for i in data.get("items", []):
+                    try:
+                        i["metadata"]["domain"]["name"]
+                    except KeyError:
+                        match = domain_pattern.search(endpoint["endpoint"])
+                        if match:
+                            i["metadata"] = {
+                                "domain": {
+                                    "name": self.domain_map.get(
+                                        match.group("id"), "Global"
+                                    )
+                                }
+                            }
+                        else:
+                            raise ValueError(
+                                "Cannot determine domain for object"
+                            ) from KeyError
                     endpoint_dict[endpoint["name"]].append(
                         {
                             "data": i,

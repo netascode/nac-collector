@@ -294,3 +294,21 @@
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/radiusservergroups
 - name: secure_client_profile
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/anyconnectprofiles
+- name: variable_set
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/variablesets
+- name: file_type
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/filetypes
+- name: file_category
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/filecategories
+- name: application
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/applications
+- name: application_business_relevance
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/applicationproductivities
+- name: application_category
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/applicationcategories
+- name: application_risk
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/applicationrisks
+- name: application_tag
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/applicationtags
+- name: application_type
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/applicationtypes
