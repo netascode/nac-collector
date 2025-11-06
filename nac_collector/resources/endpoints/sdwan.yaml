@@ -27,6 +27,8 @@
     endpoint: /snmp
   - name: system_omp
     endpoint: /omp
+  - name: system_ca_certificate
+    endpoint: /ca-cert
   - name: system_logging
     endpoint: /logging
   - name: system_mrf
