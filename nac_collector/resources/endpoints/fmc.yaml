@@ -138,6 +138,14 @@
     endpoint: /ipsecsettings
   - name: vpn_s2s_ike_settings
     endpoint: /ikesettings
+- name: icmpv4s
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/icmpv4objects
+- name: icmpv4_objects
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/icmpv4objects
+- name: icmpv4_object
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/icmpv4objects
+- name: icmpv4
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/icmpv4objects
 - name: time_ranges
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/timeranges
 - name: time_range
@@ -153,6 +161,14 @@
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/tunneltags
 - name: smart_license
   endpoint: /api/fmc_platform/v1/license/smartlicenses
+- name: icmpv6s
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/icmpv6objects
+- name: icmpv6_objects
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/icmpv6objects
+- name: icmpv6_object
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/icmpv6objects
+- name: icmpv6
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/icmpv6objects
 - name: vpn_ra
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/ravpns
   children:
@@ -209,6 +225,10 @@
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/portobjectgroups
 - name: port_groups
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/portobjectgroups
+- name: extended_access_list
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/extendedaccesslists
+- name: extended_acl
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/extendedaccesslists
 - name: ipv6_prefix_lists
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ipv6prefixlists
 - name: ipv6_prefix_list
@@ -219,10 +239,6 @@
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/anyconnectprofiles
 - name: policy_list
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/policylists
-- name: icmpv6_objects
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/icmpv6objects
-- name: icmpv6_object
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/icmpv6objects
 - name: dynamic_access_policy
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/dynamicaccesspolicies
 - name: secure_client_external_browser_package
@@ -241,10 +257,6 @@
     endpoint: /manualnatrules
   - name: ftd_auto_nat_rule
     endpoint: /autonatrules
-- name: icmpv4_objects
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/icmpv4objects
-- name: icmpv4_object
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/icmpv4objects
 - name: policy_assignment
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/assignment/policyassignments
 - name: ipv4_prefix_lists
@@ -295,13 +307,21 @@
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ikev1policies
 - name: group_policy
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/grouppolicies
+- name: standard_access_list
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/standardaccesslists
+- name: standard_acl
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/standardaccesslists
 - name: certificate_maps
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/certificatemaps
 - name: certificate_map
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/certificatemaps
 - name: dynamic_objects
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/dynamicobjects
+- name: fqdn
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/fqdns
 - name: fqdn_objects
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/fqdns
+- name: fqdns
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/fqdns
 - name: fqdn_object
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/fqdns
@@ -311,8 +331,6 @@
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/vlangrouptags
 - name: vlan_tag_groups
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/vlangrouptags
-- name: standard_acl
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/standardaccesslists
 - name: file_policy
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/filepolicies
 - name: geolocation
@@ -354,5 +372,3 @@
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/urls
 - name: health_policy
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/healthpolicies
-- name: extended_acl
-  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/extendedaccesslists
