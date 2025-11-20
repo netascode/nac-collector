@@ -395,7 +395,7 @@ class CiscoClientFMC(CiscoClientController):
         endpoint_url = f"{endpoint}?expanded={expanded}&limit={limit}"
         output = super().fetch_data(endpoint_url)
 
-        if not output:
+        if not output or not isinstance(output, dict):
             return None
 
         if "paging" in output and "next" in output["paging"]:
@@ -403,7 +403,7 @@ class CiscoClientFMC(CiscoClientController):
             while True:
                 next_url_params = data["paging"]["next"][0].split("?")[1]
                 next_data = super().fetch_data(endpoint + "?" + next_url_params)
-                if next_data is None:
+                if next_data is None or not isinstance(next_data, dict):
                     break
                 data = next_data
                 output["items"].extend(data["items"])
