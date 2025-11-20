@@ -5,33 +5,33 @@
 - name: network_access_policy_set_update_ranks
   endpoint: /api/v1/policy/network-access/policy-set
   children:
-  - name: network_access_authorization_rule_update_ranks
+  - &id001
+    name: network_access_authorization_rule_update_ranks
     endpoint: /authorization
-  - name: network_access_authorization_rule
+  - &id002
+    name: network_access_authorization_rule
     endpoint: /authorization
-  - name: network_access_authentication_rule_update_ranks
+  - &id003
+    name: network_access_authentication_rule_update_ranks
     endpoint: /authentication
-  - name: network_access_authentication_rule
+  - &id004
+    name: network_access_authentication_rule
     endpoint: /authentication
-  - name: network_access_authorization_exception_rule_update_ranks
+  - &id005
+    name: network_access_authorization_exception_rule_update_ranks
     endpoint: /exception
-  - name: network_access_authorization_exception_rule
+  - &id006
+    name: network_access_authorization_exception_rule
     endpoint: /exception
 - name: network_access_policy_set
   endpoint: /api/v1/policy/network-access/policy-set
   children:
-  - name: network_access_authorization_rule_update_ranks
-    endpoint: /authorization
-  - name: network_access_authorization_rule
-    endpoint: /authorization
-  - name: network_access_authentication_rule_update_ranks
-    endpoint: /authentication
-  - name: network_access_authentication_rule
-    endpoint: /authentication
-  - name: network_access_authorization_exception_rule_update_ranks
-    endpoint: /exception
-  - name: network_access_authorization_exception_rule
-    endpoint: /exception
+  - *id001
+  - *id002
+  - *id003
+  - *id004
+  - *id005
+  - *id006
 - name: allowed_protocols
   endpoint: /ers/config/allowedprotocols
 - name: allowed_protocols_tacacs
@@ -47,33 +47,33 @@
 - name: device_admin_policy_set
   endpoint: /api/v1/policy/device-admin/policy-set
   children:
-  - name: device_admin_authentication_rule
+  - &id007
+    name: device_admin_authentication_rule
     endpoint: /authentication
-  - name: device_admin_authentication_rule_update_ranks
+  - &id008
+    name: device_admin_authentication_rule_update_ranks
     endpoint: /authentication
-  - name: device_admin_authorization_rule
+  - &id009
+    name: device_admin_authorization_rule
     endpoint: /authorization
-  - name: device_admin_authorization_rule_update_ranks
+  - &id010
+    name: device_admin_authorization_rule_update_ranks
     endpoint: /authorization
-  - name: device_admin_authorization_exception_rule_update_ranks
+  - &id011
+    name: device_admin_authorization_exception_rule_update_ranks
     endpoint: /exception
-  - name: device_admin_authorization_exception_rule
+  - &id012
+    name: device_admin_authorization_exception_rule
     endpoint: /exception
 - name: device_admin_policy_set_update_ranks
   endpoint: /api/v1/policy/device-admin/policy-set
   children:
-  - name: device_admin_authentication_rule
-    endpoint: /authentication
-  - name: device_admin_authentication_rule_update_ranks
-    endpoint: /authentication
-  - name: device_admin_authorization_rule
-    endpoint: /authorization
-  - name: device_admin_authorization_rule_update_ranks
-    endpoint: /authorization
-  - name: device_admin_authorization_exception_rule_update_ranks
-    endpoint: /exception
-  - name: device_admin_authorization_exception_rule
-    endpoint: /exception
+  - *id007
+  - *id008
+  - *id009
+  - *id010
+  - *id011
+  - *id012
 - name: certificate_authentication_profile
   endpoint: /ers/config/certificateprofile
 - name: trustsec_ip_to_sgt_mapping_group

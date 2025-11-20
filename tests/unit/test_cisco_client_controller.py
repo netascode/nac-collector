@@ -294,6 +294,16 @@ class TestFetchData:
 
         assert result == {"key": "value"}
 
+    def test_fetch_data_list_response(self, cisco_client):
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = ["item1", "item2"]
+
+        with patch.object(cisco_client, "get_request", return_value=mock_response):
+            result = cisco_client.fetch_data("/api/test")
+
+        assert result == ["item1", "item2"]
+
     def test_fetch_data_no_response(self, cisco_client):
         with patch.object(cisco_client, "get_request", return_value=None):
             result = cisco_client.fetch_data("/api/test")
@@ -310,10 +320,10 @@ class TestFetchData:
 
         assert result is None
 
-    def test_fetch_data_non_dict_response(self, cisco_client):
+    def test_fetch_data_unknown_type_response(self, cisco_client):
         mock_response = MagicMock()
         mock_response.status_code = 200
-        mock_response.json.return_value = ["item1", "item2"]
+        mock_response.json.return_value = "bar"
 
         with patch.object(cisco_client, "get_request", return_value=mock_response):
             result = cisco_client.fetch_data("/api/test")

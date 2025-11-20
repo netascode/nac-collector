@@ -21,7 +21,7 @@ from nac_collector.github_repo_wrapper import GithubRepoWrapper
 
 # Solutions that support fetching from upstream sources
 # NDO is excluded as it has a different repository structure
-SUPPORTED_SOLUTIONS = ["fmc", "ise", "sdwan"]
+SUPPORTED_SOLUTIONS = ["fmc", "ise", "sdwan", "meraki"]
 
 # Configure logging
 logging.basicConfig(
