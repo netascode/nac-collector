@@ -71,6 +71,8 @@
         endpoint: /hotspot20
       - name: wireless_ssid_bonjour_forwarding
         endpoint: /bonjourForwarding
+      - name: wireless_ssid_open_roaming
+        endpoint: /openRoaming
     - name: appliance_inbound_cellular_firewall_rules
       endpoint: /appliance/firewall/inboundCellularFirewallRules
     - name: appliance_network_security_intrusion
