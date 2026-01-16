@@ -125,3 +125,5 @@
   endpoint: /api/v1/template-programmer/extendedTemplates
 - name: vlanToSsids
   endpoint: /dna/intent/api/v1/sda/fabrics/%v/vlanToSsids
+- name: site_settings
+  endpoint: /api/v1/commonsetting/global

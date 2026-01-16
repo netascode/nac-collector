@@ -53,3 +53,8 @@
   source_key: id
   target_endpoint: /dna/intent/api/v1/sda/fabrics/%v/vlanToSsids
   target_key: siteId
+- endpoint: /api/v1/commonsetting/global
+  source_endpoint: /dna/intent/api/v2/site
+  source_key: id
+  target_endpoint: /api/v1/commonsetting/global/%v
+  target_key: siteId
