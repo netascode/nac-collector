@@ -354,9 +354,7 @@
     endpoint: /unified/ssl-decryption-profile
   - name: policy_object_ipv4_prefix_list
     endpoint: /prefix
-  - name: policy_object_security_url_block_list
-    endpoint: /security-urllist
-  - name: policy_object_security_url_allow_list
+  - name: policy_object_security_url_list
     endpoint: /security-urllist
   - name: policy_object_preferred_color_group
     endpoint: /preferred-color-group
