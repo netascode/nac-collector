@@ -424,6 +424,7 @@ class CiscoClientSDWAN(CiscoClientController):
 
         """
         endpoint_dict["configuration_group_devices"] = []
+        endpoint_dict["configuration_group_associated_devices"] = []
         response = self.get_request(self.base_url + endpoint["endpoint"])
         if response is None:
             return endpoint_dict
@@ -451,6 +452,25 @@ class CiscoClientSDWAN(CiscoClientController):
 
                 # If configuration group has devices assigned, extract devices details to configuration_group_devices
                 if data.get("numberOfDevices") > 0:
+                    config_group_asssociated_devices_endpoint = (
+                        config_group_endpoint + "/device/associate"
+                    )
+                    response = self.get_request(
+                        self.base_url + config_group_asssociated_devices_endpoint
+                    )
+                    if response is None:
+                        continue
+                    for device_data in response.json().get("devices", []):
+                        endpoint_dict["configuration_group_associated_devices"].append(
+                            {
+                                "data": device_data,
+                                "endpoint": config_group_asssociated_devices_endpoint,
+                            }
+                        )
+                    self.log_response(
+                        config_group_asssociated_devices_endpoint, response
+                    )
+
                     config_group_devices_endpoint = (
                         config_group_endpoint + "/device/variables"
                     )

@@ -95,10 +95,12 @@ nac-collector -s ISE --username USERNAME --password PASSWORD --url URL -v DEBUG 
 
 ```sh
 # With environment variables
-nac-collector -s CATALYSTCENTER -v DEBUG --fetch-latest
+nac-collector -s CATALYSTCENTER -v DEBUG
 
 # Without environment variables
-nac-collector -s CATALYSTCENTER --username USERNAME --password PASSWORD --url URL -v DEBUG --fetch-latest
+nac-collector -s CATALYSTCENTER --username USERNAME --password PASSWORD --url URL -v DEBUG
+
+Catalyst center should NOT use "--fetch-latest"
 ```
 
 Catalyst Center contains some custom logic, explained in [README_catalyst_center.md](README_catalyst_center.md).
