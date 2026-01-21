@@ -10,6 +10,7 @@ from rich.progress import (
     TextColumn,
 )
 
+from nac_collector.constants import ISE_ERS_PAGE_SIZE
 from nac_collector.controller.base import CiscoClientController
 
 logger = logging.getLogger("main")
@@ -224,7 +225,20 @@ class CiscoClientISE(CiscoClientController):
 
                 endpoint_dict = CiscoClientController.create_endpoint_dict(endpoint)
 
-                data = self.fetch_data(endpoint["endpoint"])
+                # Optimize ERS API calls by adding page size parameter
+                # ERS endpoints contain '/ers/config/' in their path
+                endpoint_url = endpoint["endpoint"]
+                if "/ers/config/" in endpoint_url:
+                    # Add size parameter to reduce number of pagination calls
+                    # Check if URL already has query parameters
+                    separator = "&" if "?" in endpoint_url else "?"
+                    endpoint_url = f"{endpoint_url}{separator}size={ISE_ERS_PAGE_SIZE}"
+                    logger.debug(
+                        "ERS endpoint detected, adding pagination size parameter: %s",
+                        endpoint_url,
+                    )
+
+                data = self.fetch_data(endpoint_url)
 
                 # Process the endpoint data and get the updated dictionary
                 endpoint_dict = self.process_endpoint_data(
