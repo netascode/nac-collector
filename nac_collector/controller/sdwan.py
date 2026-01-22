@@ -652,7 +652,9 @@ class CiscoClientSDWAN(CiscoClientController):
         return entry
 
     @staticmethod
-    def _merge_url_list_endpoints(endpoints_data: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    def _merge_url_list_endpoints(
+        endpoints_data: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
         """
         Merge policy_object_security_url_block_list and policy_object_security_url_allow_list
         into a single policy_object_security_url_list endpoint.
@@ -664,10 +666,25 @@ class CiscoClientSDWAN(CiscoClientController):
             Modified list with merged URL list endpoints
         """
         for item in endpoints_data:
-            if item.get("name") == "policy_object_feature_profile" and "children" in item:
-                url_list_names = {"policy_object_security_url_block_list", "policy_object_security_url_allow_list"}
-                item["children"] = [child for child in item["children"] if child.get("name") not in url_list_names]
-                item["children"].append({"name": "policy_object_security_url_list", "endpoint": "/security-urllist"})
+            if (
+                item.get("name") == "policy_object_feature_profile"
+                and "children" in item
+            ):
+                url_list_names = {
+                    "policy_object_security_url_block_list",
+                    "policy_object_security_url_allow_list",
+                }
+                item["children"] = [
+                    child
+                    for child in item["children"]
+                    if child.get("name") not in url_list_names
+                ]
+                item["children"].append(
+                    {
+                        "name": "policy_object_security_url_list",
+                        "endpoint": "/security-urllist",
+                    }
+                )
         return endpoints_data
 
     @staticmethod
