@@ -16,6 +16,9 @@
     endpoint: /appliance/dns/split/profiles
   - name: appliance_organization_security_intrusion
     endpoint: /appliance/security/intrusion
+  - name: appliance_sdwan_internet_policies
+    endpoint: /appliance/sdwan/internetPolicies
+    split_by_network: true
   - name: appliance_third_party_vpn_peers
     endpoint: /appliance/vpn/thirdPartyVPNPeers
   - name: appliance_vpn_firewall_rules
@@ -410,6 +413,8 @@
     has_own_id: true
     id_name: networkId
     endpoint: /extensions/thousandEyes/networks
+  - name: organization_inventory_devices
+    endpoint: /inventory/devices
   - name: organization_license
     has_own_id: true
     id_name: id

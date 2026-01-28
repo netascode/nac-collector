@@ -1,4 +1,25 @@
-# Endpoint overrides YAML format:
+# Extra manually-defined endpoints and overrides
+# for endpoints generated from provider definitions.
+#
+# To apply modifications in this file,
+# regenerate the endpoints YAML with "uv run ./scripts/update_endpoints.py".
+
+extra_endpoints:
+- name: appliance_sdwan_internet_policies
+  # Skipped due to "no_read" in the provider definition -
+  # an organization-level GET endpoint (early access) should be used,
+  # while the (PUT) endpoint in the provider definition is network-level.
+  endpoint: /appliance/sdwan/internetPolicies
+  parent_endpoint:
+  - /organizations
+  split_by_network: true
+- name: organization_inventory_devices
+  # Skipped due to "no_resource" in the provider definition.
+  endpoint: /inventory/devices
+  parent_endpoint:
+  - /organizations
+overrides:
+# Endpoint overrides format:
 # A flat list of endpoints (no tree with "children").
 # "name" refers to an endpoint anywhere in the main endpoint tree.
 # any other keys replace the corresponding keys in the endpoint.

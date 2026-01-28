@@ -205,10 +205,12 @@ class GithubRepoWrapper:
         self._delete_repo()
 
         if self.solution == "meraki":
+            # TODO Add a separate kind of file instead of using get_packaged_endpoint_data
+            # which is declared to return a list while the overrides YAML is a dict.
             overrides = ResourceManager.get_packaged_endpoint_data(
                 f"{self.solution}_overrides"
             )
-            self.add_overrides_to_endpoints(endpoints_list, overrides)
+            self.add_overrides_to_endpoints(endpoints_list, overrides)  # type: ignore[arg-type]
 
         return endpoints_list
 
@@ -352,6 +354,36 @@ class GithubRepoWrapper:
         )
         return found_endpoint
 
+    def find_endpoint_by_path(
+        self, endpoints_list: list[dict[str, Any]], path: list[str]
+    ) -> dict[str, Any]:
+        """
+        Find an endpoint by path.
+
+        Args:
+            endpoints_list: List of endpoint dictionaries.
+            path: List of URL fragments, e.g. ["/organizations", "/networks"]
+
+        Returns:
+            The endpoint definition at path.
+
+        Raises:
+            Exception: If any endpoint in the path is not found.
+        """
+
+        current_list = endpoints_list
+        result: dict[str, Any] = {}
+        for endpoint in path:
+            try:
+                result = self.find_first_endpoint(current_list, endpoint)
+            except Exception as e:
+                raise Exception(
+                    f"Failed to find endpoint at path {path}: "
+                    f"could not find endpoint '{endpoint}'"
+                ) from e
+            current_list = result.get("children", [])
+        return result
+
     def pop_first_endpoint(
         self, endpoints_list: list[dict[str, Any]], endpoint: str
     ) -> dict[str, Any]:
@@ -420,13 +452,43 @@ class GithubRepoWrapper:
             shutil.rmtree(self.clone_dir)
         self.logger.info("Deleted repository")
 
-    @staticmethod
     def add_overrides_to_endpoints(
-        endpoints: list[dict[str, Any]], overrides: list[dict[str, Any]] | None
+        self,
+        endpoints: list[dict[str, Any]],
+        overrides_map: dict[str, Any] | None,
     ) -> None:
-        if overrides is None:
+        if overrides_map is None:
             return
 
+        self.apply_extra_endpoints(endpoints, overrides_map.get("extra_endpoints", []))
+        self.apply_overrides(endpoints, overrides_map.get("overrides", []))
+
+    def apply_extra_endpoints(
+        self,
+        endpoints: list[dict[str, Any]],
+        extra_endpoints: list[dict[str, Any]],
+    ) -> None:
+        for extra_endpoint in extra_endpoints:
+            endpoint_list = endpoints
+            parent_endpoint = extra_endpoint.get("parent_endpoint")
+            if parent_endpoint is not None:
+                parent = self.find_endpoint_by_path(endpoints, parent_endpoint)
+                endpoint_list = parent.setdefault("children", [])
+                del extra_endpoint["parent_endpoint"]
+
+            self.add_endpoint_to_list(endpoint_list, extra_endpoint)
+            full_path = (parent_endpoint or []) + [extra_endpoint.get("endpoint")]
+            self.logger.info(
+                "Added extra endpoint %s (%s)",
+                " -> ".join(full_path),
+                extra_endpoint.get("name"),
+            )
+
+    def apply_overrides(
+        self,
+        endpoints: list[dict[str, Any]],
+        overrides: list[dict[str, Any]],
+    ) -> None:
         for endpoint in endpoints:
             try:
                 override_endpoint = next(
@@ -439,6 +501,4 @@ class GithubRepoWrapper:
             except StopIteration:
                 pass
 
-            GithubRepoWrapper.add_overrides_to_endpoints(
-                endpoint.get("children", []), overrides
-            )
+            self.apply_overrides(endpoint.get("children", []), overrides)
