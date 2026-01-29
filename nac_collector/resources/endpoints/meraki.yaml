@@ -21,6 +21,9 @@
     split_by_network: true
   - name: appliance_third_party_vpn_peers
     endpoint: /appliance/vpn/thirdPartyVPNPeers
+  - name: appliance_traffic_shaping_vpn_exclusions
+    endpoint: /appliance/trafficShaping/vpnExclusions/byNetwork
+    split_by_network: true
   - name: appliance_vpn_firewall_rules
     endpoint: /appliance/vpn/vpnFirewallRules
   - name: appliance_vpn_site_to_site_ipsec_peers_slas
@@ -112,6 +115,7 @@
   - name: network
     has_own_id: true
     endpoint: /networks
+    root: true
     children:
     - name: appliance_cellular_firewall_rules
       endpoint: /appliance/firewall/cellularFirewallRules
@@ -181,8 +185,6 @@
       endpoint: /appliance/trafficShaping/uplinkBandwidth
     - name: appliance_traffic_shaping_uplink_selection
       endpoint: /appliance/trafficShaping/uplinkSelection
-    - name: appliance_traffic_shaping_vpn_exclusions
-      endpoint: /appliance/trafficShaping/vpnExclusions
     - name: appliance_vlan
       has_own_id: true
       endpoint: /appliance/vlans
@@ -373,7 +375,6 @@
         endpoint: /vpn
     - name: wireless_zigbee
       endpoint: /wireless/zigbee
-    root: true
   - name: organization_adaptive_policy
     has_own_id: true
     id_name: adaptivePolicyId

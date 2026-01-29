@@ -18,15 +18,35 @@ extra_endpoints:
   endpoint: /inventory/devices
   parent_endpoint:
   - /organizations
-overrides:
+
 # Endpoint overrides format:
 # A flat list of endpoints (no tree with "children").
-# "name" refers to an endpoint anywhere in the main endpoint tree.
-# any other keys replace the corresponding keys in the endpoint.
-
-# To apply modifications in this file,
-# regenerate the endpoints YAML with "uv run ./scripts/update_endpoints.py".
-
+#   "name" refers to an endpoint anywhere in the main endpoint tree.
+#   "parent_endpoint" (a path: list of URLs of parent endpoints, e.g. ["/organizations", "/networks"])
+#     moves the endpoint to a different parent.
+#   Any other keys replace the corresponding keys in the endpoint.
+overrides:
+# Meraki API has 2 special-case roots: /networks and /devices.
+# They are listed via /organizations/%v/{networks,devices},
+# but the individual resources and their children are fetched
+# using URIs rooted at them (e.g. /networks/%v, /networks/%v/switch/stacks).
+# "root: true" tells the client to use /organizations/%v/networks to list networks,
+# but use /networks/%v/child to fetch its children.
+- name: network
+  parent_endpoint:
+  - /organizations
+  root: true
+- name: device
+  parent_endpoint:
+  - /organizations
+  root: true
+- name: appliance_traffic_shaping_vpn_exclusions
+  # organization-level GET with /byNetwork suffix,
+  # while the (PUT) endpoint in the provider definition is network-level.
+  endpoint: /appliance/trafficShaping/vpnExclusions/byNetwork
+  parent_endpoint:
+  - /organizations
+  split_by_network: true
 # Note: for switches, the error message says "This endpoint only supports MS devices",
 # but no error is returned for MS and C devices, not just MS devices.
 - name: switch_port
