@@ -148,6 +148,13 @@ class CiscoClientMERAKI(CiscoClientController):
             terraform_import_ids = parent_ids
         result["terraform_import_ids"] = terraform_import_ids
 
+        # Pass through split_by_network
+        # so that nac-tool preprocessing moves the data into respective networks
+        # when it is set to true.
+        split_by_network = endpoint.get("split_by_network")
+        if split_by_network is not None:
+            result["split_by_network"] = split_by_network
+
         return result
 
     def get_from_endpoints_data(
