@@ -251,6 +251,7 @@ class CiscoClientMERAKI(CiscoClientController):
                 item["data"], parent_endpoint, grandparent_conditions
             )
             parent_instance = {
+                "endpoint_dict": item,
                 "id": parent_id,
                 "conditions": conditions,
             }
@@ -276,6 +277,8 @@ class CiscoClientMERAKI(CiscoClientController):
             ):
                 parent_id = parent_instance["id"]
                 parent_conditions = parent_instance["conditions"]
+                parent_instance_endpoint_dict = parent_instance["endpoint_dict"]
+
                 children_endpoint_uri = (
                     f"{parent_endpoint_uri}/{parent_id}{children_endpoint['endpoint']}"
                 )
@@ -317,14 +320,9 @@ class CiscoClientMERAKI(CiscoClientController):
                         progress,
                     )
 
-                for index, value in enumerate(items):
-                    value_data = value.get("data")
-                    if not isinstance(value_data, dict):
-                        value_data = {}
-                    if self.get_id_value(value_data, parent_endpoint) == parent_id:
-                        items[index].setdefault("children", {})[
-                            children_endpoint["name"]
-                        ] = children_endpoint_dict[children_endpoint["name"]]
+                parent_instance_endpoint_dict.setdefault("children", {})[
+                    children_endpoint["name"]
+                ] = children_endpoint_dict[children_endpoint["name"]]
 
             progress.remove_task(children_endpoint_task)
 
