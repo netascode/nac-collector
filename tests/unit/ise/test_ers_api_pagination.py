@@ -154,7 +154,9 @@ def test_reconstruct_url_with_matching_host(cisco_client):
 
 def test_reconstruct_url_preserves_query_params(cisco_client):
     """Test that URL reconstruction preserves all query parameters"""
-    href = "https://10.1.1.1/ers/config/networkdevice?filter=name.EQ.test&size=100&page=2"
+    href = (
+        "https://10.1.1.1/ers/config/networkdevice?filter=name.EQ.test&size=100&page=2"
+    )
     expected = "https://example.com/ers/config/networkdevice?filter=name.EQ.test&size=100&page=2"
 
     result = cisco_client.reconstruct_url_with_base(href)

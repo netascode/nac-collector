@@ -80,7 +80,7 @@ class CiscoClientISE(CiscoClientController):
             logger.debug(
                 "Reconstructed URL: %s (original href had different host: %s)",
                 reconstructed_url,
-                parsed_href.netloc
+                parsed_href.netloc,
             )
 
         return reconstructed_url
