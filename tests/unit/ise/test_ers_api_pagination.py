@@ -130,3 +130,53 @@ def test_process_ers_api_results_with_pagination(mocker, cisco_client):
     assert data[1]["name"] == "name-2"
     assert data[1]["attr1"] == "attr-3"
     assert data[1]["attr2"] == "attr-4"
+
+
+def test_reconstruct_url_with_internal_ip(cisco_client):
+    """Test URL reconstruction when ISE returns internal IP in href (proxy scenario)"""
+    href = "https://10.247.67.80/ers/config/sgt?size=20&page=3"
+    expected = "https://example.com/ers/config/sgt?size=20&page=3"
+
+    result = cisco_client.reconstruct_url_with_base(href)
+
+    assert result == expected
+
+
+def test_reconstruct_url_with_matching_host(cisco_client):
+    """Test URL reconstruction when href already uses correct host"""
+    href = "https://example.com/ers/config/sgt/abc-123"
+    expected = "https://example.com/ers/config/sgt/abc-123"
+
+    result = cisco_client.reconstruct_url_with_base(href)
+
+    assert result == expected
+
+
+def test_reconstruct_url_preserves_query_params(cisco_client):
+    """Test that URL reconstruction preserves all query parameters"""
+    href = "https://10.1.1.1/ers/config/networkdevice?filter=name.EQ.test&size=100&page=2"
+    expected = "https://example.com/ers/config/networkdevice?filter=name.EQ.test&size=100&page=2"
+
+    result = cisco_client.reconstruct_url_with_base(href)
+
+    assert result == expected
+
+
+def test_reconstruct_url_without_query_params(cisco_client):
+    """Test URL reconstruction with no query parameters"""
+    href = "https://192.168.1.100/ers/config/sgt/9ba71a76-0622-4a0f-8cb1-18bc155f65ca"
+    expected = "https://example.com/ers/config/sgt/9ba71a76-0622-4a0f-8cb1-18bc155f65ca"
+
+    result = cisco_client.reconstruct_url_with_base(href)
+
+    assert result == expected
+
+
+def test_reconstruct_url_with_domain_name_href(cisco_client):
+    """Test URL reconstruction when href uses different domain name"""
+    href = "https://ise-internal.company.local/ers/config/sgt?size=20"
+    expected = "https://example.com/ers/config/sgt?size=20"
+
+    result = cisco_client.reconstruct_url_with_base(href)
+
+    assert result == expected
