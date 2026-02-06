@@ -8,11 +8,14 @@ from meraki.aio.rest_session import AsyncRestSession
 from meraki.exceptions import AsyncAPIError
 from rich.progress import (
     BarColumn,
+    MofNCompleteColumn,
     Progress,
     SpinnerColumn,
     TaskID,
     TaskProgressColumn,
     TextColumn,
+    TimeElapsedColumn,
+    TimeRemainingColumn,
 )
 
 from nac_collector.cli import console
@@ -86,6 +89,7 @@ class CiscoClientMERAKI(CiscoClientController):
         )
         self.request_throttle_semaphore = asyncio.Semaphore(1)
         self.request_throttle_delay = 0.1  # 10 requests per second rate limit
+        self.total_requests = 0
         logger.info("Created Meraki REST session successful with API key.")
 
     async def close_session(self) -> None:
@@ -201,13 +205,22 @@ class CiscoClientMERAKI(CiscoClientController):
             TextColumn("[progress.description]{task.description}"),
             BarColumn(),
             TaskProgressColumn(),
+            MofNCompleteColumn(),
+            "requests done.",
+            "Time elapsed:",
+            TimeElapsedColumn(),
+            "Time remaining (estimated):",
+            TimeRemainingColumn(),
             console=console,
         ) as progress:
+            progress_task = progress.add_task("Fetching Meraki endpoints:", start=False)
             # Note: there is only one top-level endpoint: organization
             for endpoint in endpoints_data:
                 endpoint_dict = CiscoClientController.create_endpoint_dict(endpoint)
 
-                data, err_data = await self.fetch_data_with_error(endpoint["endpoint"])
+                data, err_data = await self.fetch_data_with_error(
+                    endpoint["endpoint"], progress, progress_task
+                )
 
                 data = self.filter_organizations(endpoint, data)
 
@@ -227,6 +240,7 @@ class CiscoClientMERAKI(CiscoClientController):
                         [],
                         {},
                         progress,
+                        progress_task,
                     )
 
                 # Save results to dictionary
@@ -262,6 +276,7 @@ class CiscoClientMERAKI(CiscoClientController):
         grandparent_endpoints_ids: list[str | int],
         grandparent_conditions: dict[str, Any],
         progress: Progress,
+        progress_task: TaskID,
     ) -> None:
         if isinstance(parent_endpoint_dict, dict):
             logger.info(
@@ -295,10 +310,12 @@ class CiscoClientMERAKI(CiscoClientController):
             # Ignore the parent's parent's ID.
             grandparent_endpoints_ids = []
 
-        children_endpoints_task = progress.add_task(
-            f"Fetching children of {parent_endpoint_uri}",
-            total=len(parent_endpoint["children"]),
+        # Sort endpoints so that requests for children are queued first
+        # so that the total number of requests for the progress bar hopefully becomes correct sooner.
+        child_endpoints = self.sort_endpoints_with_children_first(
+            parent_endpoint["children"]
         )
+
         await asyncio.gather(
             *(
                 self.get_child_endpoint_for_parent_instances(
@@ -308,13 +325,11 @@ class CiscoClientMERAKI(CiscoClientController):
                     parent_instances,
                     children_endpoint,
                     progress,
-                    children_endpoints_task,
+                    progress_task,
                 )
-                for children_endpoint in parent_endpoint["children"]
+                for children_endpoint in child_endpoints
             )
         )
-
-        progress.remove_task(children_endpoints_task)
 
     async def get_child_endpoint_for_parent_instances(
         self,
@@ -324,12 +339,8 @@ class CiscoClientMERAKI(CiscoClientController):
         parent_instances: list[dict[str, Any]],
         children_endpoint: dict[str, Any],
         progress: Progress,
-        children_endpoints_task: TaskID,
+        progress_task: TaskID,
     ) -> None:
-        children_endpoint_task = progress.add_task(
-            f"Fetching {children_endpoint['endpoint']} for each {parent_endpoint['name']}",
-            total=len(parent_instances),
-        )
         await asyncio.gather(
             *(
                 self.get_child_endpoint_for_parent_instance(
@@ -338,14 +349,11 @@ class CiscoClientMERAKI(CiscoClientController):
                     parent_instance,
                     children_endpoint,
                     progress,
-                    children_endpoint_task,
+                    progress_task,
                 )
                 for parent_instance in parent_instances
             )
         )
-
-        progress.remove_task(children_endpoint_task)
-        progress.update(children_endpoints_task, advance=1)
 
     async def get_child_endpoint_for_parent_instance(
         self,
@@ -354,7 +362,7 @@ class CiscoClientMERAKI(CiscoClientController):
         parent_instance: dict[str, Any],
         children_endpoint: dict[str, Any],
         progress: Progress,
-        children_endpoint_task: TaskID,
+        progress_task: TaskID,
     ) -> None:
         parent_id = parent_instance["id"]
         parent_conditions = parent_instance["conditions"]
@@ -380,7 +388,9 @@ class CiscoClientMERAKI(CiscoClientController):
             children_endpoint
         )
 
-        data, err_data = await self.fetch_data_with_error(children_endpoint_uri)
+        data, err_data = await self.fetch_data_with_error(
+            children_endpoint_uri, progress, progress_task
+        )
 
         # Process the children endpoint data and get the updated dictionary
         children_endpoint_dict = self.process_endpoint_data(
@@ -399,17 +409,22 @@ class CiscoClientMERAKI(CiscoClientController):
                 grandparent_endpoints_ids + [parent_id],
                 parent_conditions,
                 progress,
+                progress_task,
             )
 
         parent_instance_endpoint_dict.setdefault("children", {})[
             children_endpoint["name"]
         ] = children_endpoint_dict[children_endpoint["name"]]
 
-        progress.update(children_endpoint_task, advance=1)
-
     async def fetch_data_with_error(
-        self, uri: str
+        self,
+        uri: str,
+        progress: Progress,
+        progress_task: TaskID,
     ) -> tuple[dict[str, Any] | list[Any] | None, dict[str, Any] | None]:
+        self.total_requests += 1
+        progress.update(progress_task, total=self.total_requests)
+
         try:
             metadata = {
                 "tags": ["no tag"],
@@ -437,6 +452,24 @@ class CiscoClientMERAKI(CiscoClientController):
             return None, {
                 "message": f"JSON decode error: {str(e)}",
             }
+        finally:
+            progress.start_task(progress_task)
+            progress.update(progress_task, advance=1)
+
+    @staticmethod
+    def sort_endpoints_with_children_first(
+        endpoints: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        """
+        Return endpoints, with endpoints that have children first, then ones that don't.
+        """
+        endpoints_with_children = [
+            endpoint for endpoint in endpoints if endpoint.get("children")
+        ]
+        endpoints_without_children = [
+            endpoint for endpoint in endpoints if not endpoint.get("children")
+        ]
+        return endpoints_with_children + endpoints_without_children
 
     @staticmethod
     def endpoint_has_own_id(endpoint: dict[str, Any]) -> bool:
