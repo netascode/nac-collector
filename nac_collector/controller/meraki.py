@@ -318,31 +318,6 @@ class CiscoClientMERAKI(CiscoClientController):
 
         await asyncio.gather(
             *(
-                self.get_child_endpoint_for_parent_instances(
-                    parent_endpoint,
-                    parent_endpoint_uri,
-                    grandparent_endpoints_ids,
-                    parent_instances,
-                    children_endpoint,
-                    progress,
-                    progress_task,
-                )
-                for children_endpoint in child_endpoints
-            )
-        )
-
-    async def get_child_endpoint_for_parent_instances(
-        self,
-        parent_endpoint: dict[str, Any],
-        parent_endpoint_uri: str,
-        grandparent_endpoints_ids: list[str | int],
-        parent_instances: list[dict[str, Any]],
-        children_endpoint: dict[str, Any],
-        progress: Progress,
-        progress_task: TaskID,
-    ) -> None:
-        await asyncio.gather(
-            *(
                 self.get_child_endpoint_for_parent_instance(
                     parent_endpoint_uri,
                     grandparent_endpoints_ids,
@@ -351,6 +326,7 @@ class CiscoClientMERAKI(CiscoClientController):
                     progress,
                     progress_task,
                 )
+                for children_endpoint in child_endpoints
                 for parent_instance in parent_instances
             )
         )
