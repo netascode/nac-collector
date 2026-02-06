@@ -195,12 +195,8 @@ class GithubRepoWrapper:
         self._delete_repo()
 
         if self.solution == "meraki":
-            # TODO Add a separate kind of file instead of using get_packaged_endpoint_data
-            # which is declared to return a list while the overrides YAML is a dict.
-            overrides = ResourceManager.get_packaged_endpoint_data(
-                f"{self.solution}_overrides"
-            )
-            self.add_overrides_to_endpoints(endpoints_list, overrides)  # type: ignore[arg-type]
+            overrides = ResourceManager.get_packaged_endpoint_overrides(self.solution)
+            self.add_overrides_to_endpoints(endpoints_list, overrides)
 
         return endpoints_list
 
@@ -477,13 +473,15 @@ class GithubRepoWrapper:
     def add_overrides_to_endpoints(
         self,
         endpoints: list[dict[str, Any]],
-        overrides_map: dict[str, Any] | None,
+        overrides_config: dict[str, Any] | None,
     ) -> None:
-        if overrides_map is None:
+        if overrides_config is None:
             return
 
-        self.apply_extra_endpoints(endpoints, overrides_map.get("extra_endpoints", []))
-        self.apply_overrides(endpoints, overrides_map.get("overrides", []))
+        self.apply_extra_endpoints(
+            endpoints, overrides_config.get("extra_endpoints", [])
+        )
+        self.apply_overrides(endpoints, overrides_config.get("overrides", []))
 
     def apply_extra_endpoints(
         self,
