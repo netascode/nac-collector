@@ -47,6 +47,54 @@ overrides:
   parent_endpoint:
   - /organizations
   split_by_network: true
+- name: appliance_firewall_multicast_forwarding
+  # organization-level GET with /byNetwork suffix,
+  # while the (PUT) endpoint in the provider definition is network-level.
+  endpoint: /appliance/firewall/multicastForwarding/byNetwork
+  parent_endpoint:
+  - /organizations
+  # TODO The format (at least according to the OpenAPI spec) has network.id instead of networkId.
+  # nac-tool will have to handle this when the endpoint becomes supported in NaC-Meraki.
+  split_by_network: true
+- name: wireless_air_marshal_rule
+  # organization-level GET,
+  # while the (PUT) endpoint in the provider definition is network-level.
+  parent_endpoint:
+  - /organizations
+  # TODO The format (at least according to the OpenAPI spec) has network.id instead of networkId.
+  # Also, it looks like there can be multiple entries with the same network ID.
+  # nac-tool will have to handle this when the endpoint becomes supported in NaC-Meraki.
+  split_by_network: true
+- name: wireless_air_marshal_settings
+  # organization-level GET with /byNetwork suffix,
+  # while the (PUT) endpoint in the provider definition is network-level.
+  endpoint: /wireless/airMarshal/settings/byNetwork
+  parent_endpoint:
+  - /organizations
+  split_by_network: true
+- name: wireless_location_scanning
+  # organization-level GET with /byNetwork suffix,
+  # while the (PUT) endpoint in the provider definition is network-level.
+  endpoint: /wireless/location/scanning/byNetwork
+  parent_endpoint:
+  - /organizations
+  split_by_network: true
+- name: wireless_ssid_open_roaming
+  # organization-level GET with /byNetwork suffix,
+  # while the (PUT) endpoint in the provider definition is under the individual wireless SSID.
+  endpoint: /wireless/ssids/openRoaming/byNetwork
+  parent_endpoint:
+  - /organizations
+  split_by_network: true
+- name: wireless_zigbee
+  # organization-level GET with /byNetwork suffix,
+  # while the (PUT) endpoint in the provider definition is network-level.
+  endpoint: /wireless/zigbee/byNetwork
+  parent_endpoint:
+  - /organizations
+  # TODO The format (at least according to the OpenAPI spec) has network.id instead of networkId.
+  # nac-tool will have to handle this when the endpoint becomes supported in NaC-Meraki.
+  split_by_network: true
 # Note: for switches, the error message says "This endpoint only supports MS devices",
 # but no error is returned for MS and C devices, not just MS devices.
 - name: switch_port

@@ -14,6 +14,9 @@
     has_own_id: true
     id_name: profileId
     endpoint: /appliance/dns/split/profiles
+  - name: appliance_firewall_multicast_forwarding
+    endpoint: /appliance/firewall/multicastForwarding/byNetwork
+    split_by_network: true
   - name: appliance_organization_security_intrusion
     endpoint: /appliance/security/intrusion
   - name: appliance_sdwan_internet_policies
@@ -123,8 +126,6 @@
       endpoint: /appliance/connectivityMonitoringDestinations
     - name: appliance_content_filtering
       endpoint: /appliance/contentFiltering
-    - name: appliance_firewall_multicast_forwarding
-      endpoint: /appliance/firewall/multicastForwarding
     - name: appliance_firewall_settings
       endpoint: /appliance/firewall/settings
     - name: appliance_firewalled_service
@@ -316,12 +317,6 @@
       endpoint: /switch/stormControl
     - name: switch_stp
       endpoint: /switch/stp
-    - name: wireless_air_marshal_rule
-      has_own_id: true
-      id_name: ruleId
-      endpoint: /wireless/airMarshal/rules
-    - name: wireless_air_marshal_settings
-      endpoint: /wireless/airMarshal/settings
     - name: wireless_alternate_management_interface
       endpoint: /wireless/alternateManagementInterface
     - name: wireless_billing
@@ -332,8 +327,6 @@
       endpoint: /wireless/ethernet/ports/profiles
     - name: wireless_ethernet_port_profile_default
       endpoint: /wireless/ethernet/ports/profiles/setDefault
-    - name: wireless_location_scanning
-      endpoint: /wireless/location/scanning
     - name: wireless_network_bluetooth_settings
       endpoint: /wireless/bluetooth/settings
     - name: wireless_network_electronic_shelf_label
@@ -363,8 +356,6 @@
         endpoint: /firewall/l3FirewallRules
       - name: wireless_ssid_l7_firewall_rules
         endpoint: /firewall/l7FirewallRules
-      - name: wireless_ssid_open_roaming
-        endpoint: /openRoaming
       - name: wireless_ssid_schedules
         endpoint: /schedules
       - name: wireless_ssid_splash_settings
@@ -373,8 +364,6 @@
         endpoint: /trafficShaping/rules
       - name: wireless_ssid_vpn
         endpoint: /vpn
-    - name: wireless_zigbee
-      endpoint: /wireless/zigbee
   - name: organization_adaptive_policy
     has_own_id: true
     id_name: adaptivePolicyId
@@ -450,6 +439,17 @@
   - name: switch_organization_ports_profiles_automation
     has_own_id: true
     endpoint: /switch/ports/profiles/automations
+  - name: wireless_air_marshal_rule
+    has_own_id: true
+    id_name: ruleId
+    endpoint: /wireless/airMarshal/rules
+    split_by_network: true
+  - name: wireless_air_marshal_settings
+    endpoint: /wireless/airMarshal/settings/byNetwork
+    split_by_network: true
+  - name: wireless_location_scanning
+    endpoint: /wireless/location/scanning/byNetwork
+    split_by_network: true
   - name: wireless_location_scanning_receiver
     has_own_id: true
     id_name: receiverId
@@ -460,6 +460,12 @@
     has_own_id: true
     id_name: entryId
     endpoint: /wireless/ssids/firewall/isolation/allowlist/entries
+  - name: wireless_ssid_open_roaming
+    endpoint: /wireless/ssids/openRoaming/byNetwork
+    split_by_network: true
+  - name: wireless_zigbee
+    endpoint: /wireless/zigbee/byNetwork
+    split_by_network: true
   - name: wireless_zigbee_device
     has_own_id: true
     id_name: device_id
