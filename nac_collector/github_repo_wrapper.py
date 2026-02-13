@@ -110,7 +110,7 @@ class GithubRepoWrapper:
                 task = progress.add_task(
                     "Processing terraform provider definitions", total=len(files)
                 )
-                for file in files:
+                for file in sorted(files):
                     progress.advance(task)
                     # Exclude *_update_rank used in ISE from inspecting
                     if file.endswith(".yaml") and not file.endswith("update_rank.yaml"):
