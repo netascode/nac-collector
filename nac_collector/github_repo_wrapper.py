@@ -1,3 +1,4 @@
+import bisect
 import logging
 import os
 import shutil
@@ -180,11 +181,12 @@ class GithubRepoWrapper:
             # (the endpoint for fetching networks is /organizations/%v/networks instead),
             # so parent_children() skips the whole tree.
             # Add the (non-working) endpoint manually to prevent that.
-            endpoints_list.append(
+            self.add_endpoint_to_list(
+                endpoints_list,
                 {
                     "name": "network",
                     "endpoint": "/networks",
-                }
+                },
             )
 
         # Adjust endpoints with potential parent-children relationships
@@ -392,12 +394,17 @@ class GithubRepoWrapper:
             if root.get("id_name") is not None:
                 target["id_name"] = root["id_name"]
         except Exception:
-            new_parent["children"].append(root)
+            self.add_endpoint_to_list(new_parent["children"], root)
             target = root
 
         # Tell the client to use /new_parent/%v/root to list 'root's,
         # but use /root/%v/child to fetch its children.
         target["root"] = True
+
+    def add_endpoint_to_list(
+        self, endpoint_list: list[dict[str, Any]], endpoint: dict[str, Any]
+    ) -> None:
+        bisect.insort(endpoint_list, endpoint, key=lambda e: e["name"])
 
     def _delete_repo(self) -> None:
         """

@@ -25,6 +25,85 @@
   - name: camera_role
     has_own_id: true
     endpoint: /camera/roles
+  - name: device
+    has_own_id: true
+    id_name: serial
+    endpoint: /devices
+    children:
+    - name: appliance_radio_settings
+      endpoint: /appliance/radio/settings
+      allowed_device_models:
+      - MX
+    - name: appliance_uplinks_settings
+      endpoint: /appliance/uplinks/settings
+    - name: camera_custom_analytics
+      endpoint: /camera/customAnalytics
+      allowed_device_models:
+      - MV
+    - name: camera_device_wireless_profiles
+      endpoint: /camera/wirelessProfiles
+      allowed_device_models:
+      - MV
+    - name: camera_quality_retention
+      endpoint: /camera/qualityAndRetention
+      allowed_device_models:
+      - MV
+    - name: camera_sense
+      endpoint: /camera/sense
+      allowed_device_models:
+      - MV
+    - name: camera_video_settings
+      endpoint: /camera/video/settings
+      allowed_device_models:
+      - MV
+    - name: cellular_gateway_lan
+      endpoint: /cellularGateway/lan
+      allowed_device_models:
+      - MG
+    - name: cellular_gateway_port_forwarding_rules
+      endpoint: /cellularGateway/portForwardingRules
+      allowed_device_models:
+      - MG
+    - name: device_cellular_sims
+      endpoint: /cellular/sims
+    - name: device_management_interface
+      endpoint: /managementInterface
+    - name: sensor_relationships
+      endpoint: /sensor/relationships
+    - name: switch_port
+      has_own_id: true
+      id_name: portId
+      endpoint: /switch/ports
+      allowed_device_types:
+      - switch
+    - name: switch_routing_interface
+      has_own_id: true
+      id_name: interfaceId
+      endpoint: /switch/routing/interfaces
+      children:
+      - name: switch_routing_interface_dhcp
+        endpoint: /dhcp
+      allowed_device_types:
+      - switch
+    - name: switch_routing_static_route
+      has_own_id: true
+      id_name: staticRouteId
+      endpoint: /switch/routing/staticRoutes
+      allowed_device_types:
+      - switch
+    - name: switch_warm_spare
+      endpoint: /switch/warmSpare
+      allowed_device_types:
+      - switch
+    - name: wireless_device_bluetooth_settings
+      endpoint: /wireless/bluetooth/settings
+      allowed_device_models:
+      - MR
+    - name: wireless_device_electronic_shelf_label
+      endpoint: /wireless/electronicShelfLabel
+    - name: wireless_radio_settings
+      endpoint: /wireless/radio/settings
+    root: true
   - name: insight_monitored_media_server
     endpoint: /insight/monitoredMediaServers
   - name: network
@@ -383,82 +462,3 @@
     has_own_id: true
     id_name: door_lock_id
     endpoint: /wireless/zigbee/doorLocks
-  - name: device
-    has_own_id: true
-    id_name: serial
-    endpoint: /devices
-    children:
-    - name: appliance_radio_settings
-      endpoint: /appliance/radio/settings
-      allowed_device_models:
-      - MX
-    - name: appliance_uplinks_settings
-      endpoint: /appliance/uplinks/settings
-    - name: camera_custom_analytics
-      endpoint: /camera/customAnalytics
-      allowed_device_models:
-      - MV
-    - name: camera_device_wireless_profiles
-      endpoint: /camera/wirelessProfiles
-      allowed_device_models:
-      - MV
-    - name: camera_quality_retention
-      endpoint: /camera/qualityAndRetention
-      allowed_device_models:
-      - MV
-    - name: camera_sense
-      endpoint: /camera/sense
-      allowed_device_models:
-      - MV
-    - name: camera_video_settings
-      endpoint: /camera/video/settings
-      allowed_device_models:
-      - MV
-    - name: cellular_gateway_lan
-      endpoint: /cellularGateway/lan
-      allowed_device_models:
-      - MG
-    - name: cellular_gateway_port_forwarding_rules
-      endpoint: /cellularGateway/portForwardingRules
-      allowed_device_models:
-      - MG
-    - name: device_cellular_sims
-      endpoint: /cellular/sims
-    - name: device_management_interface
-      endpoint: /managementInterface
-    - name: sensor_relationships
-      endpoint: /sensor/relationships
-    - name: switch_port
-      has_own_id: true
-      id_name: portId
-      endpoint: /switch/ports
-      allowed_device_types:
-      - switch
-    - name: switch_routing_interface
-      has_own_id: true
-      id_name: interfaceId
-      endpoint: /switch/routing/interfaces
-      children:
-      - name: switch_routing_interface_dhcp
-        endpoint: /dhcp
-      allowed_device_types:
-      - switch
-    - name: switch_routing_static_route
-      has_own_id: true
-      id_name: staticRouteId
-      endpoint: /switch/routing/staticRoutes
-      allowed_device_types:
-      - switch
-    - name: switch_warm_spare
-      endpoint: /switch/warmSpare
-      allowed_device_types:
-      - switch
-    - name: wireless_device_bluetooth_settings
-      endpoint: /wireless/bluetooth/settings
-      allowed_device_models:
-      - MR
-    - name: wireless_device_electronic_shelf_label
-      endpoint: /wireless/electronicShelfLabel
-    - name: wireless_radio_settings
-      endpoint: /wireless/radio/settings
-    root: true
