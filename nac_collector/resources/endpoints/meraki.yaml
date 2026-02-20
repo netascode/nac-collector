@@ -2,81 +2,101 @@
   has_own_id: true
   endpoint: /organizations
   children:
-  - name: organization_branding_policy
-    has_own_id: true
-    endpoint: /brandingPolicies
-  - name: organization_snmp
-    endpoint: /snmp
-  - name: organization_policy_object
-    has_own_id: true
-    endpoint: /policyObjects
-  - name: switch_organization_ports_profile
-    has_own_id: true
-    id_name: profileId
-    endpoint: /switch/ports/profiles
-  - name: appliance_vpn_firewall_rules
-    endpoint: /appliance/vpn/vpnFirewallRules
-  - name: organization_saml_role
-    has_own_id: true
-    endpoint: /samlRoles
-  - name: appliance_third_party_vpn_peers
-    endpoint: /appliance/vpn/thirdPartyVPNPeers
-  - name: organization_adaptive_policy
-    has_own_id: true
-    id_name: adaptivePolicyId
-    endpoint: /adaptivePolicy/policies
-  - name: sm_admin_role
-    has_own_id: true
-    id_name: roleId
-    endpoint: /sm/admins/roles
   - name: organization_saml_idp
     has_own_id: true
     id_name: idpId
     endpoint: /saml/idps
-  - name: organization_config_template
-    has_own_id: true
-    endpoint: /configTemplates
-  - name: organization_early_access_features_opt_in
-    has_own_id: true
-    endpoint: /earlyAccess/features/optIns
-  - name: organization_login_security
-    endpoint: /loginSecurity
-  - name: insight_monitored_media_server
-    endpoint: /insight/monitoredMediaServers
-  - name: wireless_zigbee_device
-    has_own_id: true
-    id_name: device_id
-    endpoint: /wireless/zigbee/devices
-  - name: organization_alerts_profile
-    has_own_id: true
-    endpoint: /alerts/profiles
-  - name: organization_branding_policies_priorities
-    endpoint: /brandingPolicies/priorities
-  - name: organization_auth_radius_server
-    has_own_id: true
-    id_name: serverId
-    endpoint: /auth/radius/servers
-  - name: organization_adaptive_policy_settings
-    endpoint: /adaptivePolicy/settings
   - name: wireless_ssid_firewall_isolation_allowlist_entry
     has_own_id: true
     id_name: entryId
     endpoint: /wireless/ssids/firewall/isolation/allowlist/entries
-  - name: appliance_organization_security_intrusion
-    endpoint: /appliance/security/intrusion
-  - name: organization_policy_object_group
+  - name: camera_role
     has_own_id: true
-    endpoint: /policyObjects/groups
+    endpoint: /camera/roles
+  - name: appliance_dns_split_profile
+    has_own_id: true
+    id_name: profileId
+    endpoint: /appliance/dns/split/profiles
+  - name: appliance_vpn_firewall_rules
+    endpoint: /appliance/vpn/vpnFirewallRules
+  - name: organization_adaptive_policy_group
+    has_own_id: true
+    id_name: groupId
+    endpoint: /adaptivePolicy/groups
+  - name: organization_saml_role
+    has_own_id: true
+    endpoint: /samlRoles
+  - name: organization_login_security
+    endpoint: /loginSecurity
   - name: wireless_zigbee_door_lock
     has_own_id: true
     id_name: door_lock_id
     endpoint: /wireless/zigbee/doorLocks
+  - name: organization_snmp
+    endpoint: /snmp
+  - name: appliance_vpn_site_to_site_ipsec_peers_slas
+    endpoint: /appliance/vpn/siteToSite/ipsec/peers/slas
+  - name: organization_config_template
+    has_own_id: true
+    endpoint: /configTemplates
   - name: network
     has_own_id: true
     endpoint: /networks
     children:
-    - name: switch_settings
-      endpoint: /switch/settings
+    - name: wireless_ssid
+      has_own_id: true
+      id_name: number
+      endpoint: /wireless/ssids
+      children:
+      - name: wireless_ssid_schedules
+        endpoint: /schedules
+      - name: wireless_ssid_traffic_shaping_rules
+        endpoint: /trafficShaping/rules
+      - name: wireless_ssid_eap_override
+        endpoint: /eapOverride
+      - name: wireless_ssid_l3_firewall_rules
+        endpoint: /firewall/l3FirewallRules
+      - name: wireless_ssid_l7_firewall_rules
+        endpoint: /firewall/l7FirewallRules
+      - name: wireless_ssid_identity_psk
+        has_own_id: true
+        endpoint: /identityPsks
+      - name: wireless_ssid_device_type_group_policies
+        endpoint: /deviceTypeGroupPolicies
+      - name: wireless_ssid_splash_settings
+        endpoint: /splash/settings
+      - name: wireless_ssid_vpn
+        endpoint: /vpn
+      - name: wireless_ssid_hotspot_20
+        endpoint: /hotspot20
+      - name: wireless_ssid_bonjour_forwarding
+        endpoint: /bonjourForwarding
+      - name: wireless_ssid_open_roaming
+        endpoint: /openRoaming
+    - name: appliance_inbound_cellular_firewall_rules
+      endpoint: /appliance/firewall/inboundCellularFirewallRules
+    - name: appliance_network_security_intrusion
+      endpoint: /appliance/security/intrusion
+    - name: sensor_alerts_profile
+      has_own_id: true
+      id_name: profileId
+      endpoint: /sensor/alerts/profiles
+    - name: wireless_zigbee
+      endpoint: /wireless/zigbee
+    - name: wireless_ethernet_port_profile
+      has_own_id: true
+      id_name: profileId
+      endpoint: /wireless/ethernet/ports/profiles
+    - name: appliance_one_to_many_nat_rules
+      endpoint: /appliance/firewall/oneToManyNatRules
+    - name: switch_access_control_lists
+      endpoint: /switch/accessControlLists
+    - name: appliance_traffic_shaping_vpn_exclusions
+      endpoint: /appliance/trafficShaping/vpnExclusions
+    - name: appliance_traffic_shaping_uplink_selection
+      endpoint: /appliance/trafficShaping/uplinkSelection
+    - name: cellular_gateway_dhcp
+      endpoint: /cellularGateway/dhcp
     - name: switch_stack
       has_own_id: true
       endpoint: /switch/stacks
@@ -92,310 +112,342 @@
         has_own_id: true
         id_name: staticRouteId
         endpoint: /routing/staticRoutes
+    - name: appliance_firewalled_service
+      has_own_id: true
+      id_name: service
+      endpoint: /appliance/firewall/firewalledServices
     - name: appliance_settings
       endpoint: /appliance/settings
-    - name: appliance_port_forwarding_rules
-      endpoint: /appliance/firewall/portForwardingRules
+    - name: wireless_alternate_management_interface
+      endpoint: /wireless/alternateManagementInterface
+    - name: sensor_mqtt_broker
+      has_own_id: true
+      id_name: mqttBrokerId
+      endpoint: /sensor/mqttBrokers
+    - name: appliance_connectivity_monitoring_destinations
+      endpoint: /appliance/connectivityMonitoringDestinations
+    - name: appliance_single_lan
+      endpoint: /appliance/singleLan
+    - name: switch_stp
+      endpoint: /switch/stp
+    - name: appliance_vlan
+      has_own_id: true
+      endpoint: /appliance/vlans
+    - name: wireless_ethernet_port_profile_default
+      endpoint: /wireless/ethernet/ports/profiles/setDefault
     - name: switch_mtu
       endpoint: /switch/mtu
-    - name: appliance_security_malware
-      endpoint: /appliance/security/malware
-    - name: sensor_alerts_profile
+    - name: network_netflow
+      endpoint: /netflow
+    - name: wireless_network_electronic_shelf_label
+      endpoint: /wireless/electronicShelfLabel
+    - name: appliance_port_forwarding_rules
+      endpoint: /appliance/firewall/portForwardingRules
+    - name: switch_qos_rule_order
+      endpoint: /switch/qosRules/order
+    - name: switch_dscp_to_cos_mappings
+      endpoint: /switch/dscpToCosMappings
+    - name: switch_qos_rule
       has_own_id: true
-      id_name: profileId
-      endpoint: /sensor/alerts/profiles
+      endpoint: /switch/qosRules
+    - name: appliance_firewall_settings
+      endpoint: /appliance/firewall/settings
+    - name: switch_dhcp_server_policy_arp_inspection_trusted_server
+      has_own_id: true
+      id_name: trustedServerId
+      endpoint: /switch/dhcpServerPolicy/arpInspection/trustedServers
+    - name: switch_alternate_management_interface
+      endpoint: /switch/alternateManagementInterface
+    - name: wireless_settings
+      endpoint: /wireless/settings
+    - name: appliance_ssid
+      has_own_id: true
+      id_name: number
+      endpoint: /appliance/ssids
+    - name: network_syslog_servers
+      endpoint: /syslogServers
+    - name: switch_routing_ospf
+      endpoint: /switch/routing/ospf
+    - name: appliance_content_filtering
+      endpoint: /appliance/contentFiltering
+    - name: network_firmware_upgrades
+      endpoint: /firmwareUpgrades
+    - name: network_alerts_settings
+      endpoint: /alerts/settings
+    - name: appliance_l3_firewall_rules
+      endpoint: /appliance/firewall/l3FirewallRules
+    - name: appliance_traffic_shaping_rules
+      endpoint: /appliance/trafficShaping/rules
     - name: appliance_port
       has_own_id: true
       id_name: number
       endpoint: /appliance/ports
+    - name: cellular_gateway_connectivity_monitoring_destinations
+      endpoint: /cellularGateway/connectivityMonitoringDestinations
+    - name: appliance_warm_spare
+      endpoint: /appliance/warmSpare
+    - name: switch_dhcp_server_policy
+      endpoint: /switch/dhcpServerPolicy
+    - name: appliance_static_route
+      has_own_id: true
+      endpoint: /appliance/staticRoutes
+    - name: network_snmp
+      endpoint: /snmp
+    - name: appliance_traffic_shaping
+      endpoint: /appliance/trafficShaping
     - name: switch_access_policy
       has_own_id: true
       id_name: accessPolicyNumber
       endpoint: /switch/accessPolicies
-    - name: switch_port_schedule
+    - name: network_settings
+      endpoint: /settings
+    - name: network_vlan_profile
       has_own_id: true
-      endpoint: /switch/portSchedules
-    - name: switch_routing_multicast
-      endpoint: /switch/routing/multicast
-    - name: network_snmp
-      endpoint: /snmp
-    - name: appliance_static_route
+      id_name: iname
+      endpoint: /vlanProfiles
+    - name: appliance_one_to_one_nat_rules
+      endpoint: /appliance/firewall/oneToOneNatRules
+    - name: network_webhook_http_server
       has_own_id: true
-      endpoint: /appliance/staticRoutes
-    - name: appliance_vlans_settings
-      endpoint: /appliance/vlans/settings
-    - name: network_meraki_auth_user
+      endpoint: /webhooks/httpServers
+    - name: wireless_network_bluetooth_settings
+      endpoint: /wireless/bluetooth/settings
+    - name: network_group_policy
       has_own_id: true
-      endpoint: /merakiAuthUsers
-    - name: switch_qos_rule_order
-      endpoint: /switch/qosRules/order
-    - name: wireless_air_marshal_settings
-      endpoint: /wireless/airMarshal/settings
-    - name: appliance_traffic_shaping_vpn_exclusions
-      endpoint: /appliance/trafficShaping/vpnExclusions
-    - name: appliance_single_lan
-      endpoint: /appliance/singleLan
-    - name: appliance_vlan
+      id_name: groupPolicyId
+      endpoint: /groupPolicies
+    - name: network_webhook_payload_template
       has_own_id: true
-      endpoint: /appliance/vlans
-    - name: wireless_ssid
-      has_own_id: true
-      id_name: number
-      endpoint: /wireless/ssids
-      children:
-      - name: wireless_ssid_open_roaming
-        endpoint: /openRoaming
-      - name: wireless_ssid_hotspot_20
-        endpoint: /hotspot20
-      - name: wireless_ssid_l3_firewall_rules
-        endpoint: /firewall/l3FirewallRules
-      - name: wireless_ssid_eap_override
-        endpoint: /eapOverride
-      - name: wireless_ssid_bonjour_forwarding
-        endpoint: /bonjourForwarding
-      - name: wireless_ssid_identity_psk
-        has_own_id: true
-        endpoint: /identityPsks
-      - name: wireless_ssid_device_type_group_policies
-        endpoint: /deviceTypeGroupPolicies
-      - name: wireless_ssid_schedules
-        endpoint: /schedules
-      - name: wireless_ssid_traffic_shaping_rules
-        endpoint: /trafficShaping/rules
-      - name: wireless_ssid_l7_firewall_rules
-        endpoint: /firewall/l7FirewallRules
-      - name: wireless_ssid_splash_settings
-        endpoint: /splash/settings
-      - name: wireless_ssid_vpn
-        endpoint: /vpn
-    - name: switch_dscp_to_cos_mappings
-      endpoint: /switch/dscpToCosMappings
-    - name: appliance_connectivity_monitoring_destinations
-      endpoint: /appliance/connectivityMonitoringDestinations
-    - name: wireless_alternate_management_interface
-      endpoint: /wireless/alternateManagementInterface
+      id_name: payloadTemplateId
+      endpoint: /webhooks/payloadTemplates
     - name: appliance_cellular_firewall_rules
       endpoint: /appliance/firewall/cellularFirewallRules
-    - name: appliance_l3_firewall_rules
-      endpoint: /appliance/firewall/l3FirewallRules
+    - name: wireless_billing
+      endpoint: /wireless/billing
     - name: network_mqtt_broker
       has_own_id: true
       endpoint: /mqttBrokers
     - name: camera_quality_retention_profile
       has_own_id: true
       endpoint: /camera/qualityRetentionProfiles
-    - name: wireless_network_bluetooth_settings
-      endpoint: /wireless/bluetooth/settings
-    - name: wireless_ethernet_port_profile
+    - name: appliance_vlans_settings
+      endpoint: /appliance/vlans/settings
+    - name: network_meraki_auth_user
       has_own_id: true
-      id_name: profileId
-      endpoint: /wireless/ethernet/ports/profiles
-    - name: appliance_ssid
-      has_own_id: true
-      id_name: number
-      endpoint: /appliance/ssids
-    - name: cellular_gateway_dhcp
-      endpoint: /cellularGateway/dhcp
-    - name: switch_access_control_lists
-      endpoint: /switch/accessControlLists
-    - name: switch_routing_multicast_rendezvous_point
-      has_own_id: true
-      id_name: rendezvousPointId
-      endpoint: /switch/routing/multicast/rendezvousPoints
-    - name: network_firmware_upgrades
-      endpoint: /firmwareUpgrades
-    - name: switch_alternate_management_interface
-      endpoint: /switch/alternateManagementInterface
-    - name: appliance_one_to_one_nat_rules
-      endpoint: /appliance/firewall/oneToOneNatRules
-    - name: wireless_ethernet_port_profile_default
-      endpoint: /wireless/ethernet/ports/profiles/setDefault
-    - name: appliance_site_to_site_vpn
-      endpoint: /appliance/vpn/siteToSiteVpn
+      endpoint: /merakiAuthUsers
+    - name: wireless_air_marshal_settings
+      endpoint: /wireless/airMarshal/settings
+    - name: appliance_inbound_firewall_rules
+      endpoint: /appliance/firewall/inboundFirewallRules
+    - name: cellular_gateway_subnet_pool
+      endpoint: /cellularGateway/subnetPool
     - name: network_floor_plan
       has_own_id: true
       id_name: floorPlanId
       endpoint: /floorPlans
-    - name: sensor_mqtt_broker
-      has_own_id: true
-      id_name: mqttBrokerId
-      endpoint: /sensor/mqttBrokers
-    - name: appliance_traffic_shaping_rules
-      endpoint: /appliance/trafficShaping/rules
-    - name: wireless_settings
-      endpoint: /wireless/settings
-    - name: network_vlan_profile
-      has_own_id: true
-      id_name: iname
-      endpoint: /vlanProfiles
-    - name: appliance_content_filtering
-      endpoint: /appliance/contentFiltering
-    - name: network_webhook_http_server
-      has_own_id: true
-      endpoint: /webhooks/httpServers
-    - name: appliance_inbound_cellular_firewall_rules
-      endpoint: /appliance/firewall/inboundCellularFirewallRules
-    - name: switch_qos_rule
-      has_own_id: true
-      endpoint: /switch/qosRules
-    - name: cellular_gateway_connectivity_monitoring_destinations
-      endpoint: /cellularGateway/connectivityMonitoringDestinations
+    - name: switch_storm_control
+      endpoint: /switch/stormControl
+    - name: network_traffic_analysis
+      endpoint: /trafficAnalysis
+    - name: appliance_security_malware
+      endpoint: /appliance/security/malware
     - name: appliance_traffic_shaping_uplink_bandwidth
       endpoint: /appliance/trafficShaping/uplinkBandwidth
+    - name: switch_routing_multicast_rendezvous_point
+      has_own_id: true
+      id_name: rendezvousPointId
+      endpoint: /switch/routing/multicast/rendezvousPoints
     - name: appliance_vpn_bgp
       endpoint: /appliance/vpn/bgp
+    - name: appliance_rf_profile
+      has_own_id: true
+      endpoint: /appliance/rfProfiles
+    - name: sm_target_group
+      has_own_id: true
+      endpoint: /sm/targetGroups
+    - name: wireless_rf_profile
+      has_own_id: true
+      endpoint: /wireless/rfProfiles
+    - name: switch_routing_multicast
+      endpoint: /switch/routing/multicast
     - name: appliance_prefix_delegated_static
       has_own_id: true
       id_name: staticDelegatedPrefixId
       endpoint: /appliance/prefixes/delegated/statics
-    - name: appliance_warm_spare
-      endpoint: /appliance/warmSpare
-    - name: network_alerts_settings
-      endpoint: /alerts/settings
-    - name: switch_dhcp_server_policy_arp_inspection_trusted_server
-      has_own_id: true
-      id_name: trustedServerId
-      endpoint: /switch/dhcpServerPolicy/arpInspection/trustedServers
-    - name: network_settings
-      endpoint: /settings
-    - name: appliance_firewalled_service
-      has_own_id: true
-      id_name: service
-      endpoint: /appliance/firewall/firewalledServices
-    - name: camera_wireless_profile
-      has_own_id: true
-      endpoint: /camera/wirelessProfiles
-    - name: wireless_location_scanning
-      endpoint: /wireless/location/scanning
-    - name: appliance_inbound_firewall_rules
-      endpoint: /appliance/firewall/inboundFirewallRules
-    - name: wireless_network_electronic_shelf_label
-      endpoint: /wireless/electronicShelfLabel
-    - name: wireless_zigbee
-      endpoint: /wireless/zigbee
-    - name: appliance_traffic_shaping_uplink_selection
-      endpoint: /appliance/trafficShaping/uplinkSelection
-    - name: appliance_firewall_settings
-      endpoint: /appliance/firewall/settings
-    - name: switch_link_aggregation
-      has_own_id: true
-      endpoint: /switch/linkAggregations
-    - name: appliance_traffic_shaping
-      endpoint: /appliance/trafficShaping
     - name: appliance_traffic_shaping_custom_performance_class
       has_own_id: true
       id_name: customPerformanceClassId
       endpoint: /appliance/trafficShaping/customPerformanceClasses
-    - name: network_group_policy
+    - name: appliance_site_to_site_vpn
+      endpoint: /appliance/vpn/siteToSiteVpn
+    - name: switch_link_aggregation
       has_own_id: true
-      id_name: groupPolicyId
-      endpoint: /groupPolicies
-    - name: wireless_rf_profile
-      has_own_id: true
-      endpoint: /wireless/rfProfiles
-    - name: wireless_billing
-      endpoint: /wireless/billing
-    - name: appliance_firewall_multicast_forwarding
-      endpoint: /appliance/firewall/multicastForwarding
-    - name: switch_routing_ospf
-      endpoint: /switch/routing/ospf
-    - name: switch_storm_control
-      endpoint: /switch/stormControl
-    - name: cellular_gateway_subnet_pool
-      endpoint: /cellularGateway/subnetPool
-    - name: network_netflow
-      endpoint: /netflow
-    - name: network_webhook_payload_template
-      has_own_id: true
-      id_name: payloadTemplateId
-      endpoint: /webhooks/payloadTemplates
-    - name: switch_dhcp_server_policy
-      endpoint: /switch/dhcpServerPolicy
-    - name: appliance_l7_firewall_rules
-      endpoint: /appliance/firewall/l7FirewallRules
+      endpoint: /switch/linkAggregations
     - name: cellular_gateway_uplink
       endpoint: /cellularGateway/uplink
+    - name: appliance_l7_firewall_rules
+      endpoint: /appliance/firewall/l7FirewallRules
+    - name: appliance_firewall_multicast_forwarding
+      endpoint: /appliance/firewall/multicastForwarding
+    - name: camera_wireless_profile
+      has_own_id: true
+      endpoint: /camera/wirelessProfiles
+    - name: switch_port_schedule
+      has_own_id: true
+      endpoint: /switch/portSchedules
     - name: wireless_air_marshal_rule
       has_own_id: true
       id_name: ruleId
       endpoint: /wireless/airMarshal/rules
-    - name: network_traffic_analysis
-      endpoint: /trafficAnalysis
-    - name: appliance_network_security_intrusion
-      endpoint: /appliance/security/intrusion
-    - name: appliance_one_to_many_nat_rules
-      endpoint: /appliance/firewall/oneToManyNatRules
-    - name: network_syslog_servers
-      endpoint: /syslogServers
-    - name: switch_stp
-      endpoint: /switch/stp
-    - name: sm_target_group
-      has_own_id: true
-      endpoint: /sm/targetGroups
-    - name: appliance_rf_profile
-      has_own_id: true
-      endpoint: /appliance/rfProfiles
+    - name: wireless_location_scanning
+      endpoint: /wireless/location/scanning
+    - name: switch_settings
+      endpoint: /switch/settings
     root: true
-  - name: organization_extensions_thousand_eyes_network
+  - name: sm_admin_role
     has_own_id: true
-    id_name: networkId
-    endpoint: /extensions/thousandEyes/networks
+    id_name: roleId
+    endpoint: /sm/admins/roles
   - name: organization_saml
     endpoint: /saml
-  - name: appliance_vpn_site_to_site_ipsec_peers_slas
-    endpoint: /appliance/vpn/siteToSite/ipsec/peers/slas
+  - name: organization_admin
+    has_own_id: true
+    endpoint: /admins
   - name: wireless_location_scanning_receiver
     has_own_id: true
     id_name: receiverId
     endpoint: /wireless/location/scanning/receivers
+  - name: organization_adaptive_policy
+    has_own_id: true
+    id_name: adaptivePolicyId
+    endpoint: /adaptivePolicy/policies
+  - name: switch_organization_ports_profile
+    has_own_id: true
+    id_name: profileId
+    endpoint: /switch/ports/profiles
+  - name: appliance_third_party_vpn_peers
+    endpoint: /appliance/vpn/thirdPartyVPNPeers
+  - name: wireless_mqtt_settings
+    endpoint: /wireless/mqtt/settings
+  - name: organization_auth_radius_server
+    has_own_id: true
+    id_name: serverId
+    endpoint: /auth/radius/servers
+  - name: organization_branding_policy
+    has_own_id: true
+    endpoint: /brandingPolicies
+  - name: organization_early_access_features_opt_in
+    has_own_id: true
+    endpoint: /earlyAccess/features/optIns
+  - name: organization_branding_policies_priorities
+    endpoint: /brandingPolicies/priorities
   - name: switch_organization_ports_profiles_automation
     has_own_id: true
     endpoint: /switch/ports/profiles/automations
-  - name: appliance_dns_split_profile
-    has_own_id: true
-    id_name: profileId
-    endpoint: /appliance/dns/split/profiles
-  - name: organization_adaptive_policy_group
-    has_own_id: true
-    id_name: groupId
-    endpoint: /adaptivePolicy/groups
-  - name: appliance_dns_local_profile
-    has_own_id: true
-    id_name: profileId
-    endpoint: /appliance/dns/local/profiles
-  - name: organization_admin
-    has_own_id: true
-    endpoint: /admins
-  - name: camera_role
-    has_own_id: true
-    endpoint: /camera/roles
+  - name: insight_monitored_media_server
+    endpoint: /insight/monitoredMediaServers
   - name: appliance_dns_local_record
     has_own_id: true
     id_name: recordId
     endpoint: /appliance/dns/local/records
-  - name: wireless_mqtt_settings
-    endpoint: /wireless/mqtt/settings
   - name: organization_license
     has_own_id: true
     id_name: id
     endpoint: /licenses
+  - name: appliance_dns_local_profile
+    has_own_id: true
+    id_name: profileId
+    endpoint: /appliance/dns/local/profiles
+  - name: wireless_zigbee_device
+    has_own_id: true
+    id_name: device_id
+    endpoint: /wireless/zigbee/devices
+  - name: organization_adaptive_policy_settings
+    endpoint: /adaptivePolicy/settings
+  - name: organization_extensions_thousand_eyes_network
+    has_own_id: true
+    id_name: networkId
+    endpoint: /extensions/thousandEyes/networks
+  - name: appliance_organization_security_intrusion
+    endpoint: /appliance/security/intrusion
   - name: organization_adaptive_policy_acl
     has_own_id: true
     id_name: aclId
     endpoint: /adaptivePolicy/acls
+  - name: organization_policy_object
+    has_own_id: true
+    endpoint: /policyObjects
+  - name: organization_policy_object_group
+    has_own_id: true
+    endpoint: /policyObjects/groups
+  - name: organization_alerts_profile
+    has_own_id: true
+    endpoint: /alerts/profiles
   - name: device
     has_own_id: true
     id_name: serial
     endpoint: /devices
     children:
-    - name: camera_quality_retention
-      endpoint: /camera/qualityAndRetention
+    - name: camera_sense
+      endpoint: /camera/sense
+      allowed_device_models:
+      - MV
+    - name: switch_routing_static_route
+      has_own_id: true
+      id_name: staticRouteId
+      endpoint: /switch/routing/staticRoutes
+      allowed_device_types:
+      - switch
+    - name: sensor_relationships
+      endpoint: /sensor/relationships
+    - name: appliance_uplinks_settings
+      endpoint: /appliance/uplinks/settings
+    - name: switch_warm_spare
+      endpoint: /switch/warmSpare
+      allowed_device_types:
+      - switch
+    - name: camera_custom_analytics
+      endpoint: /camera/customAnalytics
+      allowed_device_models:
+      - MV
+    - name: camera_device_wireless_profiles
+      endpoint: /camera/wirelessProfiles
       allowed_device_models:
       - MV
     - name: wireless_device_bluetooth_settings
       endpoint: /wireless/bluetooth/settings
       allowed_device_models:
       - MR
+    - name: device_cellular_sims
+      endpoint: /cellular/sims
+    - name: cellular_gateway_port_forwarding_rules
+      endpoint: /cellularGateway/portForwardingRules
+      allowed_device_models:
+      - MG
+    - name: wireless_device_electronic_shelf_label
+      endpoint: /wireless/electronicShelfLabel
+    - name: device_management_interface
+      endpoint: /managementInterface
+    - name: camera_video_settings
+      endpoint: /camera/video/settings
+      allowed_device_models:
+      - MV
+    - name: camera_quality_retention
+      endpoint: /camera/qualityAndRetention
+      allowed_device_models:
+      - MV
+    - name: wireless_radio_settings
+      endpoint: /wireless/radio/settings
+    - name: switch_port
+      has_own_id: true
+      id_name: portId
+      endpoint: /switch/ports
+      allowed_device_types:
+      - switch
+    - name: appliance_radio_settings
+      endpoint: /appliance/radio/settings
+      allowed_device_models:
+      - MX
     - name: switch_routing_interface
       has_own_id: true
       id_name: interfaceId
@@ -405,60 +457,8 @@
         endpoint: /dhcp
       allowed_device_types:
       - switch
-    - name: cellular_gateway_port_forwarding_rules
-      endpoint: /cellularGateway/portForwardingRules
-      allowed_device_models:
-      - MG
-    - name: switch_warm_spare
-      endpoint: /switch/warmSpare
-      allowed_device_types:
-      - switch
-    - name: appliance_radio_settings
-      endpoint: /appliance/radio/settings
-      allowed_device_models:
-      - MX
-    - name: camera_sense
-      endpoint: /camera/sense
-      allowed_device_models:
-      - MV
-    - name: camera_device_wireless_profiles
-      endpoint: /camera/wirelessProfiles
-      allowed_device_models:
-      - MV
-    - name: camera_video_settings
-      endpoint: /camera/video/settings
-      allowed_device_models:
-      - MV
     - name: cellular_gateway_lan
       endpoint: /cellularGateway/lan
       allowed_device_models:
       - MG
-    - name: wireless_radio_settings
-      endpoint: /wireless/radio/settings
-    - name: device_management_interface
-      endpoint: /managementInterface
-    - name: sensor_relationships
-      endpoint: /sensor/relationships
-    - name: switch_routing_static_route
-      has_own_id: true
-      id_name: staticRouteId
-      endpoint: /switch/routing/staticRoutes
-      allowed_device_types:
-      - switch
-    - name: appliance_uplinks_settings
-      endpoint: /appliance/uplinks/settings
-    - name: camera_custom_analytics
-      endpoint: /camera/customAnalytics
-      allowed_device_models:
-      - MV
-    - name: device_cellular_sims
-      endpoint: /cellular/sims
-    - name: wireless_device_electronic_shelf_label
-      endpoint: /wireless/electronicShelfLabel
-    - name: switch_port
-      has_own_id: true
-      id_name: portId
-      endpoint: /switch/ports
-      allowed_device_types:
-      - switch
     root: true
