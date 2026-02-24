@@ -53,3 +53,8 @@
   source_key: id
   target_endpoint: /dna/intent/api/v1/sda/fabrics/%v/vlanToSsids
   target_key: siteId
+- endpoint: /dna/intent/api/v1/sda/fabricDevices/layer3Handoffs/sdaTransits
+  source_endpoint: /dna/intent/api/v1/sda/fabricSites?limit=500
+  source_key: id
+  target_endpoint: /dna/intent/api/v1/sda/fabricDevices/layer3Handoffs/sdaTransits?fabricId=%v
+  target_key: fabricId
