@@ -194,9 +194,8 @@ class GithubRepoWrapper:
 
         self._delete_repo()
 
-        if self.solution == "meraki":
-            overrides = ResourceManager.get_packaged_endpoint_overrides(self.solution)
-            self.add_overrides_to_endpoints(endpoints_list, overrides)
+        overrides = ResourceManager.get_packaged_endpoint_overrides(self.solution)
+        self.add_overrides_to_endpoints(endpoints_list, overrides)
 
         return endpoints_list
 
