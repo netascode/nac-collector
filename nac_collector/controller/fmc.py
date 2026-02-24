@@ -1,6 +1,7 @@
 import copy
 import json
 import logging
+import re
 from typing import Any
 
 import httpx
@@ -44,6 +45,8 @@ class CiscoClientFMC(CiscoClientController):
         )
         self.x_auth_refresh_token: str | None = None
         self.domains: list[str] = []
+        # Map domain UUID to domain name
+        self.domain_map: dict[str, str] = {}
 
     def authenticate(self) -> bool:
         """
@@ -88,13 +91,11 @@ class CiscoClientFMC(CiscoClientController):
                 self.x_auth_refresh_token = response.headers.get("X-auth-refresh-token")
 
                 # Save a list of UUIDs of all available domains
-                domains_header = response.headers.get("DOMAINS")
-                if domains_header:
-                    self.domains = [
-                        x["uuid"]
-                        for x in json.loads(domains_header)
-                        if isinstance(x, dict) and "uuid" in x
-                    ]
+                self.domain_map = {
+                    x["uuid"]: x["name"]
+                    for x in json.loads(response.headers.get("DOMAINS"))
+                }
+                self.domains = list(self.domain_map.keys())
                 return True
 
             logger.error(
@@ -124,25 +125,119 @@ class CiscoClientFMC(CiscoClientController):
         """
 
         if data is None:
-            endpoint_dict[endpoint["name"]].append(
-                {"data": {}, "endpoint": endpoint["endpoint"]}
-            )
+            # Transparent FTD devices have Global VRF, which is not returned by API
+            if endpoint["name"] == "device_vrf":
+                endpoint_dict[endpoint["name"]].append(
+                    {
+                        "data": {
+                            "description": "This is a Global Virtual Router",
+                            "name": "Global",
+                        },
+                        "endpoint": endpoint["endpoint"],
+                    }
+                )
+            else:
+                endpoint_dict[endpoint["name"]] = []
 
         elif isinstance(data, list):
             endpoint_dict[endpoint["name"]].append(
-                {"data": data, "endpoint": endpoint["endpoint"]}
+                {
+                    "data": data,
+                    "endpoint": endpoint["endpoint"],
+                }
             )
 
-        elif data.get("items", None):
-            items = data.get("items")
-            if items is not None:
-                for i in items:
+        elif "items" in data:
+            # STG object ANY should have readOnly state set to True
+            if endpoint["name"] == "sgt":
+                for i in data.get("items", []):
+                    if i["name"] == "ANY":
+                        i["metadata"]["readOnly"]["state"] = True
                     endpoint_dict[endpoint["name"]].append(
                         {
                             "data": i,
                             "endpoint": f"{endpoint['endpoint']}/{self.get_id_value(i)}",
                         }
                     )
+
+            # Prefilter Policy object Default Prefilter Policy should have readOnly state set to True
+            elif endpoint["name"] == "prefilter_policy":
+                for i in data.get("items", []):
+                    if i["name"] == "Default Prefilter Policy":
+                        i["metadata"]["readOnly"] = {"state": True}
+                    endpoint_dict[endpoint["name"]].append(
+                        {
+                            "data": i,
+                            "endpoint": f"{endpoint['endpoint']}/{self.get_id_value(i)}",
+                        }
+                    )
+
+            # Those objects are read-only but don't have it marked in metadata
+            elif endpoint["name"] in [
+                "variable_set",
+                "file_type",
+                "file_category",
+                "application",
+                "application_business_relevance",
+                "application_category",
+                "application_risk",
+                "application_type",
+                "application_tag",
+            ]:
+                for i in data.get("items", []):
+                    if "metadata" in i:
+                        i["metadata"]["readOnly"] = {"state": True}
+                    else:
+                        i["metadata"] = {"readOnly": {"state": True}}
+                    endpoint_dict[endpoint["name"]].append(
+                        {
+                            "data": i,
+                            "endpoint": f"{endpoint['endpoint']}/{self.get_id_value(i)}",
+                        }
+                    )
+
+            # Those resources have missing domain info, try to extract it from endpoint URL
+            # if fai
+            elif endpoint["name"] in ["application_filter", "time_range"]:
+                domain_pattern = re.compile("domain/(?P<id>.*?)/")
+                for i in data.get("items", []):
+                    try:
+                        i["metadata"]["domain"]["name"]
+                    except KeyError:
+                        match = domain_pattern.search(endpoint["endpoint"])
+                        if match:
+                            i["metadata"] = {
+                                "domain": {
+                                    "name": self.domain_map.get(
+                                        match.group("id"), "Global"
+                                    )
+                                }
+                            }
+                        else:
+                            raise ValueError(
+                                "Cannot determine domain for object"
+                            ) from KeyError
+                    endpoint_dict[endpoint["name"]].append(
+                        {
+                            "data": i,
+                            "endpoint": f"{endpoint['endpoint']}/{self.get_id_value(i)}",
+                        }
+                    )
+
+            else:
+                for i in data.get("items", []):
+                    endpoint_dict[endpoint["name"]].append(
+                        {
+                            "data": i,
+                            "endpoint": f"{endpoint['endpoint']}/{self.get_id_value(i)}",
+                        }
+                    )
+
+        elif "items" not in data and data["paging"]["count"] == 0:
+            pass
+
+        else:
+            raise ValueError("Unexpected data format received from endpoint")
 
         return endpoint_dict  # Return the processed endpoint dictionary
 
@@ -185,57 +280,7 @@ class CiscoClientFMC(CiscoClientController):
                     endpoint, endpoint_dict, data
                 )
 
-                if endpoint.get("children"):
-                    parent_endpoint_ids = []
-
-                    for item in endpoint_dict[endpoint["name"]]:
-                        # Add the item's id to the list
-                        try:
-                            parent_endpoint_ids.append(item["data"]["id"])
-                        except KeyError:
-                            continue
-
-                    for children_endpoint in endpoint["children"]:
-                        logger.info(
-                            "Processing children endpoint: %s",
-                            endpoint["endpoint"]
-                            + "/%v"
-                            + children_endpoint["endpoint"],
-                        )
-
-                        for id_ in parent_endpoint_ids:
-                            children_endpoint_dict = (
-                                CiscoClientController.create_endpoint_dict(
-                                    children_endpoint
-                                )
-                            )
-
-                            # Replace '%v' in the endpoint with the id
-                            children_joined_endpoint = (
-                                endpoint["endpoint"]
-                                + "/"
-                                + id_
-                                + children_endpoint["endpoint"]
-                            )
-
-                            data = self.fetch_data(children_joined_endpoint)
-
-                            # Process the children endpoint data and get the updated dictionary
-                            children_endpoint_dict = self.process_endpoint_data(
-                                children_endpoint, children_endpoint_dict, data
-                            )
-
-                            for index, value in enumerate(
-                                endpoint_dict[endpoint["name"]]
-                            ):
-                                if value.get("data").get("id") == id_:
-                                    endpoint_dict[endpoint["name"]][index].setdefault(
-                                        "children", {}
-                                    )[
-                                        children_endpoint["name"]
-                                    ] = children_endpoint_dict[
-                                        children_endpoint["name"]
-                                    ]
+                self.process_children(endpoint, endpoint_dict)
 
                 # Save results to dictionary
                 # Due to domain expansion, it may happen that same endpoint["name"] will occur multiple times
@@ -245,6 +290,68 @@ class CiscoClientFMC(CiscoClientController):
                     final_dict[endpoint["name"]].extend(endpoint_dict[endpoint["name"]])
 
         return final_dict
+
+    def process_children(
+        self,
+        endpoint: dict[str, Any],
+        endpoint_dict: dict[str, Any],
+        parent_full_endpoint: str = "",
+    ) -> None:
+        if not endpoint.get("children"):
+            return
+
+        parent_endpoint_ids = []
+
+        for item in endpoint_dict[endpoint["name"]]:
+            # Add the item's id to the list
+            try:
+                parent_endpoint_ids.append(item["data"]["id"])
+            except KeyError:
+                continue
+
+        for children_endpoint in endpoint["children"]:
+            logger.info(
+                "Processing children endpoint: %s",
+                endpoint["endpoint"] + "/%v" + children_endpoint["endpoint"],
+            )
+
+            for id_ in parent_endpoint_ids:
+                children_endpoint_dict = CiscoClientController.create_endpoint_dict(
+                    children_endpoint
+                )
+
+                # Build the full endpoint path
+                # Use parent_full_endpoint if provided (for nested children), otherwise use endpoint["endpoint"]
+                base_endpoint = (
+                    parent_full_endpoint
+                    if parent_full_endpoint != ""
+                    else endpoint["endpoint"]
+                )
+                children_joined_endpoint = (
+                    base_endpoint + "/" + id_ + children_endpoint["endpoint"]
+                )
+
+                data = self.fetch_data(children_joined_endpoint)
+
+                # Process the children endpoint data and get the updated dictionary
+                children_endpoint_dict = self.process_endpoint_data(
+                    children_endpoint, children_endpoint_dict, data
+                )
+
+                for index, value in enumerate(endpoint_dict[endpoint["name"]]):
+                    if value.get("data").get("id") == id_:
+                        endpoint_dict[endpoint["name"]][index].setdefault(
+                            "children", {}
+                        )[children_endpoint["name"]] = children_endpoint_dict[
+                            children_endpoint["name"]
+                        ]
+
+                        # Pass the full accumulated path for nested children
+                        self.process_children(
+                            children_endpoint,
+                            endpoint_dict[endpoint["name"]][index]["children"],
+                            children_joined_endpoint,
+                        )
 
     @staticmethod
     def get_id_value(i: dict[str, Any]) -> str | None:
@@ -279,7 +386,7 @@ class CiscoClientFMC(CiscoClientController):
         Parameters:
             endpoint (str): Endpoint to collect data from
             expanded (bool): Download objects in expanded form
-            limit (int): Maximum number of items obtained via single call (<=1000ś)
+            limit (int): Maximum number of items obtained via single call (<=1000)
 
         Returns:
             dict: Merged dict with all objects
@@ -288,7 +395,7 @@ class CiscoClientFMC(CiscoClientController):
         endpoint_url = f"{endpoint}?expanded={expanded}&limit={limit}"
         output = super().fetch_data(endpoint_url)
 
-        if not output:
+        if not output or not isinstance(output, dict):
             return None
 
         if "paging" in output and "next" in output["paging"]:
@@ -296,7 +403,7 @@ class CiscoClientFMC(CiscoClientController):
             while True:
                 next_url_params = data["paging"]["next"][0].split("?")[1]
                 next_data = super().fetch_data(endpoint + "?" + next_url_params)
-                if next_data is None:
+                if next_data is None or not isinstance(next_data, dict):
                     break
                 data = next_data
                 output["items"].extend(data["items"])

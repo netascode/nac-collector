@@ -10,6 +10,7 @@ from rich.progress import (
     TextColumn,
 )
 
+from nac_collector.constants import ISE_ERS_PAGE_SIZE
 from nac_collector.controller.base import CiscoClientController
 
 logger = logging.getLogger("main")
@@ -42,6 +43,47 @@ class CiscoClientISE(CiscoClientController):
         super().__init__(
             username, password, base_url, max_retries, retry_after, timeout, ssl_verify
         )
+
+    def reconstruct_url_with_base(self, href: str) -> str:
+        """
+        Reconstruct URL using the configured base_url instead of the href's host.
+
+        This is critical for proxy scenarios where ISE returns internal IP addresses
+        in href values, but the proxy can only reach the external domain name.
+
+        Parameters:
+            href (str): The href URL from ISE API response (may contain internal IP)
+
+        Returns:
+            str: Reconstructed URL using self.base_url with the path and query from href
+
+        Example:
+            href: "https://10.247.67.80/ers/config/sgt?size=20&page=3"
+            base_url: "https://ise.company.com"
+            result: "https://ise.company.com/ers/config/sgt?size=20&page=3"
+        """
+        from urllib.parse import urlparse
+
+        # Parse the href to extract path and query
+        parsed_href = urlparse(href)
+
+        # Reconstruct using our base_url (which is accessible via proxy)
+        # Extract path and query string from href
+        path_and_query = parsed_href.path
+        if parsed_href.query:
+            path_and_query += f"?{parsed_href.query}"
+
+        reconstructed_url = f"{self.base_url}{path_and_query}"
+
+        # Log the transformation for debugging proxy issues
+        if parsed_href.netloc and parsed_href.netloc not in self.base_url:
+            logger.debug(
+                "Reconstructed URL: %s (original href had different host: %s)",
+                reconstructed_url,
+                parsed_href.netloc,
+            )
+
+        return reconstructed_url
 
     def authenticate(self) -> bool:
         """
@@ -183,7 +225,20 @@ class CiscoClientISE(CiscoClientController):
 
                 endpoint_dict = CiscoClientController.create_endpoint_dict(endpoint)
 
-                data = self.fetch_data(endpoint["endpoint"])
+                # Optimize ERS API calls by adding page size parameter
+                # ERS endpoints contain '/ers/config/' in their path
+                endpoint_url = endpoint["endpoint"]
+                if "/ers/config/" in endpoint_url:
+                    # Add size parameter to reduce number of pagination calls
+                    # Check if URL already has query parameters
+                    separator = "&" if "?" in endpoint_url else "?"
+                    endpoint_url = f"{endpoint_url}{separator}size={ISE_ERS_PAGE_SIZE}"
+                    logger.debug(
+                        "ERS endpoint detected, adding pagination size parameter: %s",
+                        endpoint_url,
+                    )
+
+                data = self.fetch_data(endpoint_url)
 
                 # Process the endpoint data and get the updated dictionary
                 endpoint_dict = self.process_endpoint_data(
@@ -262,7 +317,10 @@ class CiscoClientISE(CiscoClientController):
         paginated_data = data["SearchResult"]["resources"]
         # Loop through all pages until there are no more pages
         while data["SearchResult"].get("nextPage"):
-            url = data["SearchResult"]["nextPage"]["href"]
+            # Reconstruct URL using base_url to support proxy scenarios
+            # ISE may return internal IP addresses in href that aren't reachable via proxy
+            href = data["SearchResult"]["nextPage"]["href"]
+            url = self.reconstruct_url_with_base(href)
             # Send a GET request to the URL
             response = self.get_request(url)
             if response is None:
@@ -274,7 +332,10 @@ class CiscoClientISE(CiscoClientController):
         # For ERS API retrieve details querying all elements from paginated_data
         ers_data = []
         for element in paginated_data:
-            url = element["link"]["href"]
+            # Reconstruct URL using base_url to support proxy scenarios
+            # ISE may return internal IP addresses in href that aren't reachable via proxy
+            href = element["link"]["href"]
+            url = self.reconstruct_url_with_base(href)
             response = self.get_request(url)
             if response is None:
                 continue

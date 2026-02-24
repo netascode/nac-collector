@@ -78,3 +78,5 @@ tmp/
 .ruff_cache/
 
 logs/
+.DS_Store
+nac-collector.zip

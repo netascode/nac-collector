@@ -4,15 +4,16 @@ from enum import Enum
 from typing import Annotated
 
 import typer
-from rich.console import Console
 from rich.logging import RichHandler
 
 import nac_collector
+from nac_collector.cli import console
 from nac_collector.constants import MAX_RETRIES, RETRY_AFTER, TIMEOUT
 from nac_collector.controller.base import CiscoClientController
 from nac_collector.controller.catalystcenter import CiscoClientCATALYSTCENTER
 from nac_collector.controller.fmc import CiscoClientFMC
 from nac_collector.controller.ise import CiscoClientISE
+from nac_collector.controller.meraki import CiscoClientMERAKI
 from nac_collector.controller.ndo import CiscoClientNDO
 from nac_collector.controller.sdwan import CiscoClientSDWAN
 from nac_collector.device.iosxe import CiscoClientIOSXE
@@ -21,7 +22,6 @@ from nac_collector.device.nxos import CiscoClientNXOS
 from nac_collector.device_inventory import load_devices_from_file
 from nac_collector.endpoint_resolver import EndpointResolver
 
-console = Console()
 logger = logging.getLogger("main")
 error_occurred = False
 
@@ -54,6 +54,7 @@ class Solution(str, Enum):
     NDO = "NDO"
     FMC = "FMC"
     CATALYSTCENTER = "CATALYSTCENTER"
+    MERAKI = "MERAKI"
     IOSXE = "IOSXE"
     IOSXR = "IOSXR"
     NXOS = "NXOS"
@@ -121,6 +122,14 @@ def main(
             "--password",
             envvar="NAC_PASSWORD",
             help="Password for authentication",
+        ),
+    ] = None,
+    domain: Annotated[
+        str | None,
+        typer.Option(
+            "--domain",
+            envvar="NAC_DOMAIN",
+            help="Domain for authentication (defaults to 'DefaultAuth' for NDO, empty for others)",
         ),
     ] = None,
     url: Annotated[
@@ -281,6 +290,8 @@ def main(
             cisco_client_class = CiscoClientFMC
         elif solution == Solution.CATALYSTCENTER:
             cisco_client_class = CiscoClientCATALYSTCENTER
+        elif solution == Solution.MERAKI:
+            cisco_client_class = CiscoClientMERAKI
 
         # Validate required credentials for controller-based solutions
         if not username:
@@ -298,15 +309,31 @@ def main(
             raise typer.Exit(1)
 
         if cisco_client_class:
-            client = cisco_client_class(
-                username=username,
-                password=password,
-                base_url=url,
-                max_retries=MAX_RETRIES,
-                retry_after=RETRY_AFTER,
-                timeout=timeout,
-                ssl_verify=False,
-            )
+            client: CiscoClientController
+            if solution == Solution.NDO:
+                # For NDO, handle domain parameter directly (default to "DefaultAuth" if not provided)
+                effective_domain = domain if domain is not None else "DefaultAuth"
+                client = CiscoClientNDO(
+                    username=username,
+                    password=password,
+                    domain=effective_domain,
+                    base_url=url,
+                    max_retries=MAX_RETRIES,
+                    retry_after=RETRY_AFTER,
+                    timeout=timeout,
+                    ssl_verify=False,
+                )
+            else:
+                # For other solutions, don't pass domain parameter
+                client = cisco_client_class(
+                    username=username,
+                    password=password,
+                    base_url=url,
+                    max_retries=MAX_RETRIES,
+                    retry_after=RETRY_AFTER,
+                    timeout=timeout,
+                    ssl_verify=False,
+                )
 
             # Authenticate
             if not client.authenticate():

@@ -105,6 +105,9 @@ class CiscoClientSDWAN(CiscoClientController):
         Returns:
             dict: The final dictionary containing the data retrieved from the endpoints.
         """
+        # Merge URL list endpoints for SD-WAN (otherwise we get duplicate entries)
+        endpoints_data = self._merge_url_list_endpoints(endpoints_data)
+
         # Initialize an empty dictionary
         final_dict = {}
 
@@ -127,6 +130,7 @@ class CiscoClientSDWAN(CiscoClientController):
                         "%v",
                         "%i",
                         "/v1/config-group/",
+                        "/v1/policy-group/",
                         "/v1/feature-profile/",
                         "/template/device/",
                         "/template/policy/definition",
@@ -185,6 +189,10 @@ class CiscoClientSDWAN(CiscoClientController):
                 # config groups
                 elif "/v1/config-group/" in endpoint["endpoint"]:
                     endpoint_dict = self.get_config_groups(endpoint, endpoint_dict)
+                    final_dict.update(endpoint_dict)
+                # policy groups
+                elif "/v1/policy-group/" in endpoint["endpoint"]:
+                    endpoint_dict = self.get_policy_groups(endpoint, endpoint_dict)
                     final_dict.update(endpoint_dict)
                 # feature profiles
                 elif "/v1/feature-profile/" in endpoint["endpoint"]:
@@ -415,10 +423,11 @@ class CiscoClientSDWAN(CiscoClientController):
             endpoint_dict (dict): The dictionary to append items to.
 
         Returns:
-            enpdoint_dict: The updated endpoint_dict with the processed config groups.
+            endpoint_dict: The updated endpoint_dict with the processed config groups.
 
         """
         endpoint_dict["configuration_group_devices"] = []
+        endpoint_dict["configuration_group_associated_devices"] = []
         response = self.get_request(self.base_url + endpoint["endpoint"])
         if response is None:
             return endpoint_dict
@@ -446,6 +455,25 @@ class CiscoClientSDWAN(CiscoClientController):
 
                 # If configuration group has devices assigned, extract devices details to configuration_group_devices
                 if data.get("numberOfDevices") > 0:
+                    config_group_asssociated_devices_endpoint = (
+                        config_group_endpoint + "/device/associate"
+                    )
+                    response = self.get_request(
+                        self.base_url + config_group_asssociated_devices_endpoint
+                    )
+                    if response is None:
+                        continue
+                    for device_data in response.json().get("devices", []):
+                        endpoint_dict["configuration_group_associated_devices"].append(
+                            {
+                                "data": device_data,
+                                "endpoint": config_group_asssociated_devices_endpoint,
+                            }
+                        )
+                    self.log_response(
+                        config_group_asssociated_devices_endpoint, response
+                    )
+
                     config_group_devices_endpoint = (
                         config_group_endpoint + "/device/variables"
                     )
@@ -463,6 +491,65 @@ class CiscoClientSDWAN(CiscoClientController):
                         )
                     self.log_response(config_group_devices_endpoint, response)
 
+        return endpoint_dict
+
+    def get_policy_groups(
+        self, endpoint: dict[str, Any], endpoint_dict: dict[str, Any]
+    ) -> dict[str, Any]:
+        """
+        Process policy groups
+
+        Args:
+            endpoint (dict): The endpoint to process.
+            endpoint_dict (dict): The dictionary to append items to.
+
+        Returns:
+            endpoint_dict: The updated endpoint_dict with the processed policy groups.
+
+        """
+        endpoint_dict["policy_group_devices"] = []
+        response = self.get_request(self.base_url + endpoint["endpoint"])
+        if response is None:
+            return endpoint_dict
+        for item in response.json():
+            policy_group_endpoint = endpoint["endpoint"] + self.get_id_value(item)
+            response = self.get_request(self.base_url + policy_group_endpoint)
+            if response is None:
+                continue
+
+            data = response.json()
+            if data.get("solution") == "sdwan":
+                try:
+                    endpoint_dict[endpoint["name"]].append(
+                        {
+                            "data": data,
+                            "endpoint": policy_group_endpoint,
+                        }
+                    )
+                except TypeError:
+                    endpoint_dict[endpoint["name"]].append(
+                        {"data": data, "endpoint": endpoint["endpoint"]}
+                    )
+                self.log_response(policy_group_endpoint, response)
+
+                # If policy group has devices assigned, extract devices details to policy_group_devices
+                if data.get("numberOfDevices") > 0:
+                    policy_group_devices_endpoint = (
+                        policy_group_endpoint + "/device/variables"
+                    )
+                    response = self.get_request(
+                        self.base_url + policy_group_devices_endpoint
+                    )
+                    if response is None:
+                        continue
+                    for device_data in response.json().get("devices", []):
+                        endpoint_dict["policy_group_devices"].append(
+                            {
+                                "data": device_data,
+                                "endpoint": policy_group_devices_endpoint,
+                            }
+                        )
+                    self.log_response(policy_group_devices_endpoint, response)
         return endpoint_dict
 
     def get_feature_profiles(
@@ -563,6 +650,42 @@ class CiscoClientSDWAN(CiscoClientController):
         if children_entries:
             entry["children"] = children_entries
         return entry
+
+    @staticmethod
+    def _merge_url_list_endpoints(
+        endpoints_data: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        """
+        Merge policy_object_security_url_block_list and policy_object_security_url_allow_list
+        into a single policy_object_security_url_list endpoint.
+
+        Args:
+            endpoints_data: List of endpoint definitions
+
+        Returns:
+            Modified list with merged URL list endpoints
+        """
+        for item in endpoints_data:
+            if (
+                item.get("name") == "policy_object_feature_profile"
+                and "children" in item
+            ):
+                url_list_names = {
+                    "policy_object_security_url_block_list",
+                    "policy_object_security_url_allow_list",
+                }
+                item["children"] = [
+                    child
+                    for child in item["children"]
+                    if child.get("name") not in url_list_names
+                ]
+                item["children"].append(
+                    {
+                        "name": "policy_object_security_url_list",
+                        "endpoint": "/security-urllist",
+                    }
+                )
+        return endpoints_data
 
     @staticmethod
     def strip_backslash(endpoint_string: str) -> str:

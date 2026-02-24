@@ -30,6 +30,7 @@ dependencies = [
     "rich>=14.1.0",
     "gitpython>=3.1.45",
     "httpx>=0.28.1",
+    "meraki>=2.0.3",
     "ruamel.yaml>=0.18.15",
     "tinydb>=4.8.2",
     "paramiko>=3.5.0",

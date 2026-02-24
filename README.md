@@ -95,13 +95,51 @@ nac-collector -s ISE --username USERNAME --password PASSWORD --url URL -v DEBUG 
 
 ```sh
 # With environment variables
-nac-collector -s CATALYSTCENTER -v DEBUG --fetch-latest
+nac-collector -s CATALYSTCENTER -v DEBUG
 
 # Without environment variables
-nac-collector -s CATALYSTCENTER --username USERNAME --password PASSWORD --url URL -v DEBUG --fetch-latest
+nac-collector -s CATALYSTCENTER --username USERNAME --password PASSWORD --url URL -v DEBUG
+
+Catalyst center should NOT use "--fetch-latest"
 ```
 
 Catalyst Center contains some custom logic, explained in [README_catalyst_center.md](README_catalyst_center.md).
+
+### FMC
+
+```sh
+# With environment variables
+nac-collector -s FMC -v DEBUG -e nac_collector/resources/endpoints/fmc.yaml
+
+# Without environment variables
+nac-collector -s FMC --username USERNAME --password PASSWORD --url URL -v DEBUG -e nac_collector/resources/endpoints/fmc.yaml
+```
+
+It is recommended to use the pre-populated endpoints list (via the `-e` option) instead of the auto-generated list (using `--fetch-latest`)
+### NDO
+
+```sh
+# With environment variables
+uv run nac-collector -s NDO -v DEBUG
+
+# Without environment variables
+uv run nac-collector -s NDO --username USERNAME --password PASSWORD --domain DOMAIN --url URL -v DEBUG
+```
+
+Using installed package:
+
+```sh
+nac-collector -s NDO -v DEBUG
+```
+
+### Meraki
+
+```sh
+# Optional: only collect from the given organizations
+export NAC_MERAKI_ORG_IDS="1234567,3456789"
+
+nac-collector -s MERAKI --username none --password "$MERAKI_API_KEY" --url 'https://api.meraki.com/api/v1' -v INFO --fetch-latest
+```
 
 ### IOSXE (Device-Based Collection)
 
