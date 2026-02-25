@@ -137,25 +137,53 @@ class CiscoClientMERAKI(CiscoClientController):
             "endpoint": endpoint["endpoint"],
         }
 
-        terraform_import_ids = None
         if CiscoClientMERAKI.endpoint_has_own_id(endpoint):
             id = CiscoClientMERAKI.get_id_value(data, endpoint)
             # TODO If get_id_value() return None, this just gets put into the string as "/None".
-            result["endpoint"] = f"{endpoint['endpoint']}/{id}"
-            if id is not None:
-                terraform_import_ids = parent_ids + [id]
-        else:
-            terraform_import_ids = parent_ids
-        result["terraform_import_ids"] = terraform_import_ids
+            result["endpoint"] += f"/{id}"
+
+        result["terraform_import_ids"] = CiscoClientMERAKI.get_terraform_import_ids(
+            data, endpoint, parent_ids
+        )
 
         # Pass through split_by_network
-        # so that nac-tool preprocessing moves the data into respective networks
+        # so that nac-tool and import script preprocessing
+        # moves the resource instance from the organization into its network
         # when it is set to true.
         split_by_network = endpoint.get("split_by_network")
-        if split_by_network is not None:
-            result["split_by_network"] = split_by_network
+        if split_by_network:
+            result["split_by_network"] = True
 
         return result
+
+    @staticmethod
+    def get_terraform_import_ids(
+        data: dict[str, Any], endpoint: dict[str, Any], parent_ids: list[str | int]
+    ) -> list[str | int] | None:
+        split_by_network = endpoint.get("split_by_network")
+        if split_by_network:
+            network_id = data.get("networkId")
+            if not isinstance(network_id, str | int):
+                logger.warning(
+                    "Failed to generate terraform_import_ids for endpoint %s: failed to get networkId from the response",
+                    endpoint["name"],
+                )
+                return None
+
+            parent_ids = [network_id]
+
+        if not CiscoClientMERAKI.endpoint_has_own_id(endpoint):
+            return parent_ids
+
+        id = CiscoClientMERAKI.get_id_value(data, endpoint)
+        if id is None:
+            logger.warning(
+                "Failed to generate terraform_import_ids for endpoint %s: failed to get ID from the response",
+                endpoint["name"],
+            )
+            return None
+
+        return parent_ids + [id]
 
     def get_from_endpoints_data(
         self, endpoints_data: list[dict[str, Any]]
