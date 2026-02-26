@@ -192,23 +192,10 @@ class GithubRepoWrapper:
         # Adjust endpoints with potential parent-children relationships
         endpoints_list = self.parent_children(endpoints_list)
 
-        if self.solution == "meraki":
-            # Meraki API has 2 special-case roots: /networks and /devices.
-            # They are listed via /organizations/%v/{networks,devices},
-            # but the individual resources and their children are fetched
-            # using URIs rooted at them (e.g. /networks/%v, /networks/%v/switch/stacks).
-            self.move_meraki_root_to_child(
-                endpoints_list, "/networks", "/organizations"
-            )
-            self.move_meraki_root_to_child(endpoints_list, "/devices", "/organizations")
-
         self._delete_repo()
 
-        if self.solution == "meraki":
-            overrides = ResourceManager.get_packaged_endpoint_data(
-                f"{self.solution}_overrides"
-            )
-            self.add_overrides_to_endpoints(endpoints_list, overrides)
+        overrides = ResourceManager.get_packaged_endpoint_overrides(self.solution)
+        self.add_overrides_to_endpoints(endpoints_list, overrides)
 
         return endpoints_list
 
@@ -352,6 +339,36 @@ class GithubRepoWrapper:
         )
         return found_endpoint
 
+    def find_endpoint_by_path(
+        self, endpoints_list: list[dict[str, Any]], path: list[str]
+    ) -> dict[str, Any]:
+        """
+        Find an endpoint by path.
+
+        Args:
+            endpoints_list: List of endpoint dictionaries.
+            path: List of URL fragments, e.g. ["/organizations", "/networks"]
+
+        Returns:
+            The endpoint definition at path.
+
+        Raises:
+            Exception: If any endpoint in the path is not found.
+        """
+
+        current_list = endpoints_list
+        result: dict[str, Any] = {}
+        for endpoint in path:
+            try:
+                result = self.find_first_endpoint(current_list, endpoint)
+            except Exception as e:
+                raise Exception(
+                    f"Failed to find endpoint at path {path}: "
+                    f"could not find endpoint '{endpoint}'"
+                ) from e
+            current_list = result.get("children", [])
+        return result
+
     def pop_first_endpoint(
         self, endpoints_list: list[dict[str, Any]], endpoint: str
     ) -> dict[str, Any]:
@@ -373,38 +390,70 @@ class GithubRepoWrapper:
         except StopIteration as e:
             raise Exception(f"Failed to find endpoint '{endpoint}'") from e
 
-    def move_meraki_root_to_child(
+    def move_endpoint_to_parent(
         self,
-        endpoints_list: list[dict[str, Any]],
-        root_endpoint: str,
-        new_parent_endpoint: str,
+        root_endpoints: list[dict[str, Any]],
+        source_list: list[dict[str, Any]],
+        endpoint: dict[str, Any],
+        new_parent_path: list[str],
     ) -> None:
         """
-        Move root_endpoint to be new_parent_endpoint's child
-        (replace the same child endpoint if it exists).
-        Mark it to make the Meraki client know it's a special-case root
-        (listed via /new_parent/%v/root, but children are listed via /root/%v/child).
+        Move an endpoint to a new parent path.
+
+        If an endpoint with the same URL already exists at the destination,
+        merge the current endpoint's data into it
+        (merging children; and copying id_name if not already set).
+
+        Args:
+            root_endpoints: Root list of endpoint dictionaries.
+            source_list: The list currently containing the endpoint.
+            endpoint: The endpoint to move.
+            new_parent_path: Path to the new parent, e.g. ["/organizations"].
         """
+        new_parent = self.find_endpoint_by_path(root_endpoints, new_parent_path)
+        new_parent_children = new_parent.setdefault("children", [])
 
-        root = self.pop_first_endpoint(endpoints_list, root_endpoint)
-        new_parent = self.find_first_endpoint(endpoints_list, new_parent_endpoint)
+        # Check if an endpoint with the same URL already exists at the destination
         try:
-            target = self.find_first_endpoint(new_parent["children"], root_endpoint)
-            target["children"] = root["children"]
-            if root.get("id_name") is not None:
-                target["id_name"] = root["id_name"]
-        except Exception:
-            self.add_endpoint_to_list(new_parent["children"], root)
-            target = root
+            existing = self.find_first_endpoint(
+                new_parent_children, endpoint["endpoint"]
+            )
+            # If it's the same object, endpoint is already at destination
+            if existing is endpoint:
+                return
 
-        # Tell the client to use /new_parent/%v/root to list 'root's,
-        # but use /root/%v/child to fetch its children.
-        target["root"] = True
+            source_list.remove(endpoint)
+            if endpoint.get("children"):
+                existing["children"] = self.merge_endpoint_lists(
+                    existing.get("children", []),
+                    endpoint["children"],
+                )
+            if endpoint.get("id_name") is not None:
+                existing["id_name"] = endpoint["id_name"]
+            # Copy any other properties from the moved endpoint
+            for key, value in endpoint.items():
+                if key not in ("name", "endpoint", "children", "id_name"):
+                    existing[key] = value
+        except Exception:
+            # No existing endpoint, remove from source and add to destination
+            source_list.remove(endpoint)
+            self.add_endpoint_to_list(new_parent_children, endpoint)
+
+        self.logger.info(
+            "Moved endpoint %s to parent path %s",
+            endpoint["name"],
+            " -> ".join(new_parent_path),
+        )
 
     def add_endpoint_to_list(
         self, endpoint_list: list[dict[str, Any]], endpoint: dict[str, Any]
     ) -> None:
         bisect.insort(endpoint_list, endpoint, key=lambda e: e["name"])
+
+    def merge_endpoint_lists(
+        self, list1: list[dict[str, Any]], list2: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
+        return sorted(list1 + list2, key=lambda e: e["name"])
 
     def _delete_repo(self) -> None:
         """
@@ -420,12 +469,51 @@ class GithubRepoWrapper:
             shutil.rmtree(self.clone_dir)
         self.logger.info("Deleted repository")
 
-    @staticmethod
     def add_overrides_to_endpoints(
-        endpoints: list[dict[str, Any]], overrides: list[dict[str, Any]] | None
+        self,
+        endpoints: list[dict[str, Any]],
+        overrides_config: dict[str, Any] | None,
     ) -> None:
-        if overrides is None:
+        if overrides_config is None:
             return
+
+        self.apply_extra_endpoints(
+            endpoints, overrides_config.get("extra_endpoints", [])
+        )
+        self.apply_overrides(endpoints, overrides_config.get("overrides", []))
+
+    def apply_extra_endpoints(
+        self,
+        endpoints: list[dict[str, Any]],
+        extra_endpoints: list[dict[str, Any]],
+    ) -> None:
+        for extra_endpoint in extra_endpoints:
+            endpoint_list = endpoints
+            parent_endpoint = extra_endpoint.get("parent_endpoint")
+            if parent_endpoint is not None:
+                parent = self.find_endpoint_by_path(endpoints, parent_endpoint)
+                endpoint_list = parent.setdefault("children", [])
+                del extra_endpoint["parent_endpoint"]
+
+            self.add_endpoint_to_list(endpoint_list, extra_endpoint)
+            full_path = (parent_endpoint or []) + [extra_endpoint.get("endpoint")]
+            self.logger.info(
+                "Added extra endpoint %s (%s)",
+                " -> ".join(full_path),
+                extra_endpoint.get("name"),
+            )
+
+    def apply_overrides(
+        self,
+        endpoints: list[dict[str, Any]],
+        overrides: list[dict[str, Any]],
+        root_endpoints: list[dict[str, Any]] | None = None,
+    ) -> None:
+        if root_endpoints is None:
+            root_endpoints = endpoints
+
+        # Collect endpoints to move (can't modify list while iterating)
+        endpoints_to_move: list[tuple[dict[str, Any], list[str]]] = []
 
         for endpoint in endpoints:
             try:
@@ -434,11 +522,27 @@ class GithubRepoWrapper:
                     for override in overrides
                     if override["name"] == endpoint["name"]
                 )
+                parent_endpoint_path = override_endpoint.get("parent_endpoint")
+
+                if parent_endpoint_path is not None:
+                    endpoints_to_move.append((endpoint, parent_endpoint_path))
+
                 for key, value in override_endpoint.items():
+                    if key in ("parent_endpoint", "name"):
+                        continue
                     endpoint[key] = value
+
             except StopIteration:
                 pass
 
-            GithubRepoWrapper.add_overrides_to_endpoints(
-                endpoint.get("children", []), overrides
+            self.apply_overrides(
+                endpoint.get("children", []),
+                overrides,
+                root_endpoints,
+            )
+
+        # Move endpoints after iteration is complete
+        for endpoint, new_parent_path in endpoints_to_move:
+            self.move_endpoint_to_parent(
+                root_endpoints, endpoints, endpoint, new_parent_path
             )

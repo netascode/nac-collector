@@ -40,7 +40,9 @@ class ResourceManager:
                 return None
 
         except (ImportError, AttributeError, FileNotFoundError, Exception) as e:
-            logger.debug("Failed to read packaged endpoint data: %s", e)
+            logger.debug(
+                "Failed to read packaged endpoint data for %s: %s", solution, e
+            )
             return None
 
     @staticmethod
@@ -72,7 +74,47 @@ class ResourceManager:
                 return None
 
         except (ImportError, AttributeError, FileNotFoundError, Exception) as e:
-            logger.debug("Failed to read packaged lookup content: %s", e)
+            logger.debug(
+                "Failed to read packaged lookup content for %s: %s", solution, e
+            )
+            return None
+
+    @staticmethod
+    def get_packaged_endpoint_overrides(solution: str) -> dict[str, Any] | None:
+        """
+        Get content of a packaged endpoint overrides YAML file from the endpoint_overrides subdirectory.
+
+        Args:
+            solution: The solution name (e.g., 'meraki', 'ise', etc.)
+
+        Returns:
+            Parsed YAML content if file exists, None otherwise.
+        """
+        try:
+            # Import the endpoint_overrides resource package
+            from nac_collector.resources import endpoint_overrides
+
+            filename = f"{solution.lower()}.yaml"
+
+            if resources.is_resource(endpoint_overrides, filename):
+                content = resources.read_text(endpoint_overrides, filename)
+                logger.debug(
+                    "Read packaged endpoint overrides content for: %s", solution
+                )
+
+                yaml = YAML(typ="safe")
+                parsed_content: dict[str, Any] = yaml.load(content)
+                return parsed_content
+            else:
+                logger.debug("Packaged endpoint overrides file not found: %s", filename)
+                return None
+
+        except (ImportError, AttributeError, FileNotFoundError, Exception) as e:
+            logger.debug(
+                "Failed to read packaged endpoint overrides content for %s: %s",
+                solution,
+                e,
+            )
             return None
 
     @staticmethod
