@@ -120,9 +120,13 @@
   endpoint: /ers/config/sgmapping
 - name: trustsec_ip_to_sgt_mapping_group
   endpoint: /ers/config/sgmappinggroup
+- name: trustsec_matrix
+  endpoint: /api/v1/trustsec/matrix
 - name: trustsec_security_group
   endpoint: /ers/config/sgt
 - name: trustsec_security_group_acl
   endpoint: /ers/config/sgacl
+- name: trustsec_work_process_settings
+  endpoint: /api/v1/trustsec/matrix-workflow-settings
 - name: user_identity_group
   endpoint: /ers/config/identitygroup
