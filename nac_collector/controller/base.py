@@ -280,7 +280,7 @@ class CiscoClientController(ABC):
             endpoint (str): Endpoint URL.
 
         Returns:
-            data (dict): The JSON content of the response or None if an error occurred.
+            data (dict | list): The JSON content of the response or None if an error occurred.
         """
         # Make the request to the given endpoint
         response = self.get_request(self.base_url + endpoint)
@@ -293,9 +293,7 @@ class CiscoClientController(ABC):
                     endpoint,
                     response.status_code,
                 )
-                return (
-                    data if (isinstance(data, dict) or isinstance(data, list)) else None
-                )
+                return data if isinstance(data, (dict, list)) else None
             except ValueError:
                 self.logger.error(
                     "Failed to decode JSON from response for endpoint: %s", endpoint

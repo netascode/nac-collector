@@ -141,6 +141,15 @@ export NAC_MERAKI_ORG_IDS="1234567,3456789"
 nac-collector -s MERAKI --username none --password "$MERAKI_API_KEY" --url 'https://api.meraki.com/api/v1' -v INFO --fetch-latest
 ```
 
+### NDFC
+
+```sh
+# Required: target fabric name for data collection
+export NDFC_FABRIC_NAME="FAB1"
+
+nac-collector -s NDFC --username USERNAME --password PASSWORD --url URL -v INFO
+```
+
 ### IOSXE (Device-Based Collection)
 
 IOSXE uses a device-based architecture where configuration is collected directly from individual devices using RESTCONF API or SSH. This requires a device inventory file instead of a single controller URL.
