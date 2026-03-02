@@ -113,7 +113,7 @@
 - name: tacacs_profile
   endpoint: /ers/config/tacacsprofile
 - name: trustsec_egress_matrix_cell
-  endpoint: /ers/config/egressmatrixcell
+  endpoint: /ers/config/egressmatrixcell?filter=matrixId.NEQ.1
 - name: trustsec_egress_matrix_cell_default
   endpoint: /ers/config/egressmatrixcell
 - name: trustsec_ip_to_sgt_mapping
