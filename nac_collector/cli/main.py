@@ -297,7 +297,7 @@ def main(
             cisco_client_class = CiscoClientMERAKI
 
         # Validate required credentials for controller-based solutions
-        if not username and solution not in [Solution.CDFMC]:
+        if not username:
             console.print(
                 "[red]Username is required for controller-based solutions[/red]"
             )

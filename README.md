@@ -118,10 +118,11 @@ nac-collector -s FMC --username USERNAME --password PASSWORD --url URL -v DEBUG 
 nac-collector -s CDFMC -v DEBUG -e nac_collector/resources/endpoints/fmc.yaml
 
 # cdFMC Without environment variables
-nac-collector -s CDFMC --password API_TOKEN --url URL -v DEBUG -e nac_collector/resources/endpoints/fmc.yaml
+nac-collector -s CDFMC --username none --password API_TOKEN --url URL -v DEBUG -e nac_collector/resources/endpoints/fmc.yaml
 ```
-
-It is recommended to use the pre-populated endpoints list (via the `-e` option) instead of the auto-generated list (using `--fetch-latest`)
+Notes:
+- cdFMC requires username to be set, even though it's going to be ignored
+- It is recommended to use the pre-populated endpoints list (via the `-e` option) instead of the auto-generated list (using `--fetch-latest`)
 
 ### NDO
 
