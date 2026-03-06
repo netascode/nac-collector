@@ -328,8 +328,9 @@ def main(
                 )
             if solution == Solution.CDFMC:
                 # For CDFMC, use FMC client but set cdfmc=True to adjust behavior
+                # Username is not used for CDFMC authentication
                 client = CiscoClientFMC(
-                    username="",
+                    username="ignored_for_cdfmc",
                     password=password,
                     base_url=url,
                     max_retries=MAX_RETRIES,
