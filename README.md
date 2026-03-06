@@ -105,17 +105,24 @@ Catalyst center should NOT use "--fetch-latest"
 
 Catalyst Center contains some custom logic, explained in [README_catalyst_center.md](README_catalyst_center.md).
 
-### FMC
+### FMC / CDFMC
 
 ```sh
-# With environment variables
+# FMC With environment variables
 nac-collector -s FMC -v DEBUG -e nac_collector/resources/endpoints/fmc.yaml
 
-# Without environment variables
+# FMC Without environment variables
 nac-collector -s FMC --username USERNAME --password PASSWORD --url URL -v DEBUG -e nac_collector/resources/endpoints/fmc.yaml
+
+# cdFMC With environment variables
+nac-collector -s CDFMC -v DEBUG -e nac_collector/resources/endpoints/fmc.yaml
+
+# cdFMC Without environment variables
+nac-collector -s CDFMC --password API_TOKEN --url URL -v DEBUG -e nac_collector/resources/endpoints/fmc.yaml
 ```
 
 It is recommended to use the pre-populated endpoints list (via the `-e` option) instead of the auto-generated list (using `--fetch-latest`)
+
 ### NDO
 
 ```sh
