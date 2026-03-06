@@ -53,6 +53,7 @@ class Solution(str, Enum):
     ISE = "ISE"
     NDO = "NDO"
     FMC = "FMC"
+    CDFMC = "CDFMC"
     CATALYSTCENTER = "CATALYSTCENTER"
     MERAKI = "MERAKI"
     IOSXE = "IOSXE"
@@ -288,6 +289,8 @@ def main(
             cisco_client_class = CiscoClientNDO
         elif solution == Solution.FMC:
             cisco_client_class = CiscoClientFMC
+        elif solution == Solution.CDFMC:
+            cisco_client_class = CiscoClientFMC
         elif solution == Solution.CATALYSTCENTER:
             cisco_client_class = CiscoClientCATALYSTCENTER
         elif solution == Solution.MERAKI:
@@ -322,6 +325,19 @@ def main(
                     retry_after=RETRY_AFTER,
                     timeout=timeout,
                     ssl_verify=False,
+                )
+            if solution == Solution.CDFMC:
+                # For CDFMC, use FMC client but set cdfmc=True to adjust behavior
+                # Username is not used for CDFMC authentication
+                client = CiscoClientFMC(
+                    username="ignored_for_cdfmc",
+                    password=password,
+                    base_url=url,
+                    max_retries=MAX_RETRIES,
+                    retry_after=RETRY_AFTER,
+                    timeout=timeout,
+                    ssl_verify=False,
+                    cdfmc=True,
                 )
             else:
                 # For other solutions, don't pass domain parameter
