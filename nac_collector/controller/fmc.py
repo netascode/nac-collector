@@ -27,7 +27,7 @@ class CiscoClientFMC(CiscoClientController):
      - token is used to authenticate subsequent queries
     """
 
-    FMC_AUTH_ENDPOINTS = ["/api/fmc_platform/v1/auth/generatetoken"]
+    FMC_AUTH_ENDPOINT = "/api/fmc_platform/v1/auth/generatetoken"
     SOLUTION = "fmc"
 
     def __init__(
@@ -39,11 +39,13 @@ class CiscoClientFMC(CiscoClientController):
         retry_after: int,
         timeout: int,
         ssl_verify: bool,
+        cdfmc: bool = False,
     ) -> None:
         super().__init__(
             username, password, base_url, max_retries, retry_after, timeout, ssl_verify
         )
         self.x_auth_refresh_token: str | None = None
+        self.cdfmc = cdfmc
         self.domains: list[str] = []
         # Map domain UUID to domain name
         self.domain_map: dict[str, str] = {}
@@ -56,16 +58,47 @@ class CiscoClientFMC(CiscoClientController):
             bool: True if authentication is successful, False otherwise.
         """
 
-        for api in self.FMC_AUTH_ENDPOINTS:
-            auth_url = f"{self.base_url}{api}"
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
 
-            headers = {
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-            }
+        self.client = httpx.Client(
+            verify=self.ssl_verify,
+            timeout=self.timeout,
+        )
+
+        if self.cdfmc:
+            # CDFMC doesn't require authentication - password is used as token.
+            # Check if API is reachable and collect domain information
+            headers.update({"Authorization": f"Bearer {self.password}"})
+            response = httpx.get(
+                url=f"{self.base_url}/api/fmc_platform/v1/info/domain",
+                headers=headers,
+                verify=self.ssl_verify,
+                timeout=self.timeout,
+            )
+
+            if response and response.status_code == 200:
+                logger.info("Successfully connected to CDFMC API")
+                self.client.headers.update(
+                    {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                        "Authorization": f"Bearer {self.password}",
+                    }
+                )
+
+                self.domain_map = {
+                    x["uuid"]: x["name"] for x in response.json().get("items", [])
+                }
+                self.domains = list(self.domain_map.keys())
+                return True
+        else:
+            auth_url = f"{self.base_url}{self.FMC_AUTH_ENDPOINT}"
 
             response = httpx.post(
-                auth_url,
+                url=auth_url,
                 auth=(self.username, self.password),
                 headers=headers,
                 verify=self.ssl_verify,
@@ -74,11 +107,6 @@ class CiscoClientFMC(CiscoClientController):
 
             if response and response.status_code == 204:
                 logger.info("Authentication Successful for URL: %s", auth_url)
-                # Create a client after successful authentication
-                self.client = httpx.Client(
-                    verify=self.ssl_verify,
-                    timeout=self.timeout,
-                )
                 self.client.headers.update(
                     {
                         "Content-Type": "application/json",
@@ -98,10 +126,10 @@ class CiscoClientFMC(CiscoClientController):
                 self.domains = list(self.domain_map.keys())
                 return True
 
-            logger.error(
-                "Authentication failed with status code: %s",
-                response.status_code,
-            )
+        logger.error(
+            "Authentication failed with status code: %s",
+            response.status_code,
+        )
 
         # If all authentication endpoints failed
         return False
