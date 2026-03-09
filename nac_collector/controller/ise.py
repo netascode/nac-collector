@@ -171,15 +171,22 @@ class CiscoClientISE(CiscoClientController):
         elif data and data.get("response"):
             response_items = data.get("response")
             if response_items:
-                for i in response_items:
+                # Some endpoints return a dict (e.g. trustsec_work_process_settings)
+                # rather than a list of items - treat as a single response item
+                if isinstance(response_items, dict):
                     endpoint_dict[endpoint["name"]].append(
-                        {
-                            "data": i,
-                            "endpoint": endpoint["endpoint"]
-                            + "/"
-                            + self.get_id_value(i),
-                        }
+                        {"data": response_items, "endpoint": endpoint["endpoint"]}
                     )
+                else:
+                    for i in response_items:
+                        endpoint_dict[endpoint["name"]].append(
+                            {
+                                "data": i,
+                                "endpoint": endpoint["endpoint"]
+                                + "/"
+                                + self.get_id_value(i),
+                            }
+                        )
 
         # Pagination for ERS API results
         elif data.get("SearchResult"):
