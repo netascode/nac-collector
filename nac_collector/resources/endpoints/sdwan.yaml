@@ -1,6 +1,8 @@
 - name: application_priority_feature_profile
   endpoint: /v1/feature-profile/sdwan/application-priority
   children:
+  - name: application_priority_policy_settings
+    endpoint: /policy-settings
   - name: application_priority_qos
     endpoint: /qos-policy
   - name: application_priority_traffic_policy
