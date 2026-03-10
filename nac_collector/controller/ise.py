@@ -171,15 +171,23 @@ class CiscoClientISE(CiscoClientController):
         elif data and data.get("response"):
             response_items = data.get("response")
             if response_items:
-                for i in response_items:
+                if isinstance(response_items, dict):
                     endpoint_dict[endpoint["name"]].append(
                         {
-                            "data": i,
-                            "endpoint": endpoint["endpoint"]
-                            + "/"
-                            + self.get_id_value(i),
+                            "data": response_items,
+                            "endpoint": endpoint["endpoint"],
                         }
                     )
+                else:
+                    for i in response_items:
+                        endpoint_dict[endpoint["name"]].append(
+                            {
+                                "data": i,
+                                "endpoint": endpoint["endpoint"]
+                                + "/"
+                                + self.get_id_value(i),
+                            }
+                        )
 
         # Pagination for ERS API results
         elif data.get("SearchResult"):
@@ -189,7 +197,9 @@ class CiscoClientISE(CiscoClientController):
                 endpoint_dict[endpoint["name"]].append(
                     {
                         "data": i,
-                        "endpoint": endpoint["endpoint"] + "/" + self.get_id_value(i),
+                        "endpoint": endpoint["endpoint"].split("?")[0]
+                        + "/"
+                        + self.get_id_value(i),
                     }
                 )
 
@@ -348,16 +358,24 @@ class CiscoClientISE(CiscoClientController):
         return ers_data
 
     @staticmethod
-    def get_id_value(i: dict[str, Any]) -> str | None:
+    def get_id_value(i: dict[str, Any] | str) -> str | None:
         """
-        Attempts to get the 'id' or 'name' value from a dictionary.
+        Attempts to get the 'id' or 'name' value from a dictionary, or returns
+        the value directly when it is already a string.
+
+        Some ISE resources return plain strings (e.g. 'approvalWorkflow') instead
+        of dicts inside their list payload.  In that case the string itself is the
+        identifier, so return it immediately to avoid a TypeError when subscripting.
 
         Parameters:
-            i (dict): The dictionary to get the 'id' or 'name' value from.
+            i (dict | str): The dictionary to get the 'id' or 'name' value from,
+                            or a plain string identifier.
 
         Returns:
             str or None: The 'id' or 'name' value if it exists, None otherwise.
         """
+        if isinstance(i, str):
+            return i
         try:
             return str(i["id"])
         except KeyError:

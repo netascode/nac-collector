@@ -1,0 +1,13 @@
+# Endpoint overrides for ISE endpoints generated from provider definitions.
+#
+# To apply modifications in this file,
+# regenerate the endpoints YAML with "uv run ./scripts/update_endpoints.py"
+# (or by running nac-collector with the --fetch-latest flag).
+
+overrides:
+- name: trustsec_egress_matrix_cell
+  # The default endpoint returns only cells belonging to the Production (default) matrix.
+  # Using filter=matrixId.NEQ.1 causes ISE to evaluate the filter against UUID-format
+  # matrixId values, which never equal the integer 1, so the condition is always true
+  # and ISE returns all egress matrix cells across all matrices.
+  endpoint: /ers/config/egressmatrixcell?filter=matrixId.NEQ.1
