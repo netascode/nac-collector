@@ -12,6 +12,11 @@
   children:
   - name: dns_security
     endpoint: /dns
+- name: embedded_security_feature_profile
+  endpoint: /v1/feature-profile/sdwan/embedded-security
+  children:
+  - name: embedded_security_ngfw
+    endpoint: /unified/ngfirewall
 - name: other_feature_profile
   endpoint: /v1/feature-profile/sdwan/other
   children:
@@ -332,8 +337,6 @@
   endpoint: /template/policy/definition/dnssecurity/
 - name: domain_list_policy_object
   endpoint: /template/policy/list/localdomain/
-- name: embedded_security_feature_profile
-  endpoint: /v1/feature-profile/sdwan/embedded-security
 - name: expanded_community_list_policy_object
   endpoint: /template/policy/list/expandedcommunity/
 - name: extended_community_list_policy_object
