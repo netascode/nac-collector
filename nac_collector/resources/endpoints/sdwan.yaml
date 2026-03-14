@@ -81,6 +81,8 @@
     endpoint: /security-urllist
   - name: policy_object_security_url_block_list
     endpoint: /security-urllist
+  - name: policy_object_security_zone
+    endpoint: /security-zone
   - name: policy_object_sla_class_list
     endpoint: /sla-class
   - name: policy_object_standard_community_list
