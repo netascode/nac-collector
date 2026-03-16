@@ -1,36 +1,15 @@
-- name: site
-  endpoint: /dna/intent/api/v1/sites
-  children:
-  - name: aaa_settings
-    endpoint: /aaaSettings?_inherited=true
-  - name: banner_settings
-    endpoint: /bannerSettings
-  - name: dhcp_settings
-    endpoint: /dhcpSettings
-  - name: dns_settings
-    endpoint: /dnsSettings
-  - name: ntp_settings
-    endpoint: /ntpSettings
-  - name: telemetry_settings
-    endpoint: /telemetrySettings?_inherited=true
-  - name: timezone_settings
-    endpoint: /timeZoneSettings
-  - name: wireless_ssid
-    endpoint: /wirelessSettings/ssids
 - name: anycast_gateway
   endpoint: /dna/intent/api/v1/sda/anycastGateways
 - name: area
   endpoint: /dna/intent/api/v2/site
-- name: building
-  endpoint: /dna/intent/api/v2/site
 - name: assign_credentials
-  endpoint: /api/v1/commonsetting/global
-- name: network
   endpoint: /api/v1/commonsetting/global
 - name: assign_device_to_site
   endpoint: /dna/intent/api/v1/networkDevices/assignedToSite
 - name: authentication_policy_server
   endpoint: /dna/intent/api/v1/authentication-policy-servers
+- name: building
+  endpoint: /dna/intent/api/v2/site
 - name: credentials_cli
   endpoint: /dna/intent/api/v2/global-credential
 - name: credentials_https_read
@@ -43,14 +22,14 @@
   endpoint: /dna/intent/api/v2/global-credential
 - name: credentials_snmpv3
   endpoint: /dna/intent/api/v2/global-credential
-- name: network_devices
-  endpoint: /dna/intent/api/v1/network-device
-- name: update_device_management_address
-  endpoint: /dna/intent/api/v1/network-device
 - name: device_detail
   endpoint: /dna/intent/api/v1/device-detail
+- name: extended_templates
+  endpoint: /api/v1/template-programmer/extendedTemplates
 - name: fabric_authentication_profile
   endpoint: /dna/intent/api/v1/business/sda/authentication-profile
+- name: update_device_management_address
+  endpoint: /dna/intent/api/v1/network-device
 - name: fabric_device
   endpoint: /dna/intent/api/v1/sda/fabricDevices
 - name: fabric_l2_handoff
@@ -85,45 +64,97 @@
   endpoint: /dna/intent/api/v1/image/importation
 - name: ip_pool
   endpoint: /api/v2/ippool
+  import_id_attributes:
+  - name: id
+- name: ip_pool_reservation
+  endpoint: 
+    /dna/intent/api/v1/reserve-ip-subpool?ignoreInheritedGroups=true&limit=500
+  import_id_attributes:
+  - name: id
 - name: ip_pools
   endpoint: /dna/intent/api/v1/ipam/globalIpAddressPools
-- name: ip_pool_reservation
-  endpoint: /dna/intent/api/v1/reserve-ip-subpool?ignoreInheritedGroups=true&limit=500
 - name: lan_automation
   endpoint: /dna/intent/api/v1/lan-automation/status
+- name: network
+  endpoint: /api/v1/commonsetting/global
+- name: network_devices
+  endpoint: /dna/intent/api/v1/network-device
+  children:
+  - name: wireless_controller_primary_managed_ap_locations
+    endpoint: 
+      /dna/intent/api/v1/wirelessControllers/%v/primaryManagedApLocations
+  - name: wireless_controller_secondary_managed_ap_locations
+    endpoint: 
+      /dna/intent/api/v1/wirelessControllers/%v/secondaryManagedApLocations
 - name: network_profile
   endpoint: /api/v1/siteprofile?populated=true
+  id_field: siteProfileUuid
+  import_id_attributes:
+  - name: siteProfileUuid
+    data_path: response.siteProfileUuid
+  children:
+  - name: network_profile_for_sites_assignments
+    endpoint: /dna/intent/api/v1/networkProfilesForSites/%v/siteAssignments
+    import_id_attributes:
+    - name: networkProfileId
+      data_path: $parent_id
 - name: pnp_device
   endpoint: /dna/intent/api/v1/onboarding/pnp-device
 - name: project
   endpoint: /dna/intent/api/v2/template-programmer/project
+  import_id_attributes:
+  - name: id
 - name: role
   endpoint: /dna/system/api/v1/roles
+- name: site
+  endpoint: /dna/intent/api/v1/sites
+  children:
+  - name: aaa_settings
+    endpoint: /aaaSettings?_inherited=true
+  - name: banner_settings
+    endpoint: /bannerSettings
+  - name: dhcp_settings
+    endpoint: /dhcpSettings
+  - name: dns_settings
+    endpoint: /dnsSettings
+  - name: ntp_settings
+    endpoint: /ntpSettings
+  - name: telemetry_settings
+    endpoint: /telemetrySettings?_inherited=true
+  - name: timezone_settings
+    endpoint: /timeZoneSettings
+  - name: wireless_ssid
+    endpoint: /wirelessSettings/ssids
+- name: site_settings
+  endpoint: /api/v1/commonsetting/global
 - name: sp_profile
   endpoint: /dna/intent/api/v2/service-provider
 - name: template
   endpoint: /dna/intent/api/v2/template-programmer/template
+  import_id_attributes:
+  - name: id
 - name: template_version
   endpoint: /dna/intent/api/v1/template-programmer/template/version
+  import_id_attributes:
+  - name: templateId
 - name: transit_network
   endpoint: /dna/intent/api/v1/sda/transitNetworks
+  import_id_attributes:
+  - name: name
 - name: update_authentication_profile
   endpoint: /dna/intent/api/v1/sda/authenticationProfiles
 - name: user
   endpoint: /dna/system/api/v1/user
 - name: virtual_network_ip_pool
   endpoint: /dna/intent/api/v1/business/sda/virtualnetwork/ippool
+- name: vlanToSsids
+  endpoint: /dna/intent/api/v1/sda/fabrics/%v/vlanToSsids
 - name: wireless_enterprise_ssid
   endpoint: /dna/intent/api/v1/enterprise-ssid
 - name: wireless_interface
   endpoint: /dna/intent/api/v1/wirelessSettings/interfaces
 - name: wireless_profile
   endpoint: /intent/api/v1/wirelessProfiles
+  children: []
 - name: wireless_rf_profile
   endpoint: /dna/intent/api/v1/wirelessSettings/rfProfiles
-- name: extended_templates
-  endpoint: /api/v1/template-programmer/extendedTemplates
-- name: vlanToSsids
-  endpoint: /dna/intent/api/v1/sda/fabrics/%v/vlanToSsids
-- name: site_settings
-  endpoint: /api/v1/commonsetting/global

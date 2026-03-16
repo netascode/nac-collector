@@ -1,0 +1,159 @@
+# Extra manually-defined endpoints and overrides
+# for endpoints generated from provider definitions.
+#
+# To apply modifications in this file,
+# regenerate the endpoints YAML with "uv run ./scripts/update_endpoints.py".
+
+# Endpoints to remove from the generated file
+# (duplicates, endpoints replaced by unified versions, or not needed)
+remove_endpoints:
+- areas
+- buildings
+- floors
+- anycast_gateways
+- fabric_devices
+- fabric_multicast_virtual_networks
+- provision_devices
+- provision_device
+- ap_profile
+- apply_pending_fabric_events
+- device
+- discovery
+- dot11be_profile
+- extranet_policy
+- fabric_multicast_virtual_network
+- global_credential_netconf
+- integrate_ise
+- wireless_profile_site_tag
+- tag
+- assign_devices_to_tag
+- assign_templates_to_tag
+
+# Extra endpoints not present in the Terraform provider definitions
+extra_endpoints:
+- name: site
+  endpoint: /dna/intent/api/v1/sites
+  children:
+  - name: aaa_settings
+    endpoint: /aaaSettings?_inherited=true
+  - name: banner_settings
+    endpoint: /bannerSettings
+  - name: dhcp_settings
+    endpoint: /dhcpSettings
+  - name: dns_settings
+    endpoint: /dnsSettings
+  - name: ntp_settings
+    endpoint: /ntpSettings
+  - name: telemetry_settings
+    endpoint: /telemetrySettings?_inherited=true
+  - name: timezone_settings
+    endpoint: /timeZoneSettings
+  - name: wireless_ssid
+    endpoint: /wirelessSettings/ssids
+
+- name: network
+  endpoint: /api/v1/commonsetting/global
+
+- name: network_devices
+  endpoint: /dna/intent/api/v1/network-device
+  children:
+  - name: wireless_controller_primary_managed_ap_locations
+    endpoint: /dna/intent/api/v1/wirelessControllers/%v/primaryManagedApLocations
+  - name: wireless_controller_secondary_managed_ap_locations
+    endpoint: /dna/intent/api/v1/wirelessControllers/%v/secondaryManagedApLocations
+
+- name: device_detail
+  endpoint: /dna/intent/api/v1/device-detail
+
+- name: fabric_authentication_profile
+  endpoint: /dna/intent/api/v1/business/sda/authentication-profile
+
+- name: fabric_provision_device
+  endpoint: /dna/intent/api/v1/sda/provisionDevices
+
+- name: fabric_sites
+  endpoint: /dna/intent/api/v1/sda/fabricSites
+
+- name: fabric_virtual_network
+  endpoint: /dna/intent/api/v1/virtual-network
+
+- name: ip_pools
+  endpoint: /dna/intent/api/v1/ipam/globalIpAddressPools
+
+- name: virtual_network_ip_pool
+  endpoint: /dna/intent/api/v1/business/sda/virtualnetwork/ippool
+
+- name: wireless_enterprise_ssid
+  endpoint: /dna/intent/api/v1/enterprise-ssid
+
+- name: extended_templates
+  endpoint: /api/v1/template-programmer/extendedTemplates
+
+- name: vlanToSsids
+  endpoint: /dna/intent/api/v1/sda/fabrics/%v/vlanToSsids
+
+- name: site_settings
+  endpoint: /api/v1/commonsetting/global
+
+# Endpoint overrides format:
+# A flat list of endpoints (no tree with "children").
+#   "name" refers to an endpoint anywhere in the main endpoint tree.
+#   "parent_endpoint" (a path: list of URLs of parent endpoints)
+#     moves the endpoint to a different parent.
+#   Any other keys replace the corresponding keys in the endpoint.
+overrides:
+- name: area
+  endpoint: /dna/intent/api/v2/site
+
+- name: building
+  endpoint: /dna/intent/api/v2/site
+
+- name: floor
+  endpoint: /api/v1/dna-maps-service/domains
+
+- name: image
+  endpoint: /dna/intent/api/v1/image/importation
+
+- name: ip_pool
+  endpoint: /api/v2/ippool
+  import_id_attributes:
+    - name: id
+
+- name: ip_pool_reservation
+  endpoint: /dna/intent/api/v1/reserve-ip-subpool?ignoreInheritedGroups=true&limit=500
+  import_id_attributes:
+    - name: id
+
+- name: network_profile
+  endpoint: /api/v1/siteprofile?populated=true
+  id_field: siteProfileUuid
+  import_id_attributes:
+    - name: siteProfileUuid
+      data_path: response.siteProfileUuid
+  children:
+    - name: network_profile_for_sites_assignments
+      endpoint: /dna/intent/api/v1/networkProfilesForSites/%v/siteAssignments
+      import_id_attributes:
+        - name: networkProfileId
+          data_path: $parent_id
+
+- name: project
+  endpoint: /dna/intent/api/v2/template-programmer/project
+  import_id_attributes:
+    - name: id
+
+- name: template
+  endpoint: /dna/intent/api/v2/template-programmer/template
+  import_id_attributes:
+    - name: id
+
+- name: transit_network
+  import_id_attributes:
+    - name: name
+
+- name: template_version
+  import_id_attributes:
+    - name: templateId
+
+- name: wireless_profile
+  endpoint: /intent/api/v1/wirelessProfiles
