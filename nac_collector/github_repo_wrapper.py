@@ -69,6 +69,7 @@ class GithubRepoWrapper:
 
         # Clone the repository
         Repo.clone_from(self.repo_url, self.clone_dir)
+
         self.logger.info(
             "Successfully cloned repository from %s to %s",
             self.repo_url,
@@ -477,10 +478,40 @@ class GithubRepoWrapper:
         if overrides_config is None:
             return
 
+        # Remove endpoints first (before adding extras or applying overrides)
+        self.remove_endpoints(endpoints, overrides_config.get("remove_endpoints", []))
+
         self.apply_extra_endpoints(
             endpoints, overrides_config.get("extra_endpoints", [])
         )
         self.apply_overrides(endpoints, overrides_config.get("overrides", []))
+
+    def remove_endpoints(
+        self,
+        endpoints: list[dict[str, Any]],
+        remove_list: list[str],
+    ) -> None:
+        """
+        Remove endpoints by name from the endpoints tree.
+
+        Args:
+            endpoints: List of endpoint dictionaries to modify in place
+            remove_list: List of endpoint names to remove
+        """
+        if not remove_list:
+            return
+
+        # Remove from current level
+        to_remove = [e for e in endpoints if e.get("name") in remove_list]
+        for endpoint in to_remove:
+            endpoints.remove(endpoint)
+            self.logger.info("Removed endpoint: %s", endpoint.get("name"))
+
+        # Recursively process children
+        for endpoint in endpoints:
+            children = endpoint.get("children", [])
+            if children:
+                self.remove_endpoints(children, remove_list)
 
     def apply_extra_endpoints(
         self,
