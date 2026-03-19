@@ -79,13 +79,6 @@
   endpoint: /api/v1/commonsetting/global
 - name: network_devices
   endpoint: /dna/intent/api/v1/network-device
-  children:
-  - name: wireless_controller_primary_managed_ap_locations
-    endpoint: 
-      /dna/intent/api/v1/wirelessControllers/%v/primaryManagedApLocations
-  - name: wireless_controller_secondary_managed_ap_locations
-    endpoint: 
-      /dna/intent/api/v1/wirelessControllers/%v/secondaryManagedApLocations
 - name: network_profile
   endpoint: /api/v1/siteprofile?populated=true
   id_field: siteProfileUuid
@@ -149,6 +142,10 @@
   endpoint: /dna/intent/api/v1/business/sda/virtualnetwork/ippool
 - name: vlanToSsids
   endpoint: /dna/intent/api/v1/sda/fabrics/%v/vlanToSsids
+- name: wireless_controller_primary_managed_ap_locations
+  endpoint: /dna/intent/api/v1/wirelessControllers/%v/primaryManagedApLocations
+- name: wireless_controller_secondary_managed_ap_locations
+  endpoint: /dna/intent/api/v1/wirelessControllers/%v/secondaryManagedApLocations
 - name: wireless_enterprise_ssid
   endpoint: /dna/intent/api/v1/enterprise-ssid
 - name: wireless_interface
