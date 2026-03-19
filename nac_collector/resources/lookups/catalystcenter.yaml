@@ -63,4 +63,14 @@
   source_key: id
   target_endpoint: /dna/intent/api/v1/sda/fabricDevices/layer3Handoffs/sdaTransits?fabricId=%v
   target_key: fabricId
+- endpoint: /dna/intent/api/v1/wirelessControllers/%v/primaryManagedApLocations
+  source_endpoint: /dna/intent/api/v1/network-device
+  source_key: id
+  target_endpoint: /dna/intent/api/v1/wirelessControllers/%v/primaryManagedApLocations
+  target_key: deviceId
+- endpoint: /dna/intent/api/v1/wirelessControllers/%v/secondaryManagedApLocations
+  source_endpoint: /dna/intent/api/v1/network-device
+  source_key: id
+  target_endpoint: /dna/intent/api/v1/wirelessControllers/%v/secondaryManagedApLocations
+  target_key: deviceId
 

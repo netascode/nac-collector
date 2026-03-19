@@ -2,6 +2,7 @@ import concurrent.futures
 import datetime
 import logging
 import os
+import re
 import threading
 from typing import Any
 
@@ -272,6 +273,7 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
             id_list = []
         data_list = []
         for id_ in id_list:
+            id_ = self._sanitize_id(str(id_))
             lookup_endpoint = self.id_lookup[endpoint_key]["target_endpoint"].replace(
                 "%v", id_
             )
@@ -343,8 +345,15 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
         for p in params:
             x = i.get(p)
             if x is not None:
-                return str(x)
+                return CiscoClientCATALYSTCENTER._sanitize_id(str(x))
         return None
+
+    @staticmethod
+    def _sanitize_id(value: str) -> str:
+        """
+        Strip whitespace and non-printable characters from an ID value.
+        """
+        return re.sub(r"[\x00-\x1f\x7f-\x9f\s]", "", value)
 
     def process_endpoint(self, endpoint: dict[str, Any]) -> dict[str, Any] | None:
         with self.lock:
@@ -423,11 +432,12 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
                     parent_ids = [self.global_site_id]
 
                 for parent_id in parent_ids:
+                    sanitized_parent_id = self._sanitize_id(str(parent_id))
                     child_dict = CiscoClientController.create_endpoint_dict(
                         children_endpoint
                     )
 
-                    joined_endpoint = f"{endpoint['endpoint']}/{parent_id}{children_endpoint['endpoint']}"
+                    joined_endpoint = f"{endpoint['endpoint']}/{sanitized_parent_id}{children_endpoint['endpoint']}"
                     data = self.fetch_data_pagination(joined_endpoint)
                     child_dict = self.process_endpoint_data(
                         children_endpoint, child_dict, data, parent_id
