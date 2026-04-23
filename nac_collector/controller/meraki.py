@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import os
-from json import JSONDecodeError
 from typing import Any
 
 from meraki.aio.rest_session import AsyncRestSession
@@ -451,17 +450,6 @@ class CiscoClientMERAKI(CiscoClientController):
             return None, {
                 "status_code": e.status,
                 "message": e.message,
-            }
-        except JSONDecodeError as e:
-            # For a 404 Not Found response,
-            # RestSession raises a normal APIError,
-            # with e.message being either decoded JSON or response text if decoding fails.
-            # AsyncRestSession, though, tries to parse 404 response's body
-            # (which can often be HTML instead of JSON) unconditionally
-            # and does not handle the exception.
-            # Catch the exception here, but the response code is already lost.
-            return None, {
-                "message": f"JSON decode error: {str(e)}",
             }
         finally:
             progress.start_task(progress_task)
