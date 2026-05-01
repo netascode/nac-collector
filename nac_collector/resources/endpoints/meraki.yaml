@@ -241,6 +241,8 @@
       has_own_id: true
       id_name: iname
       endpoint: /vlanProfiles
+    - name: network_vlan_profile_assignment
+      endpoint: /vlanProfiles/assignments/reassign
     - name: network_webhook_http_server
       has_own_id: true
       endpoint: /webhooks/httpServers
@@ -403,6 +405,8 @@
     has_own_id: true
     id_name: networkId
     endpoint: /extensions/thousandEyes/networks
+  - name: organization_integrations_xdr_networks
+    endpoint: /integrations/xdr/networks/enable
   - name: organization_inventory_devices
     endpoint: /inventory/devices
   - name: organization_license
