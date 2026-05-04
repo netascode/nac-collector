@@ -257,11 +257,9 @@ class CiscoClientISE(CiscoClientController):
                     parent_endpoint_ids = []
 
                     for item in endpoint_dict[endpoint["name"]]:
-                        # Add the item's id to the list
-                        try:
-                            parent_endpoint_ids.append(item["data"]["id"])
-                        except KeyError:
-                            continue
+                        id_value = self.get_id_value(item.get("data", {}))
+                        if id_value is not None:
+                            parent_endpoint_ids.append(id_value)
 
                     for children_endpoint in endpoint["children"]:
                         logger.info(
@@ -297,7 +295,7 @@ class CiscoClientISE(CiscoClientController):
                             for index, value in enumerate(
                                 endpoint_dict[endpoint["name"]]
                             ):
-                                if value.get("data").get("id") == id_:
+                                if self.get_id_value(value.get("data", {})) == id_:
                                     endpoint_dict[endpoint["name"]][index].setdefault(
                                         "children", {}
                                     )[
