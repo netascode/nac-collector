@@ -149,6 +149,8 @@
   endpoint: /dna/intent/api/v1/wirelessSettings/interfaces
 - name: wireless_profile
   endpoint: /intent/api/v1/wirelessProfiles
-  children: []
+  children:
+  - name: wireless_profile_policy_tag
+    endpoint: /policyTags
 - name: wireless_rf_profile
   endpoint: /dna/intent/api/v1/wirelessSettings/rfProfiles
