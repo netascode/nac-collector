@@ -33,10 +33,12 @@ class CiscoClientController(ABC):
         retry_after: int,
         timeout: int,
         ssl_verify: bool = False,
+        api_token: str | None = None,
     ) -> None:
         self.username = username
         self.password = password
         self.base_url = base_url
+        self.api_token = api_token
         self.max_retries = max_retries
         self.retry_after = retry_after
         self.timeout = timeout

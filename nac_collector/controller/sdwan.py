@@ -1,3 +1,4 @@
+import base64
 import json
 import logging
 from typing import Any
@@ -35,14 +36,80 @@ class CiscoClientSDWAN(CiscoClientController):
         retry_after: int,
         timeout: int,
         ssl_verify: bool,
+        api_token: str | None = None,
     ) -> None:
         super().__init__(
-            username, password, base_url, max_retries, retry_after, timeout, ssl_verify
+            username, password, base_url, max_retries, retry_after, timeout, ssl_verify, api_token
         )
 
     def authenticate(self) -> bool:
         """
-        Perform token-based authentication.
+        Perform authentication using either API token or username/password.
+
+        If api_token is set, uses Bearer token authentication (supported in 20.18+).
+        Otherwise, falls back to session-based authentication via /j_security_check.
+
+        Returns:
+            bool: True if authentication is successful, False otherwise.
+        """
+
+        if self.api_token:
+            return self._authenticate_token()
+        return self._authenticate_session()
+
+    def _authenticate_token(self) -> bool:
+        """
+        Perform API token authentication (supported in 20.18+).
+
+        Returns:
+            bool: True if authentication is successful, False otherwise.
+        """
+        logger.info("Authenticating with API token for URL: %s", self.base_url)
+
+        # Extract CSRF token from JWT payload
+        csrf_token = None
+        try:
+            payload_b64 = self.api_token.split(".")[1]
+            # Add padding if needed
+            payload_b64 += "=" * (-len(payload_b64) % 4)
+            payload = json.loads(base64.urlsafe_b64decode(payload_b64))
+            csrf_token = payload.get("csrf")
+            if csrf_token:
+                logger.info("Extracted CSRF token from JWT payload")
+            else:
+                logger.warning("No 'csrf' field found in JWT payload")
+        except (IndexError, ValueError, json.JSONDecodeError) as e:
+            logger.warning("Could not decode JWT payload to extract CSRF token: %s", e)
+
+        self.client = httpx.Client(
+            verify=self.ssl_verify,
+            timeout=self.timeout,
+        )
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.api_token}",
+        }
+        if csrf_token:
+            headers["X-XSRF-TOKEN"] = csrf_token
+        self.client.headers.update(headers)
+
+        # Verify token by making a test request
+        test_url = self.base_url + "/dataservice/client/server"
+        try:
+            response = self.client.get(test_url)
+            if response and response.status_code == 200:
+                logger.info("API token authentication successful for URL: %s", self.base_url)
+                self.base_url = self.base_url + "/dataservice"
+                return True
+        except httpx.RequestError as e:
+            logger.error("API token authentication request failed: %s", e)
+
+        logger.error("API token authentication failed")
+        return False
+
+    def _authenticate_session(self) -> bool:
+        """
+        Perform session-based authentication via /j_security_check.
 
         Returns:
             bool: True if authentication is successful, False otherwise.

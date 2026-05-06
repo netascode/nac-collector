@@ -141,6 +141,14 @@ def main(
             help="Base URL for the service",
         ),
     ] = None,
+    api_token: Annotated[
+        str | None,
+        typer.Option(
+            "--api-token",
+            envvar="NAC_API_TOKEN",
+            help="API token for authentication (supported for SDWAN 20.18+). If set, username/password are not required.",
+        ),
+    ] = None,
     verbosity: Annotated[
         LogLevel,
         typer.Option("-v", "--verbosity", help="Log level"),
@@ -297,14 +305,11 @@ def main(
             cisco_client_class = CiscoClientMERAKI
 
         # Validate required credentials for controller-based solutions
-        if not username:
+        # Either api_token OR (username AND password) must be provided
+        if not api_token and not (username and password):
             console.print(
-                "[red]Username is required for controller-based solutions[/red]"
-            )
-            raise typer.Exit(1)
-        if not password:
-            console.print(
-                "[red]Password is required for controller-based solutions[/red]"
+                "[red]Either --api-token (NAC_API_TOKEN) or both --username (NAC_USERNAME) "
+                "and --password (NAC_PASSWORD) must be provided[/red]"
             )
             raise typer.Exit(1)
         if not url:
@@ -342,13 +347,14 @@ def main(
             else:
                 # For other solutions, don't pass domain parameter
                 client = cisco_client_class(
-                    username=username,
-                    password=password,
+                    username=username or "",
+                    password=password or "",
                     base_url=url,
                     max_retries=MAX_RETRIES,
                     retry_after=RETRY_AFTER,
                     timeout=timeout,
                     ssl_verify=False,
+                    api_token=api_token,
                 )
 
             # Authenticate
