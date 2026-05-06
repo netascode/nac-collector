@@ -14,6 +14,8 @@
       endpoint: /ipv6staticroutes
     - name: device_vrf_ipv4_static_route
       endpoint: /ipv4staticroutes
+    - name: device_vrf_bgp
+      endpoint: /bgp
   - name: device_etherchannel_interface
     endpoint: /etherchannelinterfaces
   - name: device_bgp
@@ -30,7 +32,7 @@
     endpoint: /physicalinterfaces
   - name: device_ipv4_static_route
     endpoint: /routing/ipv4staticroutes
-  - name: device_vti_interface
+  - name: device_virtual_tunnel_interface
     endpoint: /virtualtunnelinterfaces
   - name: device_vni_interface
     endpoint: /vniinterfaces
@@ -40,6 +42,10 @@
     endpoint: /routing/bgpgeneralsettings
   - name: device_loopback_interface
     endpoint: /loopbackinterfaces
+  - name: device_ospf
+    endpoint: /routing/ospfv2routes
+  - name: device_ospf_interface
+    endpoint: /routing/ospfinterface
 - name: ipv6_address_pool
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ipv6addresspools
 - name: network_analysis_policy
@@ -126,7 +132,9 @@
     endpoint: /accessrules
   - name: access_category
     endpoint: /categories
-- name: standard_acl
+  - name: access_control_policy_inheritance
+    endpoint: /inheritancesettings
+- name: standard_access_list
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/standardaccesslists
 - name: tunnel_zone
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/tunneltags
@@ -210,6 +218,15 @@
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/siurlfeeds
 - name: intrusion_policy
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/intrusionpolicies
+  children:
+  - name: intrusion_policy_group_override
+    endpoint: /intrusionrulegroups
+  # - name: intrusion_policy_rule_override
+  #   endpoint: /intrusionrules
+# - name: intrusion_rule
+#   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/intrusionrules
+- name: intrusion_rule_group
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/intrusionrulegroups
 - name: range
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ranges
 - name: secure_client_customization
@@ -231,7 +248,7 @@
 - name: secure_client_external_browser_package
   endpoint: 
     /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/anyconnectexternalbrowserpackages
-- name: extended_acl
+- name: extended_access_list
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/extendedaccesslists
 - name: dynamic_object
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/dynamicobjects
@@ -281,7 +298,7 @@
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/ipv4addresspools
 - name: dns_server_group
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/dnsservergroups
-- name: realm_ad_ldap
+- name: realms
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/realms
 - name: file_policy
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/filepolicies
@@ -312,3 +329,12 @@
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/applicationtags
 - name: application_type
   endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/applicationtypes
+- name: identity_policy
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/policy/identitypolicies
+  children:
+  - name: rules
+    endpoint: /identityrules
+  - name: categories
+    endpoint: /identitycategories
+- name: key_chain
+  endpoint: /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/keychains
