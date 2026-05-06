@@ -49,6 +49,10 @@ Options:
                         Request timeout in seconds [default: 30]
   -o, --output TEXT     Path to the output ZIP file [default: nac-collector.zip]
   --devices-file TEXT   Path to the device inventory YAML file (for device-based solutions)
+  --request-delay FLOAT Seconds to pause after each successful API request [default: 0.0]
+  --max-concurrency INTEGER
+                        Maximum number of concurrent workers. Default: unlimited for
+                        controller-based solutions, 10 for device-based solutions.
   --version             Show version and exit
   --help                Show this message and exit
 ```
@@ -89,6 +93,19 @@ nac-collector -s ISE -v DEBUG --fetch-latest
 
 # Without environment variables
 nac-collector -s ISE --username USERNAME --password PASSWORD --url URL -v DEBUG --fetch-latest
+```
+
+### Throttling / rate limiting
+
+To reduce API pressure on busy controllers, use `--request-delay` to pause between
+successful requests and `--max-concurrency` to cap concurrent workers:
+
+```sh
+# Add a 0.5s pause between successful requests
+nac-collector -s ISE --request-delay 0.5 --fetch-latest
+
+# Cap Catalyst Center to 3 concurrent workers and 0.2s between requests
+nac-collector -s CATALYSTCENTER --max-concurrency 3 --request-delay 0.2
 ```
 
 ### Catalyst Center

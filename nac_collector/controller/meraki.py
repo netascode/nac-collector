@@ -45,6 +45,7 @@ class CiscoClientMERAKI(CiscoClientController):
         retry_after: int,
         timeout: int,
         ssl_verify: bool,
+        request_delay: float = 0.0,
     ) -> None:
         super().__init__(
             username,
@@ -54,6 +55,7 @@ class CiscoClientMERAKI(CiscoClientController):
             retry_after,
             timeout,
             ssl_verify,
+            request_delay=request_delay,
         )
 
         self.allowed_org_ids: list[str] | None = None

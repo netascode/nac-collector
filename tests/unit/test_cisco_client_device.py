@@ -323,6 +323,57 @@ class TestCollectAndWriteToArchive:
             )  # Original name preserved in content
 
 
+class TestMaxConcurrency:
+    def test_default_max_concurrency_is_ten(self, sample_devices):
+        client = ConcreteCiscoClientDevice(
+            devices=sample_devices,
+            default_username="user",
+            default_password="pass",
+            max_retries=1,
+            retry_after=1,
+            timeout=5,
+        )
+        assert client.max_concurrency == 10
+
+    def test_explicit_max_concurrency_override(self, sample_devices):
+        client = ConcreteCiscoClientDevice(
+            devices=sample_devices,
+            default_username="user",
+            default_password="pass",
+            max_retries=1,
+            retry_after=1,
+            timeout=5,
+            max_concurrency=3,
+        )
+        assert client.max_concurrency == 3
+
+    @patch("zipfile.ZipFile")
+    @patch("concurrent.futures.ThreadPoolExecutor")
+    def test_collect_uses_configured_max_concurrency(
+        self, mock_executor, mock_zipfile, sample_devices
+    ):
+        client = ConcreteCiscoClientDevice(
+            devices=sample_devices,
+            default_username="user",
+            default_password="pass",
+            max_retries=1,
+            retry_after=1,
+            timeout=5,
+            max_concurrency=4,
+        )
+
+        mock_future = MagicMock()
+        mock_future.result.return_value = {"device": "x", "config": "y"}
+        mock_executor_instance = mock_executor.return_value.__enter__.return_value
+        mock_executor_instance.submit.return_value = mock_future
+
+        with patch("concurrent.futures.as_completed", return_value=[mock_future]):
+            client.devices = [{"name": "OnlyDevice"}]
+            client.collect_and_write_to_archive("out.zip")
+
+        mock_executor.assert_called_once_with(max_workers=4)
+
+
 class TestAbstractMethods:
     def test_abstract_methods_must_be_implemented(self):
         # Verify that CiscoClientDevice is abstract and cannot be instantiated
