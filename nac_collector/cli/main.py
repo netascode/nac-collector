@@ -304,8 +304,15 @@ def main(
         elif solution == Solution.MERAKI:
             cisco_client_class = CiscoClientMERAKI
 
+        # Validate that api_token is only used with SDWAN
+        if api_token and solution != Solution.SDWAN:
+            console.print(
+                "[red]--api-token is only supported for SDWAN solution (20.18+)[/red]"
+            )
+            raise typer.Exit(1)
+
         # Validate required credentials for controller-based solutions
-        # Either api_token OR (username AND password) must be provided
+        # Either api_token (SDWAN only) OR (username AND password) must be provided
         if not api_token and not (username and password):
             console.print(
                 "[red]Either --api-token (NAC_API_TOKEN) or both --username (NAC_USERNAME) "
@@ -344,9 +351,9 @@ def main(
                     ssl_verify=False,
                     cdfmc=True,
                 )
-            else:
-                # For other solutions, don't pass domain parameter
-                client = cisco_client_class(
+            elif solution == Solution.SDWAN:
+                # SDWAN supports api_token authentication (20.18+)
+                client = CiscoClientSDWAN(
                     username=username or "",
                     password=password or "",
                     base_url=url,
@@ -355,6 +362,17 @@ def main(
                     timeout=timeout,
                     ssl_verify=False,
                     api_token=api_token,
+                )
+            else:
+                # For other solutions, no api_token support
+                client = cisco_client_class(
+                    username=username or "",
+                    password=password or "",
+                    base_url=url,
+                    max_retries=MAX_RETRIES,
+                    retry_after=RETRY_AFTER,
+                    timeout=timeout,
+                    ssl_verify=False,
                 )
 
             # Authenticate
