@@ -1,4 +1,5 @@
 import base64
+import binascii
 import json
 import logging
 from typing import Any
@@ -78,7 +79,7 @@ class CiscoClientSDWAN(CiscoClientController):
                 logger.info("Extracted CSRF token from JWT payload")
             else:
                 logger.warning("No 'csrf' field found in JWT payload")
-        except (IndexError, ValueError, json.JSONDecodeError) as e:
+        except (IndexError, ValueError, json.JSONDecodeError, binascii.Error) as e:
             logger.warning("Could not decode JWT payload to extract CSRF token: %s", e)
 
         self.client = httpx.Client(
@@ -97,14 +98,16 @@ class CiscoClientSDWAN(CiscoClientController):
         test_url = self.base_url + "/dataservice/client/server"
         try:
             response = self.client.get(test_url)
-            if response and response.status_code == 200:
+            if response.status_code == 200:
                 logger.info("API token authentication successful for URL: %s", self.base_url)
                 self.base_url = self.base_url + "/dataservice"
                 return True
+            logger.error(
+                "API token authentication failed with status code: %s", response.status_code
+            )
         except httpx.RequestError as e:
             logger.error("API token authentication request failed: %s", e)
 
-        logger.error("API token authentication failed")
         return False
 
     def _authenticate_session(self) -> bool:
