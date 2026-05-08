@@ -98,6 +98,9 @@
   endpoint: /api/v1/policy/network-access/condition
 - name: network_access_dictionary
   endpoint: /api/v1/policy/network-access/dictionaries
+  children:
+  - name: network_access_dictionary_attribute
+    endpoint: /attribute
 - name: network_access_time_and_date_condition
   endpoint: /api/v1/policy/network-access/time-condition
 - name: network_device
