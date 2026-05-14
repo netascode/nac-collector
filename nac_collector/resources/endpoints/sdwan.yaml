@@ -36,6 +36,8 @@
     endpoint: /config
 - name: cli_device_template
   endpoint: /template/device/
+- name: cloud_provider_settings
+  endpoint: /settings/configuration/cloudProviderSetting
 - name: color_list_policy_object
   endpoint: /template/policy/list/color/
 - name: configuration_group
