@@ -26,11 +26,11 @@ class CiscoClientNDFC(CiscoClientController):
     # These interface types must have:
     # 1. A 'vpcEntityId' field with format "serial1~serial2~vpcX"
     # 2. Children endpoints defined in YAML configuration
-    # 3. The same processing pattern for child endpoints like vPCInterfaceSetting
-    PORT_CHANNEL_INTERFACE_TYPES = [
-        "TrunkPort-Channel",
-        "AccessPort-Channel",
-        # Add new Port-Channel interface types here as needed
+    # 3. The same processing pattern for child endpoints like VpcInterfaceSetting
+    VPC_PORT_CHANNEL_INTERFACE_TYPES = [
+        "VpcTrunkPortChannel",
+        "VpcAccessPortChannel"
+        # Add new vPC Port-Channel interface types here as needed
     ]
 
     # Interface types that use serial number + interface name processing logic
@@ -42,6 +42,8 @@ class CiscoClientNDFC(CiscoClientController):
         "LoopbackInterfaces",
         "AccessEthernetPorts",
         "TrunkEthernetPorts",
+        "TrunkPortChannel",
+        "AccessPortChannel"
         # Add new serial-based interface types here as needed
     ]
 
@@ -1191,6 +1193,9 @@ class CiscoClientNDFC(CiscoClientController):
             self._process_vrf_attachments(parent_endpoint, endpoint_dict)
         elif parent_name == "Discovered_Switches":
             self._process_switch_interfaces(parent_endpoint, endpoint_dict)
+        elif parent_name in self.VPC_PORT_CHANNEL_INTERFACE_TYPES:
+            # Handle vPC Port-Channel interfaces that use vpcEntityId pattern
+            self._process_port_channel_children(parent_endpoint, endpoint_dict)
         elif parent_name in self.VPC_PAIR_TYPES:
             self._process_vpc_pairs_children(parent_endpoint, endpoint_dict)
         else:
@@ -1695,9 +1700,95 @@ class CiscoClientNDFC(CiscoClientController):
                     else:
                         logger.debug("Skipping network with missing networkName")
 
-    def _process_vpc_pairs_children(
-        self, parent_endpoint: dict[str, Any], endpoint_dict: dict[str, Any]
-    ) -> None:
+    def _process_port_channel_children(self, parent_endpoint, endpoint_dict):
+        """
+        Process children endpoints for vPC Port-Channel interface types (VpcTrunkPortChannel, VpcAccessPortChannel, etc.).
+        Fetches child endpoint data (like VpcInterfaceSetting) for each vPC Port-Channel interface.
+        
+        This method handles all interface types that:
+        1. Have a 'vpcEntityId' field with format "serial1~serial2~vpcX"
+        2. Are defined in the VPC_PORT_CHANNEL_INTERFACE_TYPES class constant
+        
+        To add support for new vPC Port-Channel interface types:
+        1. Add the interface type name to VPC_PORT_CHANNEL_INTERFACE_TYPES constant
+        2. Define the interface endpoint and children in the YAML configuration
+        3. No code changes are required as this method handles them generically
+
+        Parameters:
+            parent_endpoint (dict): The parent Port-Channel endpoint.
+            endpoint_dict (dict): The dictionary containing the processed data.
+        """
+        parent_name = parent_endpoint["name"]
+        
+        # Get the children endpoint configurations
+        children_endpoints = parent_endpoint.get("children", [])
+        
+        if not children_endpoints:
+            logger.debug("No children endpoints defined for %s", parent_name)
+            return
+
+        logger.info("Processing %d children endpoints for %s", len(children_endpoints), parent_name)
+        
+        # Get Port-Channel data from the endpoint_dict
+        port_channels = endpoint_dict.get(parent_name, [])
+        
+        if not port_channels:
+            logger.warning("No %s data found to process children for", parent_name)
+            return
+
+        # Process each Port-Channel interface
+        processed_count = 0
+        for port_channel_data in port_channels:
+            # Extract vpcEntityId which contains the pattern "serial1~serial2~vpcX"
+            vpc_entity_id = port_channel_data.get("vpcEntityId")
+            
+            if not vpc_entity_id:
+                logger.debug("No vpcEntityId found in %s data, skipping", parent_name)
+                continue
+
+            # Parse the vpcEntityId to extract vpcPair and vPC_name
+            vpc_pair, vpc_name = self._parse_vpc_entity_id(vpc_entity_id)
+            
+            if not vpc_pair or not vpc_name:
+                logger.warning("Failed to parse vpcEntityId: %s", vpc_entity_id)
+                continue
+
+            logger.debug("Processing %s children for vpcPair=%s, vPC_name=%s", parent_name, vpc_pair, vpc_name)
+
+            # Process each child endpoint
+            for child_endpoint in children_endpoints:
+                child_name = child_endpoint["name"]
+                child_url = child_endpoint["endpoint"]
+
+                # Replace variables in the child endpoint URL
+                child_url = child_url.replace("{{vpcPair}}", vpc_pair)
+                child_url = child_url.replace("{{vPC_name}}", vpc_name)
+
+                # Replace fabric ID if present
+                if self.fabric_id and "{{fabricID}}" in child_url:
+                    child_url = child_url.replace("{{fabricID}}", str(self.fabric_id))
+
+                logger.debug("Fetching child endpoint: %s -> %s", child_name, child_url)
+
+                try:
+                    response = self.client.get(f"{self.base_url}{child_url}")
+                    response.raise_for_status()
+                    child_data = response.json()
+
+                    # Save child data directly to the Port-Channel entry using the child endpoint name as key
+                    port_channel_data[child_name] = child_data
+
+                    processed_count += 1
+                    logger.debug("Successfully processed and saved child endpoint %s to %s entry for %s", child_name, parent_name, vpc_name)
+
+                except Exception as e:
+                    logger.error("Error processing child endpoint %s for %s: %s", child_name, vpc_name, str(e))
+                    # Set empty data on error to maintain consistent structure
+                    port_channel_data[child_name] = {}
+
+        logger.info("Completed processing %s children. Processed %d items", parent_name, processed_count)
+
+    def _process_vpc_pairs_children(self, parent_endpoint, endpoint_dict):
         """
         Process children endpoints for VPC pair types (VPC_Pairs).
         Fetches child endpoint data (like VPC_PeerLinkSettings) for each VPC pair.
@@ -1817,8 +1908,8 @@ class CiscoClientNDFC(CiscoClientController):
         self, parent_endpoint: dict[str, Any], interface_data: Any, sys_name: str
     ) -> None:
         """
-        Process nested children endpoints for interface data (like Port-Channel interfaces -> vPCInterfaceSetting).
-
+        Process nested children endpoints for interface data (like vPC Port-Channel interfaces -> VpcInterfaceSetting).
+        
         Parameters:
             parent_endpoint (dict): The parent endpoint configuration with children
             interface_data (list): The interface data from the parent endpoint
@@ -1847,9 +1938,9 @@ class CiscoClientNDFC(CiscoClientController):
         ):
             if not isinstance(interface_entry, dict):
                 continue
-
-            # For Port-Channel interfaces (TrunkPort-Channel, AccessPort-Channel, etc.), look for vpcEntityId
-            if parent_name in self.PORT_CHANNEL_INTERFACE_TYPES:
+                
+            # For vPC Port-Channel interfaces (VpcTrunkPortChannel, VpcAccessPortChannel, etc.), look for vpcEntityId
+            if parent_name in self.VPC_PORT_CHANNEL_INTERFACE_TYPES:
                 vpc_entity_id = interface_entry.get("vpcEntityId")
 
                 if not vpc_entity_id:
