@@ -91,6 +91,9 @@
   endpoint: /dna/intent/api/v1/sda/fabricZones
 - name: floor
   endpoint: /api/v1/dna-maps-service/domains
+  children:
+  - name: planned_access_point_position
+    endpoint: /plannedAccessPointPositions
 - name: image
   endpoint: /dna/intent/api/v1/image/importation
 - name: ip_pool
