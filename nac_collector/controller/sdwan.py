@@ -39,8 +39,9 @@ class CiscoClientSDWAN(CiscoClientController):
         ssl_verify: bool,
         api_token: str | None = None,
     ) -> None:
+        self.api_token = api_token
         super().__init__(
-            username, password, base_url, max_retries, retry_after, timeout, ssl_verify, api_token
+            username, password, base_url, max_retries, retry_after, timeout, ssl_verify
         )
 
     def authenticate(self) -> bool:
@@ -78,9 +79,18 @@ class CiscoClientSDWAN(CiscoClientController):
             if csrf_token:
                 logger.info("Extracted CSRF token from JWT payload")
             else:
-                logger.warning("No 'csrf' field found in JWT payload")
+                logger.error(
+                    "JWT payload does not contain 'csrf' field. "
+                    "Ensure valid token was generated in Manager 20.18+"
+                )
+                return False
         except (IndexError, ValueError, json.JSONDecodeError, binascii.Error) as e:
-            logger.warning("Could not decode JWT payload to extract CSRF token: %s", e)
+            logger.error(
+                "Could not decode JWT payload to extract CSRF token: %s. "
+                "Ensure valid token was generated in Manager 20.18+",
+                e,
+            )
+            return False
 
         self.client = httpx.Client(
             verify=self.ssl_verify,
@@ -89,9 +99,8 @@ class CiscoClientSDWAN(CiscoClientController):
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.api_token}",
+            "X-XSRF-TOKEN": csrf_token,
         }
-        if csrf_token:
-            headers["X-XSRF-TOKEN"] = csrf_token
         self.client.headers.update(headers)
 
         # Verify token by making a test request
