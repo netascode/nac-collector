@@ -12,6 +12,8 @@ GIT_TMP = Path("./tmp")
 MAX_RETRIES = 5
 RETRY_AFTER = 60
 TIMEOUT = 30
+REQUEST_DELAY = 0.0
+DEFAULT_DEVICE_CONCURRENCY = 10
 
 # ISE-specific constants
 # ISE ERS API pagination size parameter

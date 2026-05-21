@@ -32,6 +32,7 @@ class CiscoClientDevice(ABC):
         retry_after: int,
         timeout: int,
         ssl_verify: bool = False,
+        max_concurrency: int = 10,
     ) -> None:
         self.devices = devices
         self.default_username = default_username
@@ -40,6 +41,7 @@ class CiscoClientDevice(ABC):
         self.retry_after = retry_after
         self.timeout = timeout
         self.ssl_verify = ssl_verify
+        self.max_concurrency = max_concurrency
         self.logger = logging.getLogger(__name__)
 
     @abstractmethod
@@ -238,7 +240,7 @@ class CiscoClientDevice(ABC):
             ) as progress:
                 task = progress.add_task("Processing devices", total=len(self.devices))
 
-                with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+                with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_concurrency) as executor:
                     futures = {
                         executor.submit(
                             self._collect_with_error_handling, device

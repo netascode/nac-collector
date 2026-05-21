@@ -80,6 +80,7 @@ class TestDeviceBasedSolutions:
             retry_after=60,
             timeout=30,
             ssl_verify=False,
+            max_concurrency=10,
         )
 
         # Verify collection was called with default output file
@@ -257,6 +258,7 @@ class TestDeviceBasedSolutions:
             retry_after=60,
             timeout=30,
             ssl_verify=False,
+            max_concurrency=10,
         )
 
         # Verify collection was called with default output file
@@ -335,6 +337,7 @@ class TestControllerBasedSolutions:
             retry_after=60,
             timeout=30,
             ssl_verify=False,
+            request_delay=0.0,
         )
 
         # Verify authentication and collection
@@ -397,6 +400,132 @@ class TestControllerBasedSolutions:
         assert exc_info.value.exit_code == 1
         mock_client.authenticate.assert_called_once()
         mock_client.get_from_endpoints_data.assert_not_called()
+
+
+class TestThrottlingOptions:
+    @patch("nac_collector.cli.main.CiscoClientIOSXE")
+    @patch("nac_collector.cli.main.load_devices_from_file")
+    def test_device_solution_forwards_max_concurrency(
+        self, mock_load_devices, mock_iosxe_class, sample_devices_yaml
+    ):
+        mock_load_devices.return_value = [
+            {"name": "Device1", "url": "https://device1.example.com"}
+        ]
+        mock_iosxe_class.return_value = MagicMock()
+
+        with patch("nac_collector.cli.main.time.time", side_effect=[0, 5]):
+            with pytest.raises(typer.Exit):
+                main(
+                    solution=Solution.IOSXE,
+                    username="test_user",
+                    password="test_pass",
+                    url="http://unused.com",
+                    devices_file=sample_devices_yaml,
+                    verbosity=LogLevel.WARNING,
+                    fetch_latest=False,
+                    endpoints_file=None,
+                    timeout=30,
+                    output=None,
+                    request_delay=0.5,
+                    max_concurrency=3,
+                    version=None,
+                )
+
+        # Device clients only accept max_concurrency (not request_delay).
+        mock_iosxe_class.assert_called_once_with(
+            devices=mock_load_devices.return_value,
+            default_username="test_user",
+            default_password="test_pass",
+            max_retries=5,
+            retry_after=60,
+            timeout=30,
+            ssl_verify=False,
+            max_concurrency=3,
+        )
+
+    @patch("nac_collector.cli.main.CiscoClientISE")
+    @patch("nac_collector.cli.main.EndpointResolver.resolve_endpoint_data")
+    def test_controller_solution_forwards_request_delay(
+        self, mock_resolver, mock_ise_class
+    ):
+        mock_resolver.return_value = [{"name": "test", "endpoint": "/test"}]
+
+        mock_client = MagicMock()
+        mock_client.authenticate.return_value = True
+        mock_client.get_from_endpoints_data.return_value = {"test": "data"}
+        mock_ise_class.return_value = mock_client
+
+        with patch("nac_collector.cli.main.time.time", side_effect=[0, 5]):
+            with pytest.raises(typer.Exit):
+                main(
+                    solution=Solution.ISE,
+                    username="ise_user",
+                    password="ise_pass",
+                    url="https://ise-server.com",
+                    devices_file=None,
+                    verbosity=LogLevel.WARNING,
+                    fetch_latest=False,
+                    endpoints_file=None,
+                    timeout=30,
+                    output=None,
+                    request_delay=0.25,
+                    max_concurrency=5,
+                    version=None,
+                )
+
+        # ISE only accepts request_delay (max_concurrency is Catalyst-Center-only).
+        mock_ise_class.assert_called_once_with(
+            username="ise_user",
+            password="ise_pass",
+            base_url="https://ise-server.com",
+            max_retries=5,
+            retry_after=60,
+            timeout=30,
+            ssl_verify=False,
+            request_delay=0.25,
+        )
+
+    @patch("nac_collector.cli.main.CiscoClientCATALYSTCENTER")
+    @patch("nac_collector.cli.main.EndpointResolver.resolve_endpoint_data")
+    def test_catalyst_center_forwards_both_options(
+        self, mock_resolver, mock_catc_class
+    ):
+        mock_resolver.return_value = [{"name": "test", "endpoint": "/test"}]
+
+        mock_client = MagicMock()
+        mock_client.authenticate.return_value = True
+        mock_client.get_from_endpoints_data.return_value = {"test": "data"}
+        mock_catc_class.return_value = mock_client
+
+        with patch("nac_collector.cli.main.time.time", side_effect=[0, 5]):
+            with pytest.raises(typer.Exit):
+                main(
+                    solution=Solution.CATALYSTCENTER,
+                    username="catc_user",
+                    password="catc_pass",
+                    url="https://catc-server.com",
+                    devices_file=None,
+                    verbosity=LogLevel.WARNING,
+                    fetch_latest=False,
+                    endpoints_file=None,
+                    timeout=30,
+                    output=None,
+                    request_delay=0.3,
+                    max_concurrency=4,
+                    version=None,
+                )
+
+        mock_catc_class.assert_called_once_with(
+            username="catc_user",
+            password="catc_pass",
+            base_url="https://catc-server.com",
+            max_retries=5,
+            retry_after=60,
+            timeout=30,
+            ssl_verify=False,
+            request_delay=0.3,
+            max_concurrency=4,
+        )
 
 
 class TestSpecialCases:

@@ -22,6 +22,7 @@ class CiscoClientController(ABC):
         max_retries (int): The maximum number of times to retry the request if the status code is 429.
         retry_after (int): The number of seconds to wait before retrying the request if the status code is 429.
         timeout (int): The number of seconds to wait for the server to send data before giving up.
+        request_delay (float, optional): Delay in seconds between API requests. Defaults to 0.0.
     """
 
     def __init__(
@@ -33,6 +34,7 @@ class CiscoClientController(ABC):
         retry_after: int,
         timeout: int,
         ssl_verify: bool = False,
+        request_delay: float = 0.0,
     ) -> None:
         self.username = username
         self.password = password
@@ -41,6 +43,7 @@ class CiscoClientController(ABC):
         self.retry_after = retry_after
         self.timeout = timeout
         self.ssl_verify = ssl_verify
+        self.request_delay = request_delay
         self.client: httpx.Client | None = None
         # Create an instance of the YAML class
         self.yaml = YAML(typ="safe", pure=True)
@@ -120,6 +123,8 @@ class CiscoClientController(ABC):
 
             elif response.status_code == 200:
                 # If the status code is 200 (OK), return the response
+                if self.request_delay > 0:
+                    time.sleep(self.request_delay)
                 return response
             else:
                 # If the status code is neither 429 nor 200, log an error and continue to the next iteration
@@ -170,6 +175,8 @@ class CiscoClientController(ABC):
                 time.sleep(self.retry_after)
             elif 200 <= response.status_code < 300:
                 # If the status code is 2XX (success), return the response
+                if self.request_delay > 0:
+                    time.sleep(self.request_delay)
                 return response
             else:
                 # If the status code is neither 429 nor 200, log an error and continue to the next iteration

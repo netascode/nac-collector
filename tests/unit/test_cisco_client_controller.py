@@ -263,6 +263,69 @@ class TestPostRequest:
         assert result == mock_response
 
 
+class TestRequestDelay:
+    def _make_client(self, request_delay):
+        return ConcreteCiscoClient(
+            username="user",
+            password="pass",
+            base_url="https://example.com",
+            max_retries=3,
+            retry_after=1,
+            timeout=5,
+            ssl_verify=False,
+            request_delay=request_delay,
+        )
+
+    def test_get_request_applies_delay_on_success(self, mock_httpx_client):
+        client = self._make_client(request_delay=0.25)
+        client.client = mock_httpx_client
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_httpx_client.get.return_value = mock_response
+
+        with patch("nac_collector.controller.base.time.sleep") as mock_sleep:
+            result = client.get_request("https://example.com/api/test")
+
+        assert result == mock_response
+        mock_sleep.assert_called_once_with(0.25)
+
+    def test_get_request_zero_delay_does_not_sleep(self, mock_httpx_client):
+        client = self._make_client(request_delay=0.0)
+        client.client = mock_httpx_client
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_httpx_client.get.return_value = mock_response
+
+        with patch("nac_collector.controller.base.time.sleep") as mock_sleep:
+            client.get_request("https://example.com/api/test")
+
+        mock_sleep.assert_not_called()
+
+    def test_post_request_applies_delay_on_success(self, mock_httpx_client):
+        client = self._make_client(request_delay=0.1)
+        client.client = mock_httpx_client
+        mock_response = MagicMock()
+        mock_response.status_code = 201
+        mock_httpx_client.post.return_value = mock_response
+
+        with patch("nac_collector.controller.base.time.sleep") as mock_sleep:
+            result = client.post_request("https://example.com/api/test", {"x": 1})
+
+        assert result == mock_response
+        mock_sleep.assert_called_once_with(0.1)
+
+    def test_default_request_delay_is_zero(self):
+        client = ConcreteCiscoClient(
+            username="u",
+            password="p",
+            base_url="https://example.com",
+            max_retries=1,
+            retry_after=1,
+            timeout=1,
+        )
+        assert client.request_delay == 0.0
+
+
 class TestLogResponse:
     def test_log_response_success(self, cisco_client, caplog):
         with caplog.at_level("INFO"):

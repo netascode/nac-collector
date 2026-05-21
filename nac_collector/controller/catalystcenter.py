@@ -81,13 +81,17 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
         retry_after: int,
         timeout: int,
         ssl_verify: bool,
+        request_delay: float = 0.0,
+        max_concurrency: int | None = None,
     ) -> None:
         self.db = TinyDB("./tmp_db.json")
         self.job = Query()
         self.start_time = datetime.datetime.now().isoformat()
         self.lock = threading.Lock()
+        self.max_concurrency = max_concurrency
         super().__init__(
-            username, password, base_url, max_retries, retry_after, timeout, ssl_verify
+            username, password, base_url, max_retries, retry_after, timeout, ssl_verify,
+            request_delay=request_delay,
         )
         with self.lock:
             existing = self.db.get(self.job.url == self.base_url)
@@ -316,7 +320,7 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
             console=None,
         ) as progress:
             task = progress.add_task("Processing endpoints", total=len(endpoints))
-            with concurrent.futures.ThreadPoolExecutor() as executor:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_concurrency) as executor:
                 results = []
                 futures = [
                     executor.submit(self.process_endpoint, endpoint)
@@ -467,7 +471,7 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
                                         children_endpoint["name"]
                                     ] = child_dict[children_endpoint["name"]]
 
-            with concurrent.futures.ThreadPoolExecutor() as executor:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_concurrency) as executor:
                 list(executor.map(_process_child, endpoint["children"]))
         with self.lock:
             self.db.upsert(

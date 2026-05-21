@@ -8,7 +8,13 @@ from rich.logging import RichHandler
 
 import nac_collector
 from nac_collector.cli import console
-from nac_collector.constants import MAX_RETRIES, RETRY_AFTER, TIMEOUT
+from nac_collector.constants import (
+    DEFAULT_DEVICE_CONCURRENCY,
+    MAX_RETRIES,
+    REQUEST_DELAY,
+    RETRY_AFTER,
+    TIMEOUT,
+)
 from nac_collector.controller.base import CiscoClientController
 from nac_collector.controller.catalystcenter import CiscoClientCATALYSTCENTER
 from nac_collector.controller.fmc import CiscoClientFMC
@@ -173,6 +179,20 @@ def main(
             help="Path to devices inventory YAML file (for device-based solutions)",
         ),
     ] = None,
+    request_delay: Annotated[
+        float,
+        typer.Option(
+            "--request-delay",
+            help="Delay in seconds between API requests (e.g. 0.5 for 500ms)",
+        ),
+    ] = REQUEST_DELAY,
+    max_concurrency: Annotated[
+        int | None,
+        typer.Option(
+            "--max-concurrency",
+            help="Max concurrent requests (threads for Catalyst Center/devices, default: unlimited for controllers, 10 for devices)",
+        ),
+    ] = None,
     version: Annotated[
         bool | None,
         typer.Option(
@@ -224,6 +244,8 @@ def main(
             )
 
         # Create appropriate client based on solution
+        device_concurrency = max_concurrency or DEFAULT_DEVICE_CONCURRENCY
+
         if solution == Solution.IOSXE:
             iosxe_client = CiscoClientIOSXE(
                 devices=devices,
@@ -233,6 +255,7 @@ def main(
                 retry_after=RETRY_AFTER,
                 timeout=timeout,
                 ssl_verify=False,
+                max_concurrency=device_concurrency,
             )
             # Collect from all devices and write to archive
             iosxe_client.collect_and_write_to_archive(output_file)
@@ -245,6 +268,7 @@ def main(
                 retry_after=RETRY_AFTER,
                 timeout=timeout,
                 ssl_verify=False,
+                max_concurrency=device_concurrency,
             )
             # Collect from all devices and write to archive
             iosxr_client.collect_and_write_to_archive(output_file)
@@ -257,6 +281,7 @@ def main(
                 retry_after=RETRY_AFTER,
                 timeout=timeout,
                 ssl_verify=False,
+                max_concurrency=device_concurrency,
             )
             # Collect from all devices and write to archive
             nxos_client.collect_and_write_to_archive(output_file)
@@ -325,6 +350,7 @@ def main(
                     retry_after=RETRY_AFTER,
                     timeout=timeout,
                     ssl_verify=False,
+                    request_delay=request_delay,
                 )
             if solution == Solution.CDFMC:
                 # For CDFMC, use FMC client but set cdfmc=True to adjust behavior
@@ -337,7 +363,20 @@ def main(
                     retry_after=RETRY_AFTER,
                     timeout=timeout,
                     ssl_verify=False,
+                    request_delay=request_delay,
                     cdfmc=True,
+                )
+            elif solution == Solution.CATALYSTCENTER:
+                client = CiscoClientCATALYSTCENTER(
+                    username=username,
+                    password=password,
+                    base_url=url,
+                    max_retries=MAX_RETRIES,
+                    retry_after=RETRY_AFTER,
+                    timeout=timeout,
+                    ssl_verify=False,
+                    request_delay=request_delay,
+                    max_concurrency=max_concurrency,
                 )
             else:
                 # For other solutions, don't pass domain parameter
@@ -349,6 +388,7 @@ def main(
                     retry_after=RETRY_AFTER,
                     timeout=timeout,
                     ssl_verify=False,
+                    request_delay=request_delay,
                 )
 
             # Authenticate

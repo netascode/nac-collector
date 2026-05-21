@@ -29,10 +29,12 @@ class CiscoClientNDO(CiscoClientController):
         retry_after: int,
         timeout: int,
         ssl_verify: bool,
+        request_delay: float = 0.0,
     ) -> None:
         self.domain = domain
         super().__init__(
-            username, password, base_url, max_retries, retry_after, timeout, ssl_verify
+            username, password, base_url, max_retries, retry_after, timeout, ssl_verify,
+            request_delay=request_delay,
         )
 
     def authenticate(self) -> bool:
