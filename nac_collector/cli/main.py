@@ -315,7 +315,7 @@ def main(
         # Either api_token (SDWAN only) OR (username AND password) must be provided
         if not api_token and not (username and password):
             console.print(
-                "[red]Either --api-token (NAC_API_TOKEN) or both --username (NAC_USERNAME) "
+                "[red]Either --api-token (NAC_API_TOKEN) [SDWAN 20.18+ only] or both --username (NAC_USERNAME) "
                 "and --password (NAC_PASSWORD) must be provided[/red]"
             )
             raise typer.Exit(1)
@@ -329,8 +329,8 @@ def main(
                 # For NDO, handle domain parameter directly (default to "DefaultAuth" if not provided)
                 effective_domain = domain if domain is not None else "DefaultAuth"
                 client = CiscoClientNDO(
-                    username=username,
-                    password=password,
+                    username=username or "",
+                    password=password or "",
                     domain=effective_domain,
                     base_url=url,
                     max_retries=MAX_RETRIES,
@@ -343,7 +343,7 @@ def main(
                 # Username is not used for CDFMC authentication
                 client = CiscoClientFMC(
                     username="ignored_for_cdfmc",
-                    password=password,
+                    password=password or "",
                     base_url=url,
                     max_retries=MAX_RETRIES,
                     retry_after=RETRY_AFTER,
@@ -361,7 +361,7 @@ def main(
                     retry_after=RETRY_AFTER,
                     timeout=timeout,
                     ssl_verify=False,
-                    api_token=api_token,
+                    api_token=api_token or "",
                 )
             else:
                 # For other solutions, no api_token support

@@ -37,7 +37,7 @@ class CiscoClientSDWAN(CiscoClientController):
         retry_after: int,
         timeout: int,
         ssl_verify: bool,
-        api_token: str | None = None,
+        api_token: str = "",
     ) -> None:
         self.api_token = api_token
         super().__init__(
@@ -69,7 +69,6 @@ class CiscoClientSDWAN(CiscoClientController):
         logger.info("Authenticating with API token for URL: %s", self.base_url)
 
         # Extract CSRF token from JWT payload
-        csrf_token = None
         try:
             payload_b64 = self.api_token.split(".")[1]
             # Add padding if needed
