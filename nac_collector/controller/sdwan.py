@@ -37,7 +37,7 @@ class CiscoClientSDWAN(CiscoClientController):
         retry_after: int,
         timeout: int,
         ssl_verify: bool,
-        api_token: str = "",
+        api_token: str = "",  # nosec B107 - not a hardcoded password, empty means no token
     ) -> None:
         self.api_token = api_token
         super().__init__(
@@ -107,11 +107,14 @@ class CiscoClientSDWAN(CiscoClientController):
         try:
             response = self.client.get(test_url)
             if response.status_code == 200:
-                logger.info("API token authentication successful for URL: %s", self.base_url)
+                logger.info(
+                    "API token authentication successful for URL: %s", self.base_url
+                )
                 self.base_url = self.base_url + "/dataservice"
                 return True
             logger.error(
-                "API token authentication failed with status code: %s", response.status_code
+                "API token authentication failed with status code: %s",
+                response.status_code,
             )
         except httpx.RequestError as e:
             logger.error("API token authentication request failed: %s", e)

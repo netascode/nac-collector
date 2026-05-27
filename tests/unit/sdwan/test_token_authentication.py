@@ -1,6 +1,6 @@
 import base64
 import json
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import httpx
 import pytest
@@ -12,7 +12,11 @@ pytestmark = pytest.mark.unit
 
 def _make_jwt(payload: dict) -> str:
     """Build a fake JWT (header.payload.signature) with the given payload dict."""
-    header = base64.urlsafe_b64encode(json.dumps({"alg": "HS256"}).encode()).rstrip(b"=").decode()
+    header = (
+        base64.urlsafe_b64encode(json.dumps({"alg": "HS256"}).encode())
+        .rstrip(b"=")
+        .decode()
+    )
     body = base64.urlsafe_b64encode(json.dumps(payload).encode()).rstrip(b"=").decode()
     signature = "fake_signature"
     return f"{header}.{body}.{signature}"
@@ -60,7 +64,9 @@ class TestTokenAuthHappyPath:
 
         assert result is True
         assert sdwan_client_with_token.client is not None
-        assert sdwan_client_with_token.base_url == "https://sdwan.example.com/dataservice"
+        assert (
+            sdwan_client_with_token.base_url == "https://sdwan.example.com/dataservice"
+        )
 
         # Verify headers were set correctly
         headers = sdwan_client_with_token.client.headers
@@ -68,19 +74,29 @@ class TestTokenAuthHappyPath:
         assert headers["X-XSRF-TOKEN"] == "test-csrf-token-123"
         assert headers["Content-Type"] == "application/json"
 
-    def test_authenticate_dispatches_to_token_when_api_token_set(self, sdwan_client_with_token):
+    def test_authenticate_dispatches_to_token_when_api_token_set(
+        self, sdwan_client_with_token
+    ):
         """authenticate() should call _authenticate_token when api_token is truthy."""
-        with patch.object(CiscoClientSDWAN, "_authenticate_token", return_value=True) as mock_token:
-            with patch.object(CiscoClientSDWAN, "_authenticate_session") as mock_session:
+        with patch.object(
+            CiscoClientSDWAN, "_authenticate_token", return_value=True
+        ) as mock_token:
+            with patch.object(
+                CiscoClientSDWAN, "_authenticate_session"
+            ) as mock_session:
                 sdwan_client_with_token.authenticate()
 
         mock_token.assert_called_once()
         mock_session.assert_not_called()
 
-    def test_authenticate_dispatches_to_session_when_no_token(self, sdwan_client_no_token):
+    def test_authenticate_dispatches_to_session_when_no_token(
+        self, sdwan_client_no_token
+    ):
         """authenticate() should call _authenticate_session when api_token is empty."""
         with patch.object(CiscoClientSDWAN, "_authenticate_token") as mock_token:
-            with patch.object(CiscoClientSDWAN, "_authenticate_session", return_value=True) as mock_session:
+            with patch.object(
+                CiscoClientSDWAN, "_authenticate_session", return_value=True
+            ) as mock_session:
                 sdwan_client_no_token.authenticate()
 
         mock_session.assert_called_once()
@@ -158,7 +174,9 @@ class TestTokenAuthServerErrors:
         assert result is False
 
     def test_authenticate_token_request_error(self, sdwan_client_with_token):
-        with patch.object(httpx.Client, "get", side_effect=httpx.RequestError("Connection refused")):
+        with patch.object(
+            httpx.Client, "get", side_effect=httpx.RequestError("Connection refused")
+        ):
             result = sdwan_client_with_token.authenticate()
 
         assert result is False
