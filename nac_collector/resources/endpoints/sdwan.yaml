@@ -288,6 +288,11 @@
     endpoint: /security
   - name: system_snmp
     endpoint: /snmp
+- name: topology_feature_profile
+  endpoint: /v1/feature-profile/sdwan/topology
+  children:
+  - name: topology_custom_control
+    endpoint: /custom-control
 - name: transport_feature_profile
   endpoint: /v1/feature-profile/sdwan/transport
   children:
@@ -492,6 +497,8 @@
   endpoint: /template/policy/list/tloc/
 - name: tls_ssl_profile_policy_definition
   endpoint: /template/policy/definition/sslutdprofile/
+- name: topology_group
+  endpoint: /v1/topology-group/
 - name: traffic_data_policy_definition
   endpoint: /template/policy/definition/data/
 - name: url_filtering_definition
