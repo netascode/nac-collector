@@ -1,3 +1,5 @@
+- name: feature_templates
+  endpoint: /template/feature/object/%i
 - name: application_priority_feature_profile
   endpoint: /v1/feature-profile/sdwan/application-priority
   children:
@@ -411,6 +413,8 @@
   endpoint: /template/policy/list/color/
 - name: configuration_group
   endpoint: /v1/config-group/
+- name: custom_application
+  endpoint: /template/policy/customapp/
 - name: custom_control_topology_policy_definition
   endpoint: /template/policy/definition/control/
 - name: data_fqdn_prefix_list_policy_object
@@ -513,5 +517,3 @@
   endpoint: /template/policy/definition/zonebasedfw/
 - name: zone_list_policy_object
   endpoint: /template/policy/list/zone/
-- name: feature_templates
-  endpoint: /template/feature/object/%i
