@@ -253,6 +253,13 @@
     endpoint: /trackergroup
   - name: service_wireless_lan
     endpoint: /wirelesslan
+- name: sse_feature_profile
+  endpoint: /v1/feature-profile/sdwan/sse
+  children:
+  - name: sse_cisco
+    endpoint: /cisco
+  - name: sse_zscaler
+    endpoint: /zscaler
 - name: system_feature_profile
   endpoint: /v1/feature-profile/sdwan/system
   children:
