@@ -26,12 +26,10 @@
   endpoint: /dna/intent/api/v2/global-credential
 - name: device_detail
   endpoint: /dna/intent/api/v1/device-detail
-- name: extended_templates
-  endpoint: /api/v1/template-programmer/extendedTemplates
-- name: update_device_management_address
-  endpoint: /dna/intent/api/v1/network-device
 - name: device_replacement
   endpoint: /dna/intent/api/v1/device-replacement
+- name: extended_templates
+  endpoint: /api/v1/template-programmer/extendedTemplates
 - name: fabric_authentication_profile
   endpoint: /dna/intent/api/v1/business/sda/authentication-profile
 - name: fabric_device
@@ -48,10 +46,10 @@
   endpoint: /dna/intent/api/v1/sda/fabricDevices/layer3Handoffs/sdaTransits
 - name: fabric_l3_virtual_network
   endpoint: /dna/intent/api/v1/sda/layer3VirtualNetworks
-- name: virtual_network_to_fabric_site
-  endpoint: /dna/intent/api/v1/sda/layer3VirtualNetworks
 - name: fabric_multicast_replication_mode
   endpoint: /dna/intent/api/v1/sda/multicast
+- name: fabric_multicast_virtual_network
+  endpoint: /dna/intent/api/v1/sda/multicast/virtualNetworks
 - name: fabric_port_assignments
   endpoint: /dna/intent/api/v1/sda/portAssignments
 - name: fabric_port_channel
@@ -90,6 +88,8 @@
   endpoint: /api/v1/commonsetting/global
 - name: network_devices
   endpoint: /dna/intent/api/v1/network-device
+- name: network_profile
+  endpoint: /api/v1/siteprofile?populated=true
 - name: pnp_device
   endpoint: /dna/intent/api/v1/onboarding/pnp-device
 - name: power_profile
@@ -123,6 +123,11 @@
   endpoint: /api/v1/commonsetting/global
 - name: sp_profile
   endpoint: /dna/intent/api/v2/service-provider
+- name: tag
+  endpoint: /dna/intent/api/v1/tag
+  children:
+  - name: assign_devices_to_tag
+    endpoint: /member?memberType=networkdevice
 - name: template
   endpoint: /dna/intent/api/v2/template-programmer/template
   import_id_attributes:
@@ -137,10 +142,14 @@
   - name: name
 - name: update_authentication_profile
   endpoint: /dna/intent/api/v1/sda/authenticationProfiles
+- name: update_device_management_address
+  endpoint: /dna/intent/api/v1/network-device
 - name: user
   endpoint: /dna/system/api/v1/user
 - name: virtual_network_ip_pool
   endpoint: /dna/intent/api/v1/business/sda/virtualnetwork/ippool
+- name: virtual_network_to_fabric_site
+  endpoint: /dna/intent/api/v1/sda/layer3VirtualNetworks
 - name: vlanToSsids
   endpoint: /dna/intent/api/v1/sda/fabrics/%v/vlanToSsids
 - name: wireless_controller_primary_managed_ap_locations
