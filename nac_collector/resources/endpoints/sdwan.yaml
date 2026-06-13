@@ -302,6 +302,10 @@
   children:
   - name: topology_custom_control
     endpoint: /custom-control
+  - name: topology_hubspoke
+    endpoint: /hubspoke
+  - name: topology_mesh
+    endpoint: /mesh
 - name: transport_feature_profile
   endpoint: /v1/feature-profile/sdwan/transport
   children:
