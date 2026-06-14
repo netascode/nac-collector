@@ -25,8 +25,6 @@ remove_endpoints:
 - global_credential_netconf
 - integrate_ise
 - wireless_profile_site_tag
-- tag
-- assign_devices_to_tag
 - assign_templates_to_tag
 
 # Extra endpoints not present in the Terraform provider definitions
@@ -96,6 +94,12 @@ extra_endpoints:
 - name: site_settings
   endpoint: /api/v1/commonsetting/global
 
+- name: network_profile
+  endpoint: /api/v1/siteprofile?populated=true
+
+- name: fabric_multicast_virtual_network
+  endpoint: /dna/intent/api/v1/sda/multicast/virtualNetworks
+
 # Endpoint overrides format:
 # A flat list of endpoints (no tree with "children").
 #   "name" refers to an endpoint anywhere in the main endpoint tree.
@@ -125,19 +129,6 @@ overrides:
   import_id_attributes:
     - name: id
 
-- name: network_profile
-  endpoint: /api/v1/siteprofile?populated=true
-  id_field: siteProfileUuid
-  import_id_attributes:
-    - name: siteProfileUuid
-      data_path: response.siteProfileUuid
-  children:
-    - name: network_profile_for_sites_assignments
-      endpoint: /dna/intent/api/v1/networkProfilesForSites/%v/siteAssignments
-      import_id_attributes:
-        - name: networkProfileId
-          data_path: $parent_id
-
 - name: project
   endpoint: /dna/intent/api/v2/template-programmer/project
   import_id_attributes:
@@ -158,3 +149,6 @@ overrides:
 
 - name: wireless_profile
   endpoint: /intent/api/v1/wirelessProfiles
+
+- name: assign_devices_to_tag
+  endpoint: /member?memberType=networkdevice
