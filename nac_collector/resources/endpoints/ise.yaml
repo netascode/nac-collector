@@ -98,6 +98,7 @@
   endpoint: /api/v1/policy/network-access/condition
 - name: network_access_dictionary
   endpoint: /api/v1/policy/network-access/dictionaries
+  id_field: name
   children:
   - name: network_access_dictionary_attribute
     endpoint: /attribute

@@ -256,8 +256,13 @@ class CiscoClientISE(CiscoClientController):
                     # Create empty list of parent_endpoint_ids
                     parent_endpoint_ids = []
 
+                    id_field = endpoint.get("id_field")
                     for item in endpoint_dict[endpoint["name"]]:
-                        id_value = self.get_id_value(item.get("data", {}))
+                        data = item.get("data", {})
+                        if id_field:
+                            id_value = str(data[id_field]) if data.get(id_field) is not None else None
+                        else:
+                            id_value = self.get_id_value(data)
                         if id_value is not None:
                             parent_endpoint_ids.append(id_value)
 
@@ -295,7 +300,9 @@ class CiscoClientISE(CiscoClientController):
                             for index, value in enumerate(
                                 endpoint_dict[endpoint["name"]]
                             ):
-                                if self.get_id_value(value.get("data", {})) == id_:
+                                item_data = value.get("data", {})
+                                match_value = str(item_data[id_field]) if id_field and item_data.get(id_field) is not None else self.get_id_value(item_data)
+                                if match_value == id_:
                                     endpoint_dict[endpoint["name"]][index].setdefault(
                                         "children", {}
                                     )[
