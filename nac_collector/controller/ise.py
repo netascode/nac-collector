@@ -260,7 +260,11 @@ class CiscoClientISE(CiscoClientController):
                     for item in endpoint_dict[endpoint["name"]]:
                         data = item.get("data", {})
                         if id_field:
-                            id_value = str(data[id_field]) if data.get(id_field) is not None else None
+                            id_value = (
+                                str(data[id_field])
+                                if data.get(id_field) is not None
+                                else None
+                            )
                         else:
                             id_value = self.get_id_value(data)
                         if id_value is not None:
@@ -301,7 +305,11 @@ class CiscoClientISE(CiscoClientController):
                                 endpoint_dict[endpoint["name"]]
                             ):
                                 item_data = value.get("data", {})
-                                match_value = str(item_data[id_field]) if id_field and item_data.get(id_field) is not None else self.get_id_value(item_data)
+                                match_value = (
+                                    str(item_data[id_field])
+                                    if id_field and item_data.get(id_field) is not None
+                                    else self.get_id_value(item_data)
+                                )
                                 if match_value == id_:
                                     endpoint_dict[endpoint["name"]][index].setdefault(
                                         "children", {}
