@@ -1,0 +1,9 @@
+# Extra manually-defined endpoints and overrides
+# for endpoints generated from provider definitions.
+#
+# To apply modifications in this file,
+# regenerate the endpoints YAML with "uv run ./scripts/update_endpoints.py".
+
+overrides:
+- name: network_access_dictionary
+  id_field: name

@@ -1,5 +1,3 @@
-- name: feature_templates
-  endpoint: /template/feature/object/%i
 - name: application_priority_feature_profile
   endpoint: /v1/feature-profile/sdwan/application-priority
   children:
@@ -528,3 +526,5 @@
   endpoint: /template/policy/definition/zonebasedfw/
 - name: zone_list_policy_object
   endpoint: /template/policy/list/zone/
+- name: feature_templates
+  endpoint: /template/feature/object/%i
