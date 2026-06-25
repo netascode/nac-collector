@@ -51,6 +51,7 @@ def test_child_url_uses_name_not_uuid(mocker, cisco_client):
 
 def test_child_data_attached_to_correct_parent(mocker, cisco_client):
     """Child attributes must be attached to their matching parent dictionary."""
+
     def mock_fetch(url):
         if url == "/api/v1/policy/network-access/dictionaries":
             return {
