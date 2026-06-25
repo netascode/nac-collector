@@ -259,14 +259,7 @@ class CiscoClientISE(CiscoClientController):
                     id_field = endpoint.get("id_field")
                     for item in endpoint_dict[endpoint["name"]]:
                         data = item.get("data", {})
-                        if id_field:
-                            id_value = (
-                                str(data[id_field])
-                                if data.get(id_field) is not None
-                                else None
-                            )
-                        else:
-                            id_value = self.get_id_value(data)
+                        id_value = self._resolve_id(data, id_field)
                         if id_value is not None:
                             parent_endpoint_ids.append(id_value)
 
@@ -305,11 +298,7 @@ class CiscoClientISE(CiscoClientController):
                                 endpoint_dict[endpoint["name"]]
                             ):
                                 item_data = value.get("data", {})
-                                match_value = (
-                                    str(item_data[id_field])
-                                    if id_field and item_data.get(id_field) is not None
-                                    else self.get_id_value(item_data)
-                                )
+                                match_value = self._resolve_id(item_data, id_field)
                                 if match_value == id_:
                                     endpoint_dict[endpoint["name"]][index].setdefault(
                                         "children", {}
@@ -366,6 +355,12 @@ class CiscoClientISE(CiscoClientController):
                 ers_data.append(value)
 
         return ers_data
+
+    @staticmethod
+    def _resolve_id(data: dict[str, Any], id_field: str | None) -> str | None:
+        if id_field:
+            return str(data[id_field]) if data.get(id_field) is not None else None
+        return CiscoClientISE.get_id_value(data)
 
     @staticmethod
     def get_id_value(i: dict[str, Any]) -> str | None:
