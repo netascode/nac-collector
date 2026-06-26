@@ -49,6 +49,28 @@ def test_child_url_uses_name_not_uuid(mocker, cisco_client):
     cisco_client.fetch_data.assert_any_call(child_url)
 
 
+def test_child_url_percent_encodes_name_with_spaces(mocker, cisco_client):
+    """A name-keyed id containing spaces/special chars must be percent-encoded in the child URL."""
+    parent_url = "/api/v1/policy/network-access/dictionaries"
+    # "Network Condition" -> the space must be encoded as %20, not sent raw.
+    child_url = (
+        "/api/v1/policy/network-access/dictionaries/Network%20Condition/attribute"
+    )
+
+    def mock_fetch(url):
+        if url == parent_url:
+            return {"response": [{"id": "uuid-abc-123", "name": "Network Condition"}]}
+        if url == child_url:
+            return {"response": [{"id": "attr-1", "name": "Attr1"}]}
+        raise ValueError(f"Unexpected URL: {url}")
+
+    mocker.patch.object(cisco_client, "fetch_data", side_effect=mock_fetch)
+
+    cisco_client.get_from_endpoints_data([_DICTIONARY_ENDPOINT])
+
+    cisco_client.fetch_data.assert_any_call(child_url)
+
+
 def test_child_data_attached_to_correct_parent(mocker, cisco_client):
     """Child attributes must be attached to their matching parent dictionary."""
 

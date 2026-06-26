@@ -1,5 +1,6 @@
 import logging
 from typing import Any
+from urllib.parse import quote
 
 import httpx
 from rich.progress import (
@@ -279,11 +280,14 @@ class CiscoClientISE(CiscoClientController):
                                 )
                             )
 
-                            # Replace '%v' in the endpoint with the id
+                            # Replace '%v' in the endpoint with the id.
+                            # Percent-encode the id segment: when id_field is a
+                            # name (not a UUID) it may contain spaces or other
+                            # characters that are invalid in a URL path.
                             children_joined_endpoint = (
                                 endpoint["endpoint"]
                                 + "/"
-                                + id_
+                                + quote(id_, safe="")
                                 + children_endpoint["endpoint"]
                             )
 
@@ -359,7 +363,8 @@ class CiscoClientISE(CiscoClientController):
     @staticmethod
     def _resolve_id(data: dict[str, Any], id_field: str | None) -> str | None:
         if id_field:
-            return str(data[id_field]) if data.get(id_field) is not None else None
+            value = data.get(id_field)
+            return str(value) if value else None
         return CiscoClientISE.get_id_value(data)
 
     @staticmethod
