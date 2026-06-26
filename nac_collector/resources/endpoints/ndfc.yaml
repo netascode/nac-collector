@@ -40,6 +40,16 @@
     children:
     - name: AccessPortChannelSetting
       endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface/pti/nvpairs?serialNumber={{serialNumber}}&interfaceName={{ifName}}&policyName=int_port_channel_access_host
+  - name: RoutedEthernetPorts
+    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface?filter=underlayPolicies%3D%3Dint_routed_host%26%26sysName%3D%3D{{sysName}}&navId={{fabricID}}
+    children:
+    - name: RoutedInterfaceSetting
+      endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface/pti/nvpairs?serialNumber={{serialNumber}}&interfaceName={{ifName}}&policyName=int_routed_host
+  - name: L3PortChannel
+    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface?filter=underlayPolicies%3D%3Dint_l3_port_channel%26%26sysName%3D%3D{{sysName}}&navId={{fabricID}}
+    children:
+    - name: L3PortChannelSetting
+      endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface/pti/nvpairs?serialNumber={{serialNumber}}&interfaceName={{ifName}}&policyName=int_l3_port_channel
 - name: VPC_Pairs
   endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/vpcpair?navId={{fabricID}}
   children:

@@ -43,7 +43,9 @@ class CiscoClientNDFC(CiscoClientController):
         "AccessEthernetPorts",
         "TrunkEthernetPorts",
         "TrunkPortChannel",
-        "AccessPortChannel"
+        "AccessPortChannel",
+        "RoutedEthernetPorts",
+        "L3PortChannel"
         # Add new serial-based interface types here as needed
     ]
 
