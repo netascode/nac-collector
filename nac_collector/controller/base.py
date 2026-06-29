@@ -121,8 +121,18 @@ class CiscoClientController(ABC):
             elif response.status_code == 200:
                 # If the status code is 200 (OK), return the response
                 return response
+            elif response.status_code == 404:
+                # 404 on a child endpoint means the sub-resource does not exist for
+                # this parent (e.g. the Network Condition dictionary has no /attribute
+                # sub-endpoint). This is a legitimate ISE response, not a collector
+                # error — log at DEBUG and return None so the caller treats it as empty.
+                self.logger.debug(
+                    "GET %s returned 404 — sub-resource not available for this parent.",
+                    url,
+                )
+                return None
             else:
-                # If the status code is neither 429 nor 200, log an error and continue to the next iteration
+                # If the status code is neither 429, 200, nor 404, log an error and continue to the next iteration
                 self.logger.error(
                     "GET %s returned an unexpected status code: %s",
                     url,
@@ -302,7 +312,9 @@ class CiscoClientController(ABC):
                 )
                 return None
         else:
-            self.logger.error("No valid response received for endpoint: %s", endpoint)
+            # get_request already logged the specific reason (error status code or
+            # 404 not-available) — avoid a redundant generic message here.
+            self.logger.debug("No valid response received for endpoint: %s", endpoint)
             return None
 
     def write_to_archive(
