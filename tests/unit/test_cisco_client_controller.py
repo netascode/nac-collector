@@ -190,6 +190,42 @@ class TestGetRequest:
         assert result == mock_response
         assert mock_httpx_client.get.call_count == cisco_client.max_retries
 
+    def test_get_request_404_with_json_body_logs_debug(
+        self, cisco_client, mock_httpx_client, caplog
+    ):
+        cisco_client.client = mock_httpx_client
+        mock_response = MagicMock()
+        mock_response.status_code = 404
+        mock_response.content = b'{"code": "404", "message": "Resource not found."}'
+        mock_httpx_client.get.return_value = mock_response
+
+        import logging
+
+        with caplog.at_level(logging.DEBUG):
+            result = cisco_client.get_request("https://example.com/api/test")
+
+        assert result is None
+        assert "returned 404 — resource not available" in caplog.text
+        assert "WARNING" not in caplog.text
+
+    def test_get_request_404_with_empty_body_logs_warning(
+        self, cisco_client, mock_httpx_client, caplog
+    ):
+        cisco_client.client = mock_httpx_client
+        mock_response = MagicMock()
+        mock_response.status_code = 404
+        mock_response.content = b""
+        mock_httpx_client.get.return_value = mock_response
+
+        import logging
+
+        with caplog.at_level(logging.WARNING):
+            result = cisco_client.get_request("https://example.com/api/test")
+
+        assert result is None
+        assert "returned 404 with no body" in caplog.text
+        assert "may not be supported on this ISE version" in caplog.text
+
 
 class TestPostRequest:
     def test_post_request_success(self, cisco_client, mock_httpx_client):

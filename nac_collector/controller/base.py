@@ -122,7 +122,16 @@ class CiscoClientController(ABC):
                 # If the status code is 200 (OK), return the response
                 return response
             elif response.status_code == 404:
-                self.logger.debug("GET %s returned 404 — endpoint not available.", url)
+                if response.content:
+                    self.logger.debug(
+                        "GET %s returned 404 — resource not available.", url
+                    )
+                else:
+                    self.logger.warning(
+                        "GET %s returned 404 with no body — endpoint may not be"
+                        " supported on this ISE version.",
+                        url,
+                    )
                 return None
             else:
                 # If the status code is neither 429, 200, nor 404, log an error and continue to the next iteration
