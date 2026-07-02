@@ -118,12 +118,52 @@ class TestGetRequest:
             "Connection reset by peer"
         )
 
-        with patch.object(cisco_client, "authenticate") as mock_auth:
-            result = cisco_client.get_request("https://example.com/api/test")
+        with patch.object(cisco_client, "authenticate", return_value=True) as mock_auth:
+            with patch("time.sleep") as mock_sleep:
+                result = cisco_client.get_request("https://example.com/api/test")
 
         assert result is None
         assert mock_httpx_client.get.call_count == cisco_client.max_retries
         assert mock_auth.call_count == cisco_client.max_retries
+        assert mock_sleep.call_count == cisco_client.max_retries
+
+    def test_get_request_connect_error_auth_also_fails_network_error(
+        self, cisco_client, mock_httpx_client, caplog
+    ):
+        cisco_client.client = mock_httpx_client
+        mock_httpx_client.get.side_effect = httpx.ConnectError(
+            "Connection reset by peer"
+        )
+
+        import logging
+
+        with patch.object(
+            cisco_client, "authenticate", side_effect=httpx.NetworkError("auth down")
+        ):
+            with patch("time.sleep"):
+                with caplog.at_level(logging.WARNING):
+                    result = cisco_client.get_request("https://example.com/api/test")
+
+        assert result is None
+        assert "re-authentication also failed" in caplog.text
+
+    def test_get_request_connect_error_auth_returns_false(
+        self, cisco_client, mock_httpx_client, caplog
+    ):
+        cisco_client.client = mock_httpx_client
+        mock_httpx_client.get.side_effect = httpx.ConnectError(
+            "Connection reset by peer"
+        )
+
+        import logging
+
+        with patch.object(cisco_client, "authenticate", return_value=False):
+            with patch("time.sleep"):
+                with caplog.at_level(logging.WARNING):
+                    result = cisco_client.get_request("https://example.com/api/test")
+
+        assert result is None
+        assert "re-authentication failed" in caplog.text
 
     def test_get_request_rate_limited_with_retry_after_header(
         self, cisco_client, mock_httpx_client
@@ -245,12 +285,36 @@ class TestPostRequest:
             "Connection reset by peer"
         )
 
-        with patch.object(cisco_client, "authenticate") as mock_auth:
-            result = cisco_client.post_request("https://example.com/api/test", {})
+        with patch.object(cisco_client, "authenticate", return_value=True) as mock_auth:
+            with patch("time.sleep") as mock_sleep:
+                result = cisco_client.post_request("https://example.com/api/test", {})
 
         assert result is None
         assert mock_httpx_client.post.call_count == cisco_client.max_retries
         assert mock_auth.call_count == cisco_client.max_retries
+        assert mock_sleep.call_count == cisco_client.max_retries
+
+    def test_post_request_connect_error_auth_also_fails_network_error(
+        self, cisco_client, mock_httpx_client, caplog
+    ):
+        cisco_client.client = mock_httpx_client
+        mock_httpx_client.post.side_effect = httpx.ConnectError(
+            "Connection reset by peer"
+        )
+
+        import logging
+
+        with patch.object(
+            cisco_client, "authenticate", side_effect=httpx.NetworkError("auth down")
+        ):
+            with patch("time.sleep"):
+                with caplog.at_level(logging.WARNING):
+                    result = cisco_client.post_request(
+                        "https://example.com/api/test", {}
+                    )
+
+        assert result is None
+        assert "re-authentication also failed" in caplog.text
 
     def test_post_request_rate_limited(self, cisco_client, mock_httpx_client):
         cisco_client.client = mock_httpx_client

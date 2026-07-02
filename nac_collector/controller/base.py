@@ -102,8 +102,15 @@ class CiscoClientController(ABC):
                 )
                 continue
             except httpx.NetworkError as e:
-                self.logger.warning("GET %s network error (%s), retrying...", url, e)
-                self.authenticate()
+                self.logger.error("GET %s network error (%s), retrying...", url, e)
+                time.sleep(self.retry_after)
+                try:
+                    if not self.authenticate():
+                        self.logger.warning("GET %s re-authentication failed.", url)
+                except httpx.NetworkError as auth_err:
+                    self.logger.warning(
+                        "GET %s re-authentication also failed: %s", url, auth_err
+                    )
                 continue
 
             if response.status_code == 429:
@@ -162,8 +169,15 @@ class CiscoClientController(ABC):
                 )
                 continue
             except httpx.NetworkError as e:
-                self.logger.warning("POST %s network error (%s), retrying...", url, e)
-                self.authenticate()
+                self.logger.error("POST %s network error (%s), retrying...", url, e)
+                time.sleep(self.retry_after)
+                try:
+                    if not self.authenticate():
+                        self.logger.warning("POST %s re-authentication failed.", url)
+                except httpx.NetworkError as auth_err:
+                    self.logger.warning(
+                        "POST %s re-authentication also failed: %s", url, auth_err
+                    )
                 continue
 
             if response.status_code == 429:
