@@ -101,6 +101,10 @@ class CiscoClientController(ABC):
                     "GET %s timed out after %s seconds.", url, self.timeout
                 )
                 continue
+            except httpx.NetworkError as e:
+                self.logger.warning("GET %s network error (%s), retrying...", url, e)
+                self.authenticate()
+                continue
 
             if response.status_code == 429:
                 # If the status code is 429 (Too Many Requests), wait for a certain amount of time before retrying
@@ -144,6 +148,7 @@ class CiscoClientController(ABC):
         Returns:
             response (httpx.Response): The response from the POST request.
         """
+        response = None
         for _ in range(self.max_retries):
             try:
                 # Send a POST request to the URL
@@ -155,6 +160,10 @@ class CiscoClientController(ABC):
                 self.logger.error(
                     "POST %s timed out after %s seconds.", url, self.timeout
                 )
+                continue
+            except httpx.NetworkError as e:
+                self.logger.warning("POST %s network error (%s), retrying...", url, e)
+                self.authenticate()
                 continue
 
             if response.status_code == 429:
