@@ -122,14 +122,7 @@ class CiscoClientController(ABC):
                 # If the status code is 200 (OK), return the response
                 return response
             elif response.status_code == 404:
-                # 404 on a child endpoint means the sub-resource does not exist for
-                # this parent (e.g. the Network Condition dictionary has no /attribute
-                # sub-endpoint). This is a legitimate ISE response, not a collector
-                # error — log at DEBUG and return None so the caller treats it as empty.
-                self.logger.debug(
-                    "GET %s returned 404 — sub-resource not available for this parent.",
-                    url,
-                )
+                self.logger.debug("GET %s returned 404 — endpoint not available.", url)
                 return None
             else:
                 # If the status code is neither 429, 200, nor 404, log an error and continue to the next iteration
@@ -236,7 +229,7 @@ class CiscoClientController(ABC):
             # Make the request to the given endpoint
             response = self.get_request(self.base_url + paginated_endpoint)
             if not response:
-                self.logger.error(
+                self.logger.debug(
                     "No valid response received for endpoint: %s", paginated_endpoint
                 )
                 return None
