@@ -129,7 +129,7 @@ class CiscoClientController(ABC):
                 else:
                     self.logger.warning(
                         "GET %s returned 404 with no body — endpoint may not be"
-                        " supported on this ISE version.",
+                        " supported on this platform version.",
                         url,
                     )
                 return None
