@@ -101,13 +101,13 @@ class CiscoClientController(ABC):
                     "GET %s timed out after %s seconds.", url, self.timeout
                 )
                 continue
-            except httpx.NetworkError as e:
-                self.logger.error("GET %s network error (%s), retrying...", url, e)
+            except httpx.TransportError as e:
+                self.logger.error("GET %s transport error (%s), retrying...", url, e)
                 time.sleep(self.retry_after)
                 try:
                     if not self.authenticate():
                         self.logger.warning("GET %s re-authentication failed.", url)
-                except httpx.NetworkError as auth_err:
+                except httpx.TransportError as auth_err:
                     self.logger.warning(
                         "GET %s re-authentication also failed: %s", url, auth_err
                     )
@@ -168,13 +168,13 @@ class CiscoClientController(ABC):
                     "POST %s timed out after %s seconds.", url, self.timeout
                 )
                 continue
-            except httpx.NetworkError as e:
-                self.logger.error("POST %s network error (%s), retrying...", url, e)
+            except httpx.TransportError as e:
+                self.logger.error("POST %s transport error (%s), retrying...", url, e)
                 time.sleep(self.retry_after)
                 try:
                     if not self.authenticate():
                         self.logger.warning("POST %s re-authentication failed.", url)
-                except httpx.NetworkError as auth_err:
+                except httpx.TransportError as auth_err:
                     self.logger.warning(
                         "POST %s re-authentication also failed: %s", url, auth_err
                     )

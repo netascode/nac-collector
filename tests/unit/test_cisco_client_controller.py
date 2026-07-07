@@ -127,7 +127,7 @@ class TestGetRequest:
         assert mock_auth.call_count == cisco_client.max_retries
         assert mock_sleep.call_count == cisco_client.max_retries
 
-    def test_get_request_connect_error_auth_also_fails_network_error(
+    def test_get_request_transport_error_auth_also_fails_transport_error(
         self, cisco_client, mock_httpx_client, caplog
     ):
         cisco_client.client = mock_httpx_client
@@ -138,7 +138,7 @@ class TestGetRequest:
         import logging
 
         with patch.object(
-            cisco_client, "authenticate", side_effect=httpx.NetworkError("auth down")
+            cisco_client, "authenticate", side_effect=httpx.TransportError("auth down")
         ):
             with patch("time.sleep"):
                 with caplog.at_level(logging.WARNING):
@@ -147,7 +147,7 @@ class TestGetRequest:
         assert result is None
         assert "re-authentication also failed" in caplog.text
 
-    def test_get_request_connect_error_auth_returns_false(
+    def test_get_request_transport_error_auth_returns_false(
         self, cisco_client, mock_httpx_client, caplog
     ):
         cisco_client.client = mock_httpx_client
@@ -164,6 +164,24 @@ class TestGetRequest:
 
         assert result is None
         assert "re-authentication failed" in caplog.text
+
+    def test_get_request_protocol_error_retries_and_reauthenticates(
+        self, cisco_client, mock_httpx_client
+    ):
+        """Test that ProtocolError (a TransportError subclass) triggers retry logic."""
+        cisco_client.client = mock_httpx_client
+        mock_httpx_client.get.side_effect = httpx.RemoteProtocolError(
+            "Invalid HTTP response"
+        )
+
+        with patch.object(cisco_client, "authenticate", return_value=True) as mock_auth:
+            with patch("time.sleep") as mock_sleep:
+                result = cisco_client.get_request("https://example.com/api/test")
+
+        assert result is None
+        assert mock_httpx_client.get.call_count == cisco_client.max_retries
+        assert mock_auth.call_count == cisco_client.max_retries
+        assert mock_sleep.call_count == cisco_client.max_retries
 
     def test_get_request_rate_limited_with_retry_after_header(
         self, cisco_client, mock_httpx_client
@@ -294,7 +312,7 @@ class TestPostRequest:
         assert mock_auth.call_count == cisco_client.max_retries
         assert mock_sleep.call_count == cisco_client.max_retries
 
-    def test_post_request_connect_error_auth_also_fails_network_error(
+    def test_post_request_transport_error_auth_also_fails_transport_error(
         self, cisco_client, mock_httpx_client, caplog
     ):
         cisco_client.client = mock_httpx_client
@@ -305,7 +323,7 @@ class TestPostRequest:
         import logging
 
         with patch.object(
-            cisco_client, "authenticate", side_effect=httpx.NetworkError("auth down")
+            cisco_client, "authenticate", side_effect=httpx.TransportError("auth down")
         ):
             with patch("time.sleep"):
                 with caplog.at_level(logging.WARNING):
@@ -315,6 +333,24 @@ class TestPostRequest:
 
         assert result is None
         assert "re-authentication also failed" in caplog.text
+
+    def test_post_request_protocol_error_retries_and_reauthenticates(
+        self, cisco_client, mock_httpx_client
+    ):
+        """Test that ProtocolError (a TransportError subclass) triggers retry logic."""
+        cisco_client.client = mock_httpx_client
+        mock_httpx_client.post.side_effect = httpx.RemoteProtocolError(
+            "Invalid HTTP response"
+        )
+
+        with patch.object(cisco_client, "authenticate", return_value=True) as mock_auth:
+            with patch("time.sleep") as mock_sleep:
+                result = cisco_client.post_request("https://example.com/api/test", {})
+
+        assert result is None
+        assert mock_httpx_client.post.call_count == cisco_client.max_retries
+        assert mock_auth.call_count == cisco_client.max_retries
+        assert mock_sleep.call_count == cisco_client.max_retries
 
     def test_post_request_rate_limited(self, cisco_client, mock_httpx_client):
         cisco_client.client = mock_httpx_client
