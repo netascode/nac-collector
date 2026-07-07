@@ -224,7 +224,7 @@ class TestGetRequest:
 
         assert result is None
         assert "returned 404 with no body" in caplog.text
-        assert "may not be supported on this ISE version" in caplog.text
+        assert "may not be supported on this platform version" in caplog.text
 
 
 class TestPostRequest:
