@@ -61,6 +61,11 @@ class CiscoClientMERAKI(CiscoClientController):
         if allowed_org_ids_env != "":
             self.allowed_org_ids = allowed_org_ids_env.split(",")
 
+        self.allowed_network_ids: list[str] | None = None
+        allowed_network_ids_env = os.getenv("NAC_MERAKI_NETWORK_IDS", "")
+        if allowed_network_ids_env != "":
+            self.allowed_network_ids = allowed_network_ids_env.split(",")
+
     def authenticate(self) -> bool:
         """
         Check whether an API key is set (as password).
@@ -302,6 +307,24 @@ class CiscoClientMERAKI(CiscoClientController):
             if self.get_id_value(org, endpoint) in self.allowed_org_ids
         ]
 
+    def filter_networks(
+        self, endpoint: dict[str, Any], data: dict[str, Any] | list[Any] | None
+    ) -> dict[str, Any] | list[Any] | None:
+        if endpoint["name"] != "network":
+            return data
+
+        if not isinstance(data, list):
+            return data
+
+        if self.allowed_network_ids is None:
+            return data
+
+        return [
+            network
+            for network in data
+            if self.get_id_value(network, endpoint) in self.allowed_network_ids
+        ]
+
     async def get_from_children_endpoints(
         self,
         parent_endpoint: dict[str, Any],
@@ -401,6 +424,8 @@ class CiscoClientMERAKI(CiscoClientController):
         data, err_data = await self.fetch_data_with_error(
             children_endpoint_uri, progress, progress_task
         )
+
+        data = self.filter_networks(children_endpoint, data)
 
         # Process the children endpoint data and get the updated dictionary
         children_endpoint_dict = self.process_endpoint_data(
