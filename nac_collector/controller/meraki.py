@@ -295,6 +295,7 @@ class CiscoClientMERAKI(CiscoClientController):
         data: dict[str, Any] | list[Any] | None,
         endpoint_name: str,
         allowed_ids: list[str] | None,
+        filter_field: str | None = None,
     ) -> dict[str, Any] | list[Any] | None:
         if endpoint["name"] != endpoint_name:
             return data
@@ -304,6 +305,9 @@ class CiscoClientMERAKI(CiscoClientController):
 
         if allowed_ids is None:
             return data
+
+        if filter_field is not None:
+            return [item for item in data if item.get(filter_field) in allowed_ids]
 
         return [
             item
@@ -412,6 +416,7 @@ class CiscoClientMERAKI(CiscoClientController):
         )
 
         data = self.filter_by_allowed_ids(children_endpoint, data, "network", self.allowed_network_ids)
+        data = self.filter_by_allowed_ids(children_endpoint, data, "device", self.allowed_network_ids, filter_field="networkId")
 
         # Process the children endpoint data and get the updated dictionary
         children_endpoint_dict = self.process_endpoint_data(
