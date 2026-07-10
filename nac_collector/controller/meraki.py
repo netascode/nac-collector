@@ -261,7 +261,9 @@ class CiscoClientMERAKI(CiscoClientController):
                     endpoint["endpoint"], progress, progress_task
                 )
 
-                data = self.filter_by_allowed_ids(endpoint, data, "organization", self.allowed_org_ids)
+                data = self.filter_by_allowed_ids(
+                    endpoint, data, "organization", self.allowed_org_ids
+                )
 
                 endpoint_dict = self.process_endpoint_data(
                     endpoint,
@@ -310,9 +312,7 @@ class CiscoClientMERAKI(CiscoClientController):
             return [item for item in data if item.get(filter_field) in allowed_ids]
 
         return [
-            item
-            for item in data
-            if self.get_id_value(item, endpoint) in allowed_ids
+            item for item in data if self.get_id_value(item, endpoint) in allowed_ids
         ]
 
     async def get_from_children_endpoints(
@@ -415,8 +415,16 @@ class CiscoClientMERAKI(CiscoClientController):
             children_endpoint_uri, progress, progress_task
         )
 
-        data = self.filter_by_allowed_ids(children_endpoint, data, "network", self.allowed_network_ids)
-        data = self.filter_by_allowed_ids(children_endpoint, data, "device", self.allowed_network_ids, filter_field="networkId")
+        data = self.filter_by_allowed_ids(
+            children_endpoint, data, "network", self.allowed_network_ids
+        )
+        data = self.filter_by_allowed_ids(
+            children_endpoint,
+            data,
+            "device",
+            self.allowed_network_ids,
+            filter_field="networkId",
+        )
 
         # Process the children endpoint data and get the updated dictionary
         children_endpoint_dict = self.process_endpoint_data(
