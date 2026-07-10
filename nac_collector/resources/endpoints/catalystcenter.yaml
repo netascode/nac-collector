@@ -33,12 +33,20 @@
   endpoint: /dna/intent/api/v1/device-detail
 - name: extended_templates
   endpoint: /api/v1/template-programmer/extendedTemplates
-- name: fabric_authentication_profile
-  endpoint: /dna/intent/api/v1/business/sda/authentication-profile
+- name: fabric_multicast_virtual_network
+  endpoint: /dna/intent/api/v1/sda/multicast/virtualNetworks
+- name: ip_pools
+  endpoint: /dna/intent/api/v1/ipam/globalIpAddressPools
 - name: update_device_management_address
   endpoint: /dna/intent/api/v1/network-device
 - name: device_replacement
   endpoint: /dna/intent/api/v1/device-replacement
+- name: external_authentication
+  endpoint: /dna/system/api/v1/users/external-authentication
+- name: external_authentication_aaa_attribute
+  endpoint: /dna/system/api/v1/users/external-servers/aaa-attribute
+- name: fabric_authentication_profile
+  endpoint: /dna/intent/api/v1/business/sda/authentication-profile
 - name: fabric_device
   endpoint: /dna/intent/api/v1/sda/fabricDevices
 - name: fabric_l2_handoff
@@ -53,16 +61,12 @@
   endpoint: /dna/intent/api/v1/sda/fabricDevices/layer3Handoffs/sdaTransits
 - name: fabric_l3_virtual_network
   endpoint: /dna/intent/api/v1/sda/layer3VirtualNetworks
-- name: fabric_multicast_virtual_network
-  endpoint: /dna/intent/api/v1/sda/multicast/virtualNetworks
 - name: fabric_provision_device
   endpoint: /dna/intent/api/v1/sda/provisionDevices
 - name: fabric_sites
   endpoint: /dna/intent/api/v1/sda/fabricSites
 - name: fabric_virtual_network
   endpoint: /dna/intent/api/v1/virtual-network
-- name: ip_pools
-  endpoint: /dna/intent/api/v1/ipam/globalIpAddressPools
 - name: network
   endpoint: /api/v1/commonsetting/global
 - name: network_devices
@@ -152,6 +156,8 @@
   endpoint: /dna/intent/api/v1/business/sda/virtualnetwork/ippool
 - name: vlanToSsids
   endpoint: /dna/intent/api/v1/sda/fabrics/%v/vlanToSsids
+- name: wireless_cleanair_configuration
+  endpoint: /dna/intent/api/v1/featureTemplates/wireless/cleanAirConfigurations
 - name: wireless_controller_primary_managed_ap_locations
   endpoint: /dna/intent/api/v1/wirelessControllers/%v/primaryManagedApLocations
 - name: wireless_controller_secondary_managed_ap_locations
