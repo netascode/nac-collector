@@ -4,7 +4,7 @@ import os
 from typing import Any
 
 from meraki.session.async_ import AsyncRestSession
-from meraki.exceptions import AsyncAPIError
+from meraki.exceptions import APIError
 from rich.progress import (
     BarColumn,
     MofNCompleteColumn,
@@ -446,7 +446,7 @@ class CiscoClientMERAKI(CiscoClientController):
                 await asyncio.sleep(self.request_throttle_delay)
             data = await self.session.get_pages(metadata, uri)
             return data, None
-        except AsyncAPIError as e:
+        except APIError as e:
             return None, {
                 "status_code": e.status,
                 "message": e.message,
