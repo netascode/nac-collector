@@ -3,7 +3,7 @@ import logging
 import os
 from typing import Any
 
-from meraki.aio.rest_session import AsyncRestSession
+from meraki.session.async_ import AsyncRestSession
 from meraki.exceptions import AsyncAPIError
 from rich.progress import (
     BarColumn,
