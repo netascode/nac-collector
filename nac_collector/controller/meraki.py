@@ -261,7 +261,7 @@ class CiscoClientMERAKI(CiscoClientController):
                     endpoint["endpoint"], progress, progress_task
                 )
 
-                data = self.filter_organizations(endpoint, data)
+                data = self.filter_by_allowed_ids(endpoint, data, "organization", self.allowed_org_ids)
 
                 endpoint_dict = self.process_endpoint_data(
                     endpoint,
@@ -289,40 +289,26 @@ class CiscoClientMERAKI(CiscoClientController):
 
         return final_dict
 
-    def filter_organizations(
-        self, endpoint: dict[str, Any], data: dict[str, Any] | list[Any] | None
+    def filter_by_allowed_ids(
+        self,
+        endpoint: dict[str, Any],
+        data: dict[str, Any] | list[Any] | None,
+        endpoint_name: str,
+        allowed_ids: list[str] | None,
     ) -> dict[str, Any] | list[Any] | None:
-        if endpoint["name"] != "organization":
+        if endpoint["name"] != endpoint_name:
             return data
 
         if not isinstance(data, list):
             return data
 
-        if self.allowed_org_ids is None:
+        if allowed_ids is None:
             return data
 
         return [
-            org
-            for org in data
-            if self.get_id_value(org, endpoint) in self.allowed_org_ids
-        ]
-
-    def filter_networks(
-        self, endpoint: dict[str, Any], data: dict[str, Any] | list[Any] | None
-    ) -> dict[str, Any] | list[Any] | None:
-        if endpoint["name"] != "network":
-            return data
-
-        if not isinstance(data, list):
-            return data
-
-        if self.allowed_network_ids is None:
-            return data
-
-        return [
-            network
-            for network in data
-            if self.get_id_value(network, endpoint) in self.allowed_network_ids
+            item
+            for item in data
+            if self.get_id_value(item, endpoint) in allowed_ids
         ]
 
     async def get_from_children_endpoints(
@@ -425,7 +411,7 @@ class CiscoClientMERAKI(CiscoClientController):
             children_endpoint_uri, progress, progress_task
         )
 
-        data = self.filter_networks(children_endpoint, data)
+        data = self.filter_by_allowed_ids(children_endpoint, data, "network", self.allowed_network_ids)
 
         # Process the children endpoint data and get the updated dictionary
         children_endpoint_dict = self.process_endpoint_data(
