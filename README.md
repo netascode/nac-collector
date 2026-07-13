@@ -166,7 +166,7 @@ nac-collector -s NDO -v DEBUG
 
 ### Meraki
 
-The Meraki collector authenticates with an API key (passed as `--password`). In large environments with many organizations and networks, collection can take a long time because each network spawns a large number of child API calls. Use the optional scope filters below to target only the orgs and networks you need, which significantly reduces collection time.
+The Meraki collector authenticates with an API key (passed as `--password`).
 
 ```sh
 nac-collector -s MERAKI --username none --password "$MERAKI_API_KEY" --url 'https://api.meraki.com/api/v1' -v INFO --fetch-latest
@@ -174,12 +174,14 @@ nac-collector -s MERAKI --username none --password "$MERAKI_API_KEY" --url 'http
 
 #### Speeding up collection — filter by Organization and Network
 
+In large environments with many organizations and networks, collection can take a long time because each network and device spawns a large number of child API calls. Use the optional scope filters below to target only the orgs and networks you need, which significantly reduces collection time.
+
 | Variable | Purpose |
 |---|---|
-| `NAC_MERAKI_ORG_IDS` | Comma-separated list of org IDs. Only these orgs are collected; all others are skipped before any network or device calls are made. |
-| `NAC_MERAKI_NETWORK_IDS` | Comma-separated list of network IDs. Only these networks are collected; all others are dropped before any of their child endpoint calls are made. |
+| `NAC_MERAKI_ORG_IDS` | Comma-separated list of org IDs. Only these orgs are collected. |
+| `NAC_MERAKI_NETWORK_IDS` | Comma-separated list of network IDs. Only these networks (and devices within them) are collected; all others are dropped. |
 
-Both filters can be used independently or together. When combined, only the specified networks within the specified orgs are collected, giving the fastest possible collection for a targeted scope.
+Both filters can be used independently or together. When combined, only the specified networks within the specified orgs are collected.
 
 ```sh
 # Collect a single org only
@@ -191,9 +193,11 @@ export NAC_MERAKI_NETWORK_IDS="N_abc123def456,N_ghi789jkl012"
 nac-collector -s MERAKI --username none --password "$MERAKI_API_KEY" --url 'https://api.meraki.com/api/v1' -v INFO --fetch-latest
 ```
 
-All child data for each network that passes the filter is still collected in full (SSIDs, firewall rules, switch stacks, syslog servers, etc.). The filters control *which* networks are entered, not how deeply they are collected.
+All child data for each network that passes the filter is still collected in full (SSIDs, firewall rules, switch stacks, syslog servers, etc.).
 
-> **Note:** `NAC_MERAKI_NETWORK_IDS` only controls which networks' child items are collected. Org-level items (admins, SAML, policy objects, etc.) and devices — along with all device sub-endpoints — are always collected in full regardless of this filter.
+**Note:** `NAC_MERAKI_NETWORK_IDS` only controls which networks (and their child endpoints) are collected. Org-level endpoints (admins, SAML, policy objects, etc.) are always collected in full regardless of this filter.
+
+**Note:** Networks referred to by org-level configuration or other networks' configuration are not automatically added to the filter. Make sure to add them to the filter manually for network IDs referred to to make sense within the collected data.
 
 ### NDFC
 
