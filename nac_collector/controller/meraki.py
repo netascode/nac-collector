@@ -3,8 +3,8 @@ import logging
 import os
 from typing import Any
 
-from meraki.session.async_ import AsyncRestSession
 from meraki.exceptions import APIError
+from meraki.session.async_ import AsyncRestSession
 from rich.progress import (
     BarColumn,
     MofNCompleteColumn,
