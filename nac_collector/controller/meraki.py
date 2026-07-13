@@ -4,7 +4,11 @@ import os
 from typing import Any
 
 from meraki.exceptions import APIError
-from meraki.session.async_ import AsyncRestSession
+
+try:
+    from meraki.session.async_ import AsyncRestSession  # SDK v4.x+
+except ImportError:
+    from meraki.aio.rest_session import AsyncRestSession  # SDK v3.x
 from rich.progress import (
     BarColumn,
     MofNCompleteColumn,
