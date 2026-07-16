@@ -1,0 +1,12 @@
+# Extra manually-defined endpoints and overrides
+# for endpoints generated from provider definitions.
+#
+# To apply modifications in this file,
+# regenerate the endpoints YAML with "uv run ./scripts/update_endpoints.py".
+
+remove_endpoints:
+# terraform-provider-sdwan's policy_object_feature_profile_parcels.yaml is a
+# data-source-only definition added alongside the existing policy_object_feature_profile resource, at the same
+# base endpoint (/v1/feature-profile/sdwan/policy-object). 
+# policy_object_feature_profile already covers the same children, so drop the duplicate data-source-only entry.
+- policy_object_feature_profile_parcels

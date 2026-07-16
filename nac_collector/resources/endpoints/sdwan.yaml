@@ -31,157 +31,80 @@
 - name: policy_object_feature_profile
   endpoint: /v1/feature-profile/sdwan/policy-object
   children:
-  - &id001
-    name: policy_object_app_probe_class
+  - name: policy_object_app_probe_class
     endpoint: /app-probe
-  - &id002
-    name: policy_object_application_list
+  - name: policy_object_application_list
     endpoint: /app-list
-  - &id003
-    name: policy_object_as_path_list
+  - name: policy_object_as_path_list
     endpoint: /as-path
-  - &id004
-    name: policy_object_class_map
+  - name: policy_object_class_map
     endpoint: /class
-  - &id005
-    name: policy_object_color_list
+  - name: policy_object_color_list
     endpoint: /color
-  - &id006
-    name: policy_object_data_ipv4_prefix_list
+  - name: policy_object_data_ipv4_prefix_list
     endpoint: /data-prefix
-  - &id007
-    name: policy_object_data_ipv6_prefix_list
+  - name: policy_object_data_ipv6_prefix_list
     endpoint: /data-ipv6-prefix
-  - &id008
-    name: policy_object_expanded_community_list
+  - name: policy_object_expanded_community_list
     endpoint: /expanded-community
-  - &id009
-    name: policy_object_extended_community_list
+  - name: policy_object_extended_community_list
     endpoint: /ext-community
-  - &id010
-    name: policy_object_ipv4_prefix_list
+  - name: policy_object_ipv4_prefix_list
     endpoint: /prefix
-  - &id011
-    name: policy_object_ipv6_prefix_list
+  - name: policy_object_ipv6_prefix_list
     endpoint: /ipv6-prefix
-  - &id012
-    name: policy_object_mirror
+  - name: policy_object_mirror
     endpoint: /mirror
-  - &id013
-    name: policy_object_policer
+  - name: policy_object_policer
     endpoint: /policer
-  - &id014
-    name: policy_object_preferred_color_group
+  - name: policy_object_preferred_color_group
     endpoint: /preferred-color-group
-  - &id015
-    name: policy_object_security_data_ipv4_prefix_list
+  - name: policy_object_security_data_ipv4_prefix_list
     endpoint: /security-data-ip-prefix
-  - &id016
-    name: policy_object_security_fqdn_list
+  - name: policy_object_security_fqdn_list
     endpoint: /security-fqdn
-  - &id017
-    name: policy_object_security_geolocation_list
+  - name: policy_object_security_geolocation_list
     endpoint: /security-geolocation
-  - &id018
-    name: policy_object_security_identity_list
+  - name: policy_object_security_identity_list
     endpoint: /security-identity
-  - &id019
-    name: policy_object_security_ips_signature
+  - name: policy_object_security_ips_signature
     endpoint: /security-ipssignature
-  - &id020
-    name: policy_object_security_local_application_list
+  - name: policy_object_security_local_application_list
     endpoint: /security-localapp
-  - &id021
-    name: policy_object_security_local_domain_list
+  - name: policy_object_security_local_domain_list
     endpoint: /security-localdomain
-  - &id022
-    name: policy_object_security_port_list
+  - name: policy_object_security_port_list
     endpoint: /security-port
-  - &id023
-    name: policy_object_security_protocol_list
+  - name: policy_object_security_protocol_list
     endpoint: /security-protocolname
-  - &id024
-    name: policy_object_security_scalable_group_tag_list
+  - name: policy_object_security_scalable_group_tag_list
     endpoint: /security-scalablegrouptag
-  - &id025
-    name: policy_object_security_url_allow_list
+  - name: policy_object_security_url_allow_list
     endpoint: /security-urllist
-  - &id026
-    name: policy_object_security_url_block_list
+  - name: policy_object_security_url_block_list
     endpoint: /security-urllist
-  - &id027
-    name: policy_object_security_zone
+  - name: policy_object_security_zone
     endpoint: /security-zone
-  - &id028
-    name: policy_object_sla_class_list
+  - name: policy_object_sla_class_list
     endpoint: /sla-class
-  - &id029
-    name: policy_object_standard_community_list
+  - name: policy_object_standard_community_list
     endpoint: /standard-community
-  - &id030
-    name: policy_object_tloc_list
+  - name: policy_object_tloc_list
     endpoint: /tloc
-  - &id031
-    name: policy_object_unified_advanced_inspection_profile
+  - name: policy_object_unified_advanced_inspection_profile
     endpoint: /unified/advanced-inspection-profile
-  - &id032
-    name: policy_object_unified_advanced_malware_protection
+  - name: policy_object_unified_advanced_malware_protection
     endpoint: /unified/advanced-malware-protection
-  - &id033
-    name: policy_object_unified_intrusion_prevention
+  - name: policy_object_unified_intrusion_prevention
     endpoint: /unified/intrusion-prevention
-  - &id034
-    name: policy_object_unified_tls_ssl_decryption
+  - name: policy_object_unified_tls_ssl_decryption
     endpoint: /unified/ssl-decryption
-  - &id035
-    name: policy_object_unified_tls_ssl_profile
+  - name: policy_object_unified_tls_ssl_profile
     endpoint: /unified/ssl-decryption-profile
-  - &id036
-    name: policy_object_unified_url_filtering
+  - name: policy_object_unified_url_filtering
     endpoint: /unified/url-filtering
-  - &id037
-    name: policy_object_vpn_group
+  - name: policy_object_vpn_group
     endpoint: /vpn-group
-- name: policy_object_feature_profile_parcels
-  endpoint: /v1/feature-profile/sdwan/policy-object
-  children:
-  - *id001
-  - *id002
-  - *id003
-  - *id004
-  - *id005
-  - *id006
-  - *id007
-  - *id008
-  - *id009
-  - *id010
-  - *id011
-  - *id012
-  - *id013
-  - *id014
-  - *id015
-  - *id016
-  - *id017
-  - *id018
-  - *id019
-  - *id020
-  - *id021
-  - *id022
-  - *id023
-  - *id024
-  - *id025
-  - *id026
-  - *id027
-  - *id028
-  - *id029
-  - *id030
-  - *id031
-  - *id032
-  - *id033
-  - *id034
-  - *id035
-  - *id036
-  - *id037
 - name: service_feature_profile
   endpoint: /v1/feature-profile/sdwan/service
   children:
