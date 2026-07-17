@@ -3,8 +3,19 @@ import logging
 import os
 from typing import Any
 
-from meraki.aio.rest_session import AsyncRestSession
-from meraki.exceptions import AsyncAPIError
+from meraki.exceptions import APIError
+
+try:
+    from meraki.session.async_ import AsyncRestSession  # SDK v4.x+
+except ImportError:
+    from meraki.aio.rest_session import AsyncRestSession  # SDK v3.x
+
+# In SDK v3.x AsyncAPIError is unrelated to APIError; in v4.x it is a deprecated subclass.
+# Import it so we can catch it explicitly when running against v3.x.
+try:
+    from meraki.exceptions import AsyncAPIError
+except ImportError:
+    AsyncAPIError = APIError  # type: ignore[assignment,misc]
 from rich.progress import (
     BarColumn,
     MofNCompleteColumn,
@@ -470,7 +481,7 @@ class CiscoClientMERAKI(CiscoClientController):
                 await asyncio.sleep(self.request_throttle_delay)
             data = await self.session.get_pages(metadata, uri)
             return data, None
-        except AsyncAPIError as e:
+        except (APIError, AsyncAPIError) as e:
             return None, {
                 "status_code": e.status,
                 "message": e.message,
