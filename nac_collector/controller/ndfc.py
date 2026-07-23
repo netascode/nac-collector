@@ -1304,11 +1304,11 @@ class CiscoClientNDFC(CiscoClientController):
                 if (
                     not switch
                     or not isinstance(switch, dict)
-                    or not switch.get("hostName")
+                    or not switch.get("logicalName")
                 ):
                     continue
 
-                host_name = switch.get("hostName")
+                sys_name = switch.get("logicalName")
                 serial_number = switch.get("serialNumber")
                 switch_fabric_name = switch.get("fabricName")
 
@@ -1318,7 +1318,7 @@ class CiscoClientNDFC(CiscoClientController):
                 current_fabric = config_entry.get("fabric")
                 logger.debug(
                     "Switch fabric check: switch %s belongs to fabric %s, currently processing fabric %s",
-                    host_name,
+                    sys_name,
                     switch_fabric_name,
                     current_fabric,
                 )
@@ -1329,7 +1329,7 @@ class CiscoClientNDFC(CiscoClientController):
                 ):
                     logger.debug(
                         "Skipping switch %s (belongs to fabric %s, currently processing fabric %s)",
-                        host_name,
+                        sys_name,
                         switch_fabric_name,
                         current_fabric,
                     )
@@ -1337,7 +1337,7 @@ class CiscoClientNDFC(CiscoClientController):
 
                 logger.debug(
                     "Processing interfaces for switch: %s (serial: %s)",
-                    host_name,
+                    sys_name,
                     serial_number,
                 )
 
@@ -1353,7 +1353,7 @@ class CiscoClientNDFC(CiscoClientController):
                     logger.debug(
                         "Processing child endpoint %s for switch %s",
                         child_name,
-                        host_name,
+                        sys_name,
                     )
 
                     # Get the switch's actual fabric information
@@ -1371,12 +1371,12 @@ class CiscoClientNDFC(CiscoClientController):
                         logger.debug(
                             "Using switch's fabric ID %s for %s in fabric %s",
                             switch_fabric_id,
-                            host_name,
+                            sys_name,
                             switch_fabric_name,
                         )
 
-                    if host_name and "{{hostName}}" in child_url:
-                        child_url = child_url.replace("{{hostName}}", host_name)
+                    if sys_name and "{{sysName}}" in child_url:
+                        child_url = child_url.replace("{{sysName}}", sys_name)
 
                     if serial_number and "{{serialNumber}}" in child_url:
                         child_url = child_url.replace("{{serialNumber}}", serial_number)
@@ -1393,7 +1393,7 @@ class CiscoClientNDFC(CiscoClientController):
                             logger.debug(
                                 "Successfully retrieved %s for switch: %s",
                                 child_name,
-                                host_name,
+                                sys_name,
                             )
 
                             # Process the interface data (normalize structure)
@@ -1412,10 +1412,10 @@ class CiscoClientNDFC(CiscoClientController):
                                     logger.debug(
                                         "Processing nested children for %s on switch %s",
                                         child_name,
-                                        host_name,
+                                        sys_name,
                                     )
                                     self._process_nested_children_for_interfaces(
-                                        child_endpoint, processed_interfaces, host_name
+                                        child_endpoint, processed_interfaces, sys_name
                                     )
 
                             logger.debug("Processed child name: %s", child_name)
@@ -1426,13 +1426,13 @@ class CiscoClientNDFC(CiscoClientController):
                                 if isinstance(processed_interfaces, list)
                                 else 1,
                                 child_name,
-                                host_name,
+                                sys_name,
                             )
                         else:
                             logger.warning(
                                 "Failed to fetch %s for switch: %s",
                                 child_name,
-                                host_name,
+                                sys_name,
                             )
                             switch["interfaces"][child_name] = []
 
@@ -1440,7 +1440,7 @@ class CiscoClientNDFC(CiscoClientController):
                         logger.error(
                             "Error fetching %s for switch %s: %s",
                             child_name,
-                            host_name,
+                            sys_name,
                             str(e),
                         )
                         switch["interfaces"][child_name] = []
@@ -1814,7 +1814,7 @@ class CiscoClientNDFC(CiscoClientController):
         )
 
     def _process_nested_children_for_interfaces(
-        self, parent_endpoint: dict[str, Any], interface_data: Any, host_name: str
+        self, parent_endpoint: dict[str, Any], interface_data: Any, sys_name: str
     ) -> None:
         """
         Process nested children endpoints for interface data (like Port-Channel interfaces -> vPCInterfaceSetting).
@@ -1822,7 +1822,7 @@ class CiscoClientNDFC(CiscoClientController):
         Parameters:
             parent_endpoint (dict): The parent endpoint configuration with children
             interface_data (list): The interface data from the parent endpoint
-            host_name (str): The hostname of the switch being processed
+            sys_name (str): The sysName (logicalName) of the switch being processed
         """
         parent_name = parent_endpoint["name"]
         children_endpoints = parent_endpoint.get("children", [])
@@ -1834,7 +1834,7 @@ class CiscoClientNDFC(CiscoClientController):
             "Processing %d nested children for %s interfaces on switch %s",
             len(children_endpoints),
             parent_name,
-            host_name,
+            sys_name,
         )
 
         if self.client is None:
@@ -1870,7 +1870,7 @@ class CiscoClientNDFC(CiscoClientController):
                     "Processing nested children for vpcPair=%s, vPC_name=%s on switch %s",
                     vpc_pair,
                     vpc_name,
-                    host_name,
+                    sys_name,
                 )
 
                 # Process each nested child endpoint
@@ -1904,7 +1904,7 @@ class CiscoClientNDFC(CiscoClientController):
                             "Successfully processed and saved nested child endpoint %s to interface entry for %s on switch %s",
                             child_name,
                             vpc_name,
-                            host_name,
+                            sys_name,
                         )
 
                     except Exception as e:
@@ -1912,7 +1912,7 @@ class CiscoClientNDFC(CiscoClientController):
                             "Error processing nested child endpoint %s for %s on switch %s: %s",
                             child_name,
                             vpc_name,
-                            host_name,
+                            sys_name,
                             str(e),
                         )
                         # Set empty data on error to maintain consistent structure
@@ -1934,7 +1934,7 @@ class CiscoClientNDFC(CiscoClientController):
                     "Processing nested children for serialNumber=%s, ifName=%s on switch %s",
                     serial_number,
                     if_name,
-                    host_name,
+                    sys_name,
                 )
 
                 # Process each nested child endpoint
@@ -1968,7 +1968,7 @@ class CiscoClientNDFC(CiscoClientController):
                             "Successfully processed and saved nested child endpoint %s to interface entry for %s on switch %s",
                             child_name,
                             if_name,
-                            host_name,
+                            sys_name,
                         )
 
                     except Exception as e:
@@ -1976,7 +1976,7 @@ class CiscoClientNDFC(CiscoClientController):
                             "Error processing nested child endpoint %s for %s on switch %s: %s",
                             child_name,
                             if_name,
-                            host_name,
+                            sys_name,
                             str(e),
                         )
                         # Set empty data on error to maintain consistent structure
