@@ -6,30 +6,40 @@
   endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/control/fabrics/%v/inventory
   children:
   - name: AccessEthernetPorts
-    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface?filter=underlayPolicies%3D%3Dint_access_host%26%26mode%3D%3Daccess%26%26sysName%3D%3D{{hostName}}&navId={{fabricID}}
+    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface?filter=underlayPolicies%3D%3Dint_access_host%26%26mode%3D%3Daccess%26%26sysName%3D%3D{{sysName}}&navId={{fabricID}}
     children:
     - name: AccessInterfaceSetting
       endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface/pti/nvpairs?serialNumber={{serialNumber}}&interfaceName={{ifName}}&policyName=int_access_host
   - name: TrunkEthernetPorts
-    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface?filter=mode%3D%3Dtrunk%26%26sysName%3D%3D{{hostName}}%26%26underlayPolicies%3D%3Dint_trunk_host%26%26allowedVLANs%21%3Dnone&navId={{fabricID}}
+    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface?filter=mode%3D%3Dtrunk%26%26sysName%3D%3D{{sysName}}%26%26underlayPolicies%3D%3Dint_trunk_host%26%26allowedVLANs%21%3Dnone&navId={{fabricID}}
     children:
     - name: TrunkInterfaceSetting
       endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface/pti/nvpairs?serialNumber={{serialNumber}}&interfaceName={{ifName}}&policyName=int_trunk_host
-  - name: TrunkPort-Channel
-    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface?filter=vpcId%21%3D0%26%26sysName%3D%3D{{hostName}}%26%26underlayPolicies%3D%3Dint_vpc_trunk_po_11_1&navId={{fabricID}}
+  - name: VpcTrunkPortChannel
+    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface?filter=vpcId%21%3D0%26%26sysName%3D%3D{{sysName}}%26%26underlayPolicies%3D%3Dint_vpc_trunk_po_11_1&navId={{fabricID}}
     children:
-    - name: vPCInterfaceSetting
+    - name: VpcInterfaceSetting
       endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface/pti/nvpairs?serialNumber={{vpcPair}}&interfaceName={{vPC_name}}&policyName=int_vpc_trunk_host
-  - name: AccessPort-Channel
-    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface?filter=vpcId%21%3D0%26%26sysName%3D%3D{{hostName}}%26%26underlayPolicies%3D%3Dint_vpc_access_po_11_1&navId={{fabricID}}
+  - name: VpcAccessPortChannel
+    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface?filter=vpcId%21%3D0%26%26sysName%3D%3D{{sysName}}%26%26underlayPolicies%3D%3Dint_vpc_access_po_11_1&navId={{fabricID}}
     children:
-    - name: vPCInterfaceSetting
+    - name: VpcInterfaceSetting
       endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface/pti/nvpairs?serialNumber={{vpcPair}}&interfaceName={{vPC_name}}&policyName=int_vpc_access_host
   - name: LoopbackInterfaces
-    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface?filter=underlayPolicies%3D%3Dint_loopback%26%26sysName%3D%3D{{hostName}}&navId={{fabricID}}
+    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface?filter=underlayPolicies%3D%3Dint_loopback%26%26sysName%3D%3D{{sysName}}&navId={{fabricID}}
     children:
     - name: LoopbackInterfaceSetting
       endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface/pti/nvpairs?serialNumber={{serialNumber}}&interfaceName={{ifName}}&policyName=int_loopback
+  - name: TrunkPortChannel
+    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface?filter=underlayPolicies%3D%3Dint_port_channel_trunk_host%26%26sysName%3D%3D{{sysName}}&navId={{fabricID}}
+    children:
+    - name: TrunkPortChannelSetting
+      endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface/pti/nvpairs?serialNumber={{serialNumber}}&interfaceName={{ifName}}&policyName=int_port_channel_trunk_host
+  - name: AccessPortChannel
+    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface?filter=underlayPolicies%3D%3Dint_port_channel_access_host%26%26sysName%3D%3D{{sysName}}&navId={{fabricID}}
+    children:
+    - name: AccessPortChannelSetting
+      endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface/pti/nvpairs?serialNumber={{serialNumber}}&interfaceName={{ifName}}&policyName=int_port_channel_access_host
 - name: VPC_Pairs
   endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/vpcpair?navId={{fabricID}}
   children:
