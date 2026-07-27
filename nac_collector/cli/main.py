@@ -342,7 +342,7 @@ def main(
                     timeout=timeout,
                     ssl_verify=False,
                 )
-            if solution == Solution.CDFMC:
+            elif solution == Solution.CDFMC:
                 # For CDFMC, use FMC client but set cdfmc=True to adjust behavior
                 # Username is not used for CDFMC authentication
                 client = CiscoClientFMC(
