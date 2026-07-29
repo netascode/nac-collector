@@ -30,6 +30,8 @@
     children:
     - name: LoopbackInterfaceSetting
       endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface/pti/nvpairs?serialNumber={{serialNumber}}&interfaceName={{ifName}}&policyName=int_loopback
+- name: TorPairing
+  endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/control/tor/fabrics/%v/switches/{{leafSerialNumber}}
 - name: VPC_Pairs
   endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/vpcpair?navId={{fabricID}}
   children:
