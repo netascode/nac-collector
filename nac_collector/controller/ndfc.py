@@ -26,10 +26,10 @@ class CiscoClientNDFC(CiscoClientController):
     # These interface types must have:
     # 1. A 'vpcEntityId' field with format "serial1~serial2~vpcX"
     # 2. Children endpoints defined in YAML configuration
-    # 3. The same processing pattern for child endpoints like VpcInterfaceSetting
+    # 3. The same processing pattern for child endpoints like vPCInterfaceSetting
     VPC_PORT_CHANNEL_INTERFACE_TYPES = [
-        "VpcTrunkPortChannel",
-        "VpcAccessPortChannel"
+        "vPCTrunkPortChannel",
+        "vPCAccessPortChannel"
         # Add new vPC Port-Channel interface types here as needed
     ]
 
@@ -1702,8 +1702,8 @@ class CiscoClientNDFC(CiscoClientController):
 
     def _process_port_channel_children(self, parent_endpoint, endpoint_dict):
         """
-        Process children endpoints for vPC Port-Channel interface types (VpcTrunkPortChannel, VpcAccessPortChannel, etc.).
-        Fetches child endpoint data (like VpcInterfaceSetting) for each vPC Port-Channel interface.
+        Process children endpoints for vPC Port-Channel interface types (vPCTrunkPortChannel, vPCAccessPortChannel, etc.).
+        Fetches child endpoint data (like vPCInterfaceSetting) for each vPC Port-Channel interface.
         
         This method handles all interface types that:
         1. Have a 'vpcEntityId' field with format "serial1~serial2~vpcX"
@@ -1908,7 +1908,7 @@ class CiscoClientNDFC(CiscoClientController):
         self, parent_endpoint: dict[str, Any], interface_data: Any, sys_name: str
     ) -> None:
         """
-        Process nested children endpoints for interface data (like vPC Port-Channel interfaces -> VpcInterfaceSetting).
+        Process nested children endpoints for interface data (like vPC Port-Channel interfaces -> vPCInterfaceSetting).
         
         Parameters:
             parent_endpoint (dict): The parent endpoint configuration with children
@@ -1939,7 +1939,7 @@ class CiscoClientNDFC(CiscoClientController):
             if not isinstance(interface_entry, dict):
                 continue
                 
-            # For vPC Port-Channel interfaces (VpcTrunkPortChannel, VpcAccessPortChannel, etc.), look for vpcEntityId
+            # For vPC Port-Channel interfaces (vPCTrunkPortChannel, vPCAccessPortChannel, etc.), look for vpcEntityId
             if parent_name in self.VPC_PORT_CHANNEL_INTERFACE_TYPES:
                 vpc_entity_id = interface_entry.get("vpcEntityId")
 
