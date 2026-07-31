@@ -1,0 +1,53 @@
+import pytest
+
+from nac_collector.controller.ndfc import CiscoClientNDFC
+from nac_collector.resource_manager import ResourceManager
+
+pytestmark = pytest.mark.unit
+
+
+def _endpoint_by_interface_type() -> dict[str, dict]:
+    """Map each interface type (child of Discovered_Switches) to its yaml entry."""
+    endpoints = ResourceManager.get_packaged_endpoint_data("ndfc")
+    assert endpoints, "ndfc.yaml failed to load"
+
+    discovered = next(
+        (e for e in endpoints if e.get("name") == "Discovered_Switches"), None
+    )
+    assert discovered is not None, "Discovered_Switches key missing from ndfc.yaml"
+
+    return {child["name"]: child for child in discovered.get("children", [])}
+
+
+ENDPOINT_BY_INTERFACE_TYPE = _endpoint_by_interface_type()
+
+
+def _child_urls_for_interface_type(interface_type: str) -> list[str]:
+    entry = ENDPOINT_BY_INTERFACE_TYPE.get(interface_type)
+    assert entry is not None, f"{interface_type} not wired into Discovered_Switches"
+    child_urls = [c["endpoint"] for c in entry.get("children", [])]
+    assert child_urls, f"{interface_type} has no child endpoints"
+    return child_urls
+
+
+@pytest.mark.parametrize(
+    "interface_type", CiscoClientNDFC.VPC_PORT_CHANNEL_INTERFACE_TYPES
+)
+def test_vpc_interfaces_use_vpc_placeholders_in_children_endpoint_urls(interface_type):
+    urls = _child_urls_for_interface_type(interface_type)
+    assert all("{{vpcPair}}" in url and "{{vPC_name}}" in url for url in urls)
+
+
+@pytest.mark.parametrize("interface_type", CiscoClientNDFC.SERIAL_INTERFACE_TYPES)
+def test_serial_interfaces_use_serial_placeholders_in_children_endpoint_urls(
+    interface_type,
+):
+    urls = _child_urls_for_interface_type(interface_type)
+    assert all("{{serialNumber}}" in url and "{{ifName}}" in url for url in urls)
+
+
+def test_vpc_interfaces_and_serial_interfaces_do_not_overlap():
+    overlap = set(CiscoClientNDFC.SERIAL_INTERFACE_TYPES) & set(
+        CiscoClientNDFC.VPC_PORT_CHANNEL_INTERFACE_TYPES
+    )
+    assert not overlap, f"Interface types must be disjoint, but both contain: {overlap}"
