@@ -1697,7 +1697,9 @@ class CiscoClientNDFC(CiscoClientController):
                     else:
                         logger.debug("Skipping network with missing networkName")
 
-    def _process_vpc_pairs_children(self, parent_endpoint, endpoint_dict):
+    def _process_vpc_pairs_children(
+        self, parent_endpoint: dict[str, Any], endpoint_dict: dict[str, Any]
+    ) -> None:
         """
         Process children endpoints for VPC pair types (VPC_Pairs).
         Fetches child endpoint data (like VPC_PeerLinkSettings) for each VPC pair.
