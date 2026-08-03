@@ -104,6 +104,13 @@
   endpoint: /template/policy/definition/mesh/
 - name: mirror_policy_object
   endpoint: /template/policy/list/mirror/
+- name: network_hierarchy_node
+  endpoint: /v1/network-hierarchy
+  children:
+  - name: network_hierarchy_cflowd
+    endpoint: /network-settings/cflowd
+  - name: network_hierarchy_security_logging
+    endpoint: /network-settings/security-logging
 - name: object_group_policy_definition
   endpoint: /template/policy/definition/securitygroup/
 - name: other_feature_profile
