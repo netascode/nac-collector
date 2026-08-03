@@ -27,10 +27,10 @@ class CiscoClientNDFC(CiscoClientController):
     # 1. A 'vpcEntityId' field with format "serial1~serial2~vpcX"
     # 2. Children endpoints defined in YAML configuration
     # 3. The same processing pattern for child endpoints like vPCInterfaceSetting
-    PORT_CHANNEL_INTERFACE_TYPES = [
-        "TrunkPort-Channel",
-        "AccessPort-Channel",
-        # Add new Port-Channel interface types here as needed
+    VPC_PORT_CHANNEL_INTERFACE_TYPES = [
+        "vPCTrunkPortChannel",
+        "vPCAccessPortChannel",
+        # Add new vPC Port-Channel interface types here as needed
     ]
 
     # Interface types that use serial number + interface name processing logic
@@ -42,6 +42,8 @@ class CiscoClientNDFC(CiscoClientController):
         "LoopbackInterfaces",
         "AccessEthernetPorts",
         "TrunkEthernetPorts",
+        "TrunkPortChannel",
+        "AccessPortChannel",
         # Add new serial-based interface types here as needed
     ]
 
@@ -1817,7 +1819,7 @@ class CiscoClientNDFC(CiscoClientController):
         self, parent_endpoint: dict[str, Any], interface_data: Any, sys_name: str
     ) -> None:
         """
-        Process nested children endpoints for interface data (like Port-Channel interfaces -> vPCInterfaceSetting).
+        Process nested children endpoints for interface data (like vPC Port-Channel interfaces -> vPCInterfaceSetting).
 
         Parameters:
             parent_endpoint (dict): The parent endpoint configuration with children
@@ -1848,8 +1850,8 @@ class CiscoClientNDFC(CiscoClientController):
             if not isinstance(interface_entry, dict):
                 continue
 
-            # For Port-Channel interfaces (TrunkPort-Channel, AccessPort-Channel, etc.), look for vpcEntityId
-            if parent_name in self.PORT_CHANNEL_INTERFACE_TYPES:
+            # For vPC Port-Channel interfaces (vPCTrunkPortChannel, vPCAccessPortChannel, etc.), look for vpcEntityId
+            if parent_name in self.VPC_PORT_CHANNEL_INTERFACE_TYPES:
                 vpc_entity_id = interface_entry.get("vpcEntityId")
 
                 if not vpc_entity_id:
