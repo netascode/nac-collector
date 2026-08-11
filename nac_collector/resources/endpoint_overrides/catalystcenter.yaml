@@ -34,6 +34,8 @@ extra_endpoints:
   children:
   - name: aaa_settings
     endpoint: /aaaSettings?_inherited=true
+    import_id_attributes:
+    - source: parent
   - name: banner_settings
     endpoint: /bannerSettings
   - name: dhcp_settings
@@ -48,6 +50,9 @@ extra_endpoints:
     endpoint: /timeZoneSettings
   - name: wireless_ssid
     endpoint: /wirelessSettings/ssids
+    import_id_attributes:
+    - source: parent
+    - field: id
 
 - name: network
   endpoint: /api/v1/commonsetting/global
@@ -69,6 +74,8 @@ extra_endpoints:
 
 - name: fabric_provision_device
   endpoint: /dna/intent/api/v1/sda/provisionDevices
+  import_id_attributes:
+  - field: siteId
 
 - name: fabric_sites
   endpoint: /dna/intent/api/v1/sda/fabricSites
@@ -96,6 +103,8 @@ extra_endpoints:
 
 - name: network_profile
   endpoint: /api/v1/siteprofile?populated=true
+  import_id_attributes:
+  - field: siteProfileUuid
 
 - name: fabric_multicast_virtual_network
   endpoint: /dna/intent/api/v1/sda/multicast/virtualNetworks
@@ -122,33 +131,223 @@ overrides:
 - name: ip_pool
   endpoint: /api/v2/ippool
   import_id_attributes:
-    - name: id
+    - field: id
 
 - name: ip_pool_reservation
   endpoint: /dna/intent/api/v1/reserve-ip-subpool?ignoreInheritedGroups=true&limit=500
   import_id_attributes:
-    - name: id
+    - field: id
 
 - name: project
   endpoint: /dna/intent/api/v2/template-programmer/project
   import_id_attributes:
-    - name: id
+    - field: id
 
 - name: template
   endpoint: /dna/intent/api/v2/template-programmer/template
+  # provider import.sh format: <project_id>,<id>
   import_id_attributes:
-    - name: id
+    - field: projectId
+    - field: id
 
 - name: transit_network
   import_id_attributes:
-    - name: name
+    - field: name
+
+- name: fabric_port_assignments
+  import_id_attributes:
+    - field: fabricId
+    - field: networkDeviceId
 
 - name: template_version
   import_id_attributes:
-    - name: templateId
+    - field: templateId
 
 - name: wireless_profile
   endpoint: /intent/api/v1/wirelessProfiles
 
 - name: assign_devices_to_tag
   endpoint: /member?memberType=networkdevice
+
+# Import-ID key recipes (issue #509 keyed-import layer).
+# Authored here — NOT in the generated endpoints file — so a full endpoint
+# regeneration re-injects them (applied by apply_import_ids, matched by name,
+# recurses into children). The value builder derives the composite import id
+# from import_id_attributes; this key selects the natural key the plan indexes on.
+import_ids:
+- name: anycast_gateway
+  import_id_key:
+    field: ipPoolName
+- name: area
+  import_id_key:
+    field: groupNameHierarchy
+- name: assign_credentials
+  import_id_key:
+    join:
+    - site_hierarchy: siteId
+- name: assign_device_to_site
+  import_id_key:
+    join:
+    - site_hierarchy: siteId
+- name: tag
+  import_id_key:
+    field: name
+- name: building
+  import_id_key:
+    field: groupNameHierarchy
+- name: credentials_cli
+  import_id_key:
+    group: cliCredential
+    key_field: description
+- name: credentials_https_read
+  import_id_key:
+    group: httpsRead
+    key_field: description
+- name: credentials_https_write
+  import_id_key:
+    group: httpsWrite
+    key_field: description
+- name: credentials_snmpv2_read
+  import_id_key:
+    group: snmpV2cRead
+    key_field: description
+- name: credentials_snmpv2_write
+  import_id_key:
+    group: snmpV2cWrite
+    key_field: description
+- name: credentials_snmpv3
+  import_id_key:
+    group: snmpV3
+    key_field: description
+- name: external_authentication_aaa_attribute
+  import_id_key:
+    field: attributeName
+- name: fabric_device
+  import_id_key:
+    join:
+    - device_hostname: networkDeviceId
+- name: fabric_l2_handoff
+  import_id_key:
+    join:
+    - field: externalVlanId
+    - device_hostname: networkDeviceId
+    - field: interfaceName
+    sep: /
+- name: fabric_l2_virtual_network
+  import_id_key:
+    join:
+    - field: associatedLayer3VirtualNetworkName
+    - site_hierarchy: fabricId
+    sep: '#_#'
+- name: fabric_l3_handoff_ip_transit
+  import_id_key:
+    join:
+    - device_hostname: networkDeviceId
+- name: fabric_l3_handoff_sda_transit
+  import_id_key:
+    join:
+    - device_hostname: networkDeviceId
+- name: fabric_l3_virtual_network
+  import_id_key:
+    field: virtualNetworkName
+- name: virtual_network_to_fabric_site
+  import_id_key:
+    field: virtualNetworkName
+- name: fabric_port_assignments
+  import_id_key:
+    join:
+    - device_hostname: networkDeviceId
+- name: fabric_provision_device
+  import_id_key:
+    join:
+    - site_hierarchy: siteId
+- name: fabric_site
+  import_id_key:
+    join:
+    - site_hierarchy: siteId
+- name: fabric_zone
+  import_id_key:
+    join:
+    - site_hierarchy: siteId
+- name: ip_pool_reservation
+  import_id_key:
+    field: groupName
+# network_profile has match_id on `name`, but its definition is no_read: true, so a
+# regeneration filters it out as an endpoint node and auto-derivation has nothing to
+# attach to. Kept here so the key survives regen (the node is re-added downstream).
+- name: network_profile
+  import_id_key:
+    field: name
+- name: project
+  import_id_key:
+    field: name
+- name: role
+  import_id_key:
+    group: roles
+    key_field: role
+- name: aaa_settings
+  import_id_key:
+    join:
+    - site_hierarchy: id
+- name: banner_settings
+  import_id_key:
+    join:
+    - site_hierarchy: id
+- name: dhcp_settings
+  import_id_key:
+    join:
+    - site_hierarchy: id
+- name: dns_settings
+  import_id_key:
+    join:
+    - site_hierarchy: id
+- name: ntp_settings
+  import_id_key:
+    join:
+    - site_hierarchy: id
+- name: telemetry_settings
+  import_id_key:
+    join:
+    - site_hierarchy: id
+- name: timezone_settings
+  import_id_key:
+    join:
+    - site_hierarchy: id
+- name: sp_profile
+  import_id_key:
+    field: spProfileName
+- name: template
+  import_id_key:
+    field: name
+- name: template_version
+  import_id_key:
+    field: name
+- name: transit_network
+  import_id_key:
+    field: name
+- name: update_authentication_profile
+  import_id_key:
+    join:
+    - site_hierarchy: fabricId
+    - field: authenticationProfileName
+    sep: '#_#'
+- name: user
+  import_id_key:
+    group: users
+    key_field: username
+- name: vlanToSsids
+  import_id_key:
+    join:
+    - site_hierarchy: siteId
+- name: wireless_enterprise_ssid
+  import_id_key:
+    field: ssidName
+- name: wireless_interface
+  import_id_key:
+    field: interfaceName
+- name: wireless_profile
+  import_id_key:
+    field: wirelessProfileName
+- name: wireless_rf_profile
+  import_id_key:
+    field: rfProfileName

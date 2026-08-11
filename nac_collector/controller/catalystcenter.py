@@ -186,9 +186,8 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
 
         # License API returns a list of dictionaries
         elif isinstance(data, list):
-            endpoint_dict[endpoint["name"]].append(
-                {"data": data, "endpoint": new_endpoint}
-            )
+            entry = {"data": data, "endpoint": new_endpoint}
+            endpoint_dict[endpoint["name"]].append(entry)
         elif data and isinstance(data.get("response"), dict):
             response_data = data.get("response")
             if response_data:
@@ -198,14 +197,11 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
                         and self.mappings[endpoint["name"]] == k
                     ):
                         for i in v:
-                            endpoint_dict[endpoint["name"]].append(
-                                {
-                                    "data": i,
-                                    "endpoint": new_endpoint
-                                    + "/"
-                                    + self.get_id_value(i),
-                                }
-                            )
+                            child_entry = {
+                                "data": i,
+                                "endpoint": new_endpoint + "/" + self.get_id_value(i),
+                            }
+                            endpoint_dict[endpoint["name"]].append(child_entry)
                     else:
                         elem = {"data": v, "endpoint": new_endpoint, "name": k}
                         if id_ is not None:
@@ -213,19 +209,18 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
                         endpoint_dict[endpoint["name"]].append(elem)
 
         elif isinstance(data.get("response"), list):
-            endpoint_dict[endpoint["name"]].append(
-                {"data": data.get("response"), "endpoint": endpoint["endpoint"]}
-            )
+            response_list = data.get("response")
+            entry = {"data": response_list, "endpoint": endpoint["endpoint"]}
+            endpoint_dict[endpoint["name"]].append(entry)
         elif data and data.get("response"):
             response_items = data.get("response")
             if response_items:
                 for i in response_items:
-                    endpoint_dict[endpoint["name"]].append(
-                        {
-                            "data": i,
-                            "endpoint": new_endpoint + "/" + self.get_id_value(i),
-                        }
-                    )
+                    item_entry = {
+                        "data": i,
+                        "endpoint": new_endpoint + "/" + self.get_id_value(i),
+                    }
+                    endpoint_dict[endpoint["name"]].append(item_entry)
 
         return endpoint_dict  # Return the processed endpoint dictionary
 
@@ -328,6 +323,7 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
             for r in results:
                 if r is not None:
                     final_dict.update(r)
+            self.attach_keyed_import_ids(final_dict, endpoints)
             return final_dict
 
     @staticmethod
@@ -354,6 +350,450 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
         Strip whitespace and non-printable characters from an ID value.
         """
         return re.sub(r"[\x00-\x1f\x7f-\x9f\s]", "", value)
+
+    @staticmethod
+    def build_terraform_import_ids(
+        endpoint: dict[str, Any],
+        obj: dict[str, Any],
+        parent_id: str | None,
+    ) -> list[str] | None:
+        """
+        Assemble the ordered Terraform import ID parts for a single resource
+        instance, following the pre-composed recipe shipped on the endpoint
+        as ``import_id_attributes`` (see github_repo_wrapper.py, which ports the
+        provider's ``ImportAttributes``).
+
+        Each recipe part self-describes its source:
+          - ``{"source": "parent"}`` -> the threaded parent id (``parent_id``),
+            i.e. the ``%v`` path segment (e.g. site_id for wireless_ssid).
+          - ``{"field": "<name>"}``  -> ``obj["<name>"]`` read from the collected
+            response body (query_param/reference-with-response-body attrs, and
+            the synthetic id part).
+
+        Returns:
+            list[str]: the ordered parts, joined with "," downstream by the
+                consumer to form the import ID.
+            None: if the endpoint has no ``import_id_attributes`` recipe
+                (``no_import`` resources), or a required part is missing.
+        """
+        recipe = endpoint.get("import_id_attributes")
+        if not recipe:
+            return None
+
+        parts: list[str] = []
+        for part in recipe:
+            if part.get("source") == "parent":
+                if parent_id is None:
+                    logger.warning(
+                        "Failed to generate terraform_import_ids for endpoint %s: "
+                        "missing parent id for 'source: parent' part",
+                        endpoint["name"],
+                    )
+                    return None
+                parts.append(CiscoClientCATALYSTCENTER._sanitize_id(str(parent_id)))
+                continue
+
+            field = part.get("field")
+            if field is None:
+                logger.warning(
+                    "Failed to generate terraform_import_ids for endpoint %s: "
+                    "malformed import_id_attributes part %s",
+                    endpoint["name"],
+                    part,
+                )
+                return None
+
+            value = obj.get(field)
+            if value is None:
+                logger.warning(
+                    "Failed to generate terraform_import_ids for endpoint %s: "
+                    "missing field '%s' in the response",
+                    endpoint["name"],
+                    field,
+                )
+                return None
+            parts.append(CiscoClientCATALYSTCENTER._sanitize_id(str(value)))
+
+        return parts
+
+    @classmethod
+    def _build_site_hierarchy_index(
+        cls, final_dict: dict[str, Any]
+    ) -> dict[str, str]:
+        """
+        Map every site UUID -> its ``nameHierarchy`` path (e.g.
+        ``Global/Poland/Krakow``). Built once from the collected ``site`` tree so
+        the keying post-pass can resolve a leaf's ``siteId``/``fabricId`` back to
+        the hierarchy string the Terraform plan indexes on.
+
+        The ``Global`` root carries ``nameHierarchy: None`` in the API, so its
+        hierarchy is synthesized as its own name (``Global``).
+        """
+        index: dict[str, str] = {}
+        for entry in final_dict.get("site", []):
+            leaves = entry.get("data")
+            if not isinstance(leaves, list):
+                continue
+            for leaf in leaves:
+                if not isinstance(leaf, dict):
+                    continue
+                site_id = leaf.get("id")
+                if site_id is None:
+                    continue
+                hierarchy = leaf.get("nameHierarchy")
+                if hierarchy is None and leaf.get("name") == "Global":
+                    hierarchy = "Global"
+                if hierarchy is not None:
+                    index[str(site_id)] = str(hierarchy)
+        return index
+
+    @classmethod
+    def _build_fabric_to_site_index(
+        cls, final_dict: dict[str, Any]
+    ) -> dict[str, str]:
+        """
+        Map every fabric UUID -> the site UUID it belongs to, from the collected
+        ``fabric_site`` leaves (``id`` = fabric uuid, ``siteId`` = site uuid).
+        Lets ``site_hierarchy`` resolve a ``fabricId`` by hopping fabric -> site
+        -> hierarchy.
+        """
+        index: dict[str, str] = {}
+        for entry in final_dict.get("fabric_site", []):
+            leaves = entry.get("data")
+            if not isinstance(leaves, list):
+                continue
+            for leaf in leaves:
+                if not isinstance(leaf, dict):
+                    continue
+                fabric_id = leaf.get("id")
+                site_id = leaf.get("siteId")
+                if fabric_id is not None and site_id is not None:
+                    index[str(fabric_id)] = str(site_id)
+        return index
+
+    @classmethod
+    def _build_device_hostname_index(
+        cls, final_dict: dict[str, Any]
+    ) -> dict[str, str]:
+        """
+        Map every network-device UUID -> its short hostname (the segment before
+        the first dot, e.g. ``BR10.cisco.eu`` -> ``BR10``), from the collected
+        ``network_devices`` leaves. Lets ``device_hostname`` resolve a leaf's
+        ``networkDeviceId`` to the name the Terraform plan indexes on.
+        """
+        index: dict[str, str] = {}
+        for entry in final_dict.get("network_devices", []):
+            leaves = entry.get("data")
+            if not isinstance(leaves, list):
+                continue
+            for leaf in leaves:
+                if not isinstance(leaf, dict):
+                    continue
+                dev_id = leaf.get("id")
+                hostname = leaf.get("hostname")
+                if dev_id is not None and hostname is not None:
+                    index[str(dev_id)] = str(hostname).split(".")[0]
+        return index
+
+    @staticmethod
+    def _group_wrapper_leaves(obj: dict[str, Any]) -> list[Any] | None:
+        """
+        Detect a lookup group-wrapper and return its nested leaf list.
+
+        Endpoints fetched via ``resources/lookups/catalystcenter.yaml`` (the
+        nested handoffs — layer2Handoffs, layer3Handoffs/ipTransits|sdaTransits)
+        are stored by ``fetch_data_alternate`` as a list of *group wrappers*, each
+        carrying the group key (``fabricId`` or ``siteId``) alongside the API
+        ``response`` nested under ``response`` or ``data``. The recipe fields
+        (``networkDeviceId``, ``fabricId``, ``id``) live on the *leaf*, not the
+        wrapper, so the consumer must descend one level before applying the recipe.
+
+        Returns the leaf list when ``obj`` looks like such a wrapper (a small dict
+        of exactly {group key(s)} + one nested list), else ``None`` for a flat leaf
+        (e.g. ``fabric_port_assignments``) that carries the recipe fields directly.
+        """
+        nested = None
+        for list_key in ("response", "data"):
+            val = obj.get(list_key)
+            if isinstance(val, list):
+                nested = val
+                break
+        if nested is None:
+            return None
+        # A genuine wrapper's only non-list keys are group keys (uuids), never the
+        # recipe fields. If the object itself carries recipe-shaped fields, treat it
+        # as a flat leaf instead.
+        if obj.get("networkDeviceId") is not None:
+            return None
+        return nested
+
+    @classmethod
+    def _resolve_key_part(
+        cls,
+        part: dict[str, Any],
+        leaf: dict[str, Any],
+        parent_id: str | None,
+        indices: dict[str, dict[str, str]],
+    ) -> str | None:
+        """
+        Resolve one ``import_id_key`` part to its natural-key string.
+
+        Supported source kinds:
+          - ``{"field": "<name>"}``        -> ``leaf["<name>"]`` verbatim.
+          - ``{"source": "parent"}``       -> the threaded ``parent_id``.
+          - ``{"site_hierarchy": "<f>"}``  -> resolve the uuid in ``leaf["<f>"]``
+            (a siteId, or a fabricId hopped via fabric->site) to its hierarchy
+            path (e.g. ``Global/Poland/Krakow``).
+          - ``{"device_hostname": "<f>"}`` -> resolve the network-device uuid in
+            ``leaf["<f>"]`` to its short hostname (e.g. ``BR10``).
+
+        Returns the resolved string, or ``None`` if a required source is missing
+        (the caller then omits the whole entry's key).
+        """
+        if "field" in part:
+            value = leaf.get(part["field"])
+            return None if value is None else str(value)
+        if part.get("source") == "parent":
+            return None if parent_id is None else str(parent_id)
+        if "site_hierarchy" in part:
+            uuid = leaf.get(part["site_hierarchy"])
+            if uuid is None:
+                # child entries carry the site id at entry level, not on the leaf
+                uuid = parent_id
+            if uuid is None:
+                return None
+            uuid = str(uuid)
+            site_index = indices["site_hierarchy"]
+            if uuid in site_index:
+                return site_index[uuid]
+            fabric_index = indices["fabric_to_site"]
+            site_id = fabric_index.get(uuid)
+            if site_id is not None and site_id in site_index:
+                return site_index[site_id]
+            return None
+        if "device_hostname" in part:
+            uuid = leaf.get(part["device_hostname"])
+            if uuid is None:
+                return None
+            return indices["device_hostname"].get(str(uuid))
+        return None
+
+    @classmethod
+    def _build_natural_key(
+        cls,
+        key_spec: dict[str, Any],
+        leaf: dict[str, Any],
+        parent_id: str | None,
+        indices: dict[str, dict[str, str]],
+    ) -> str | None:
+        """
+        Build the full natural key (the string the Terraform plan indexes on) for
+        one ``leaf``, following the endpoint's ``import_id_key`` spec.
+
+        ``{"field": ...}`` is the single-field shortcut; ``{"join": [parts...],
+        "sep": "..."}`` composes several resolved parts. Returns ``None`` (so the
+        entry's key is omitted) if any required part cannot be resolved.
+        """
+        if "join" in key_spec:
+            sep = key_spec.get("sep", ",")
+            resolved: list[str] = []
+            for part in key_spec["join"]:
+                value = cls._resolve_key_part(part, leaf, parent_id, indices)
+                if value is None:
+                    return None
+                resolved.append(value)
+            return sep.join(resolved)
+        return cls._resolve_key_part(key_spec, leaf, parent_id, indices)
+
+    @staticmethod
+    def _flatten_key_leaves(obj: Any) -> list[dict[str, Any]]:
+        """
+        Descend one collected ``data`` object to its importable leaf dicts.
+
+        Handles the three shapes the collector produces:
+          - a flat leaf dict carrying the recipe fields directly;
+          - a lookup group-wrapper (``{fabricId|siteId, response|data:[leaf,…]}``)
+            whose real leaves are one level down (nested handoffs);
+          - the ``template_version`` double-nest (``{templateId, data:[{name,
+            versionsInfo:[…]}]}``) whose importable leaf is the inner ``name``
+            object.
+        Returns the list of leaf dicts (possibly just ``[obj]``).
+        """
+        if not isinstance(obj, dict):
+            return []
+        leaves = CiscoClientCATALYSTCENTER._group_wrapper_leaves(obj)
+        if leaves is None:
+            return [obj]
+        flattened: list[dict[str, Any]] = []
+        for leaf in leaves:
+            if not isinstance(leaf, dict):
+                continue
+            inner = leaf.get("data")
+            if isinstance(inner, list) and inner and "templateId" in leaf:
+                flattened.extend(x for x in inner if isinstance(x, dict))
+            else:
+                flattened.append(leaf)
+        return flattened
+
+    @staticmethod
+    def _group_list_leaves(obj: Any, sub_field: str) -> list[dict[str, Any]]:
+        """
+        Expand one shared grouped-object response into the leaves of a sub-list.
+
+        The credential/role/user endpoints return a single object whose kinds are
+        parallel sub-lists (``cliCredential``, ``snmpV2cRead``, … / ``roles`` /
+        ``users``), each element carrying its own id + a human name the module
+        indexes on. A given terraform_type maps to exactly one sub-list, so the
+        keyed pass selects ``obj[sub_field]`` and treats each element as a leaf
+        (the recipe reads its ``id``/``roleId``/``userId``; the key reads its
+        ``description``/``role``/``username``). Returns ``[]`` when the sub-list
+        is absent or empty.
+        """
+        if not isinstance(obj, dict):
+            return []
+        sub = obj.get(sub_field)
+        if not isinstance(sub, list):
+            return []
+        return [x for x in sub if isinstance(x, dict)]
+
+
+    @staticmethod
+    def _validate_key_spec_dialect(
+        name: str | None, key_spec: Any
+    ) -> None:
+        """
+        Enforce that an ``import_id_key`` uses exactly ONE dialect.
+
+        The three dialects are mutually exclusive:
+          - ``{group: <subListField>, key_field: ...}``  (grouped sub-list)
+          - ``{join: [parts...], sep: ...}``             (composite key)
+          - ``{field: ...}``                             (single-field shortcut)
+
+        ``attach_keyed_import_ids`` checks ``group`` first and returns early, so a
+        spec that mixes ``group`` with ``join``/``field`` would silently ignore the
+        latter. Raise loudly instead -- a mixed spec is always an authoring error.
+        """
+        if not isinstance(key_spec, dict):
+            raise ValueError(
+                f"import_id_key for endpoint {name!r} must be a mapping, "
+                f"got {type(key_spec).__name__}"
+            )
+        present = [d for d in ("group", "join", "field") if d in key_spec]
+        if len(present) > 1:
+            raise ValueError(
+                f"import_id_key for endpoint {name!r} mixes mutually exclusive "
+                f"dialects {present}; use exactly one of group/join/field"
+            )
+
+    def attach_keyed_import_ids(
+        self, final_dict: dict[str, Any], endpoints: list[dict[str, Any]]
+    ) -> None:
+        """
+        Post-pass: replace every entry's ``terraform_import_ids`` with a dict
+        keyed by the natural key the Terraform plan indexes on
+        (``change["index"]``), mapping to the already-comma-joined composite
+        import id::
+
+            entry["terraform_import_ids"] = { "<index>": "<joined,id>", … }
+
+        Runs once after all endpoints are collected so the cross-endpoint joins
+        (device hostname, site hierarchy) can see ``network_devices`` and the
+        ``site`` tree. Entries whose endpoint has no ``import_id_key`` (fixed
+        singletons, ``no_import`` resources) are left untouched.
+        """
+        indices = {
+            "site_hierarchy": self._build_site_hierarchy_index(final_dict),
+            "fabric_to_site": self._build_fabric_to_site_index(final_dict),
+            "device_hostname": self._build_device_hostname_index(final_dict),
+        }
+
+        def _key_entry(endpoint: dict[str, Any], entry: dict[str, Any]) -> None:
+            """Attach the keyed ``terraform_import_ids`` dict to one entry."""
+            key_spec = endpoint.get("import_id_key")
+            if key_spec is None or not isinstance(entry, dict):
+                return
+            self._validate_key_spec_dialect(endpoint.get("name"), key_spec)
+            parent_id = entry.get("id")
+            keyed: dict[str, str] = {}
+            objs = entry.get("data")
+            obj_list = objs if isinstance(objs, list) else [objs]
+
+            # Group C -- grouped/nested object: one shared response expands into
+            # the leaves of a single sub-list, each keyed on ``key_field`` (its
+            # own name) and importing its own id via the recipe. No cross-endpoint
+            # join, so the key is the element's ``key_field`` verbatim.
+            group = key_spec.get("group") if isinstance(key_spec, dict) else None
+            if group is not None:
+                key_field = key_spec["key_field"]
+                for obj in obj_list:
+                    for leaf in self._group_list_leaves(obj, group):
+                        name = leaf.get(key_field)
+                        if name is None:
+                            continue
+                        parts = self.build_terraform_import_ids(
+                            endpoint, leaf, parent_id
+                        )
+                        if parts is None:
+                            continue
+                        keyed[str(name)] = ",".join(parts)
+                entry["terraform_import_ids"] = keyed
+                return
+
+            # Group B -- wrapper-keyed types (assign_credentials, fabric_device,
+            # vlanToSsids) carry the key/id field (``siteId``) on the *wrapper*;
+            # their inner ``data``/``response`` leaves do not, so descent must be
+            # suppressed and the wrapper itself used as the leaf.
+            no_descend = bool(endpoint.get("import_id_no_descend"))
+            for obj in obj_list:
+                leaves = [obj] if no_descend else self._flatten_key_leaves(obj)
+                for leaf in leaves:
+                    key = self._build_natural_key(
+                        key_spec, leaf, parent_id, indices
+                    )
+                    if key is None:
+                        continue
+                    parts = self.build_terraform_import_ids(
+                        endpoint, leaf, parent_id
+                    )
+                    if parts is None:
+                        continue
+                    keyed[key] = ",".join(parts)
+            entry["terraform_import_ids"] = keyed
+
+        def _collect_child_entries(
+            parent_entries: list[Any], child_name: str
+        ) -> list[dict[str, Any]]:
+            """
+            Flatten a child endpoint's entries out of the parent entries'
+            ``children`` bucket. Child data is stored as a list of lists of entry
+            dicts (one inner list per parent instance), never at the top level of
+            ``final_dict``.
+            """
+            out: list[dict[str, Any]] = []
+            for parent in parent_entries:
+                if not isinstance(parent, dict):
+                    continue
+                bucket = parent.get("children", {}).get(child_name)
+                if not isinstance(bucket, list):
+                    continue
+                for group in bucket:
+                    if isinstance(group, list):
+                        out.extend(x for x in group if isinstance(x, dict))
+                    elif isinstance(group, dict):
+                        out.append(group)
+            return out
+
+        def _walk(
+            endpoint: dict[str, Any], entries: list[Any]
+        ) -> None:
+            for entry in entries:
+                _key_entry(endpoint, entry)
+            for child in endpoint.get("children", []):
+                child_entries = _collect_child_entries(entries, child["name"])
+                _walk(child, child_entries)
+
+        for endpoint in endpoints:
+            _walk(endpoint, final_dict.get(endpoint["name"], []))
 
     def process_endpoint(self, endpoint: dict[str, Any]) -> dict[str, Any] | None:
         with self.lock:
