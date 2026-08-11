@@ -417,9 +417,7 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
         return parts
 
     @classmethod
-    def _build_site_hierarchy_index(
-        cls, final_dict: dict[str, Any]
-    ) -> dict[str, str]:
+    def _build_site_hierarchy_index(cls, final_dict: dict[str, Any]) -> dict[str, str]:
         """
         Map every site UUID -> its ``nameHierarchy`` path (e.g.
         ``Global/Poland/Krakow``). Built once from the collected ``site`` tree so
@@ -448,9 +446,7 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
         return index
 
     @classmethod
-    def _build_fabric_to_site_index(
-        cls, final_dict: dict[str, Any]
-    ) -> dict[str, str]:
+    def _build_fabric_to_site_index(cls, final_dict: dict[str, Any]) -> dict[str, str]:
         """
         Map every fabric UUID -> the site UUID it belongs to, from the collected
         ``fabric_site`` leaves (``id`` = fabric uuid, ``siteId`` = site uuid).
@@ -472,9 +468,7 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
         return index
 
     @classmethod
-    def _build_device_hostname_index(
-        cls, final_dict: dict[str, Any]
-    ) -> dict[str, str]:
+    def _build_device_hostname_index(cls, final_dict: dict[str, Any]) -> dict[str, str]:
         """
         Map every network-device UUID -> its short hostname (the segment before
         the first dot, e.g. ``BR10.cisco.eu`` -> ``BR10``), from the collected
@@ -595,7 +589,7 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
         entry's key is omitted) if any required part cannot be resolved.
         """
         if "join" in key_spec:
-            sep = key_spec.get("sep", ",")
+            sep: str = key_spec.get("sep", ",")
             resolved: list[str] = []
             for part in key_spec["join"]:
                 value = cls._resolve_key_part(part, leaf, parent_id, indices)
@@ -656,11 +650,8 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
             return []
         return [x for x in sub if isinstance(x, dict)]
 
-
     @staticmethod
-    def _validate_key_spec_dialect(
-        name: str | None, key_spec: Any
-    ) -> None:
+    def _validate_key_spec_dialect(name: str | None, key_spec: Any) -> None:
         """
         Enforce that an ``import_id_key`` uses exactly ONE dialect.
 
@@ -745,16 +736,17 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
             # suppressed and the wrapper itself used as the leaf.
             no_descend = bool(endpoint.get("import_id_no_descend"))
             for obj in obj_list:
-                leaves = [obj] if no_descend else self._flatten_key_leaves(obj)
-                for leaf in leaves:
-                    key = self._build_natural_key(
-                        key_spec, leaf, parent_id, indices
+                if no_descend:
+                    leaves: list[dict[str, Any]] = (
+                        [obj] if isinstance(obj, dict) else []
                     )
+                else:
+                    leaves = self._flatten_key_leaves(obj)
+                for leaf in leaves:
+                    key = self._build_natural_key(key_spec, leaf, parent_id, indices)
                     if key is None:
                         continue
-                    parts = self.build_terraform_import_ids(
-                        endpoint, leaf, parent_id
-                    )
+                    parts = self.build_terraform_import_ids(endpoint, leaf, parent_id)
                     if parts is None:
                         continue
                     keyed[key] = ",".join(parts)
@@ -783,9 +775,7 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
                         out.append(group)
             return out
 
-        def _walk(
-            endpoint: dict[str, Any], entries: list[Any]
-        ) -> None:
+        def _walk(endpoint: dict[str, Any], entries: list[Any]) -> None:
             for entry in entries:
                 _key_entry(endpoint, entry)
             for child in endpoint.get("children", []):
