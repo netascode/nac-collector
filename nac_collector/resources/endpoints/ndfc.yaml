@@ -41,7 +41,7 @@
     - name: AccessPortChannelSetting
       endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface/pti/nvpairs?serialNumber={{serialNumber}}&interfaceName={{ifName}}&policyName=int_port_channel_access_host
   - name: RoutedEthernetPorts
-    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface?filter=mode%3D%3Drouted%26%26sysName%3D%3D{{sysName}}%26%26ipAddress%21%3Dnull%26%26ifType%3D%3DINTERFACE_ETHERNET
+    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface?filter=mode%3D%3Drouted%26%26sysName%3D%3D{{sysName}}%26%26ipAddress%21%3Dnull%26%26ifType%3D%3DINTERFACE_ETHERNET%26%26underlayPolicies%21%3Dint_fabric_num_11_1
     children:
     - name: RoutedInterfaceSetting
       endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface/pti/nvpairs?serialNumber={{serialNumber}}&interfaceName={{ifName}}&policyName=int_routed_host

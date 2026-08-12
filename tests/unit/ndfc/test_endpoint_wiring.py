@@ -51,3 +51,15 @@ def test_vpc_interfaces_and_serial_interfaces_do_not_overlap():
         CiscoClientNDFC.VPC_PORT_CHANNEL_INTERFACE_TYPES
     )
     assert not overlap, f"Interface types must be disjoint, but both contain: {overlap}"
+
+
+def test_routed_ethernet_ports_excludes_numbered_fabric_underlay_links():
+    """RoutedEthernetPorts must exclude interfaces carrying the auto-generated
+    numbered fabric underlay link policy (int_fabric_num_11_1).
+    """
+    entry = ENDPOINT_BY_INTERFACE_TYPE.get("RoutedEthernetPorts")
+    assert entry is not None, "RoutedEthernetPorts not wired into Discovered_Switches"
+    assert "underlayPolicies%21%3Dint_fabric_num_11_1" in entry["endpoint"], (
+        "RoutedEthernetPorts endpoint must exclude underlayPolicies=="
+        "int_fabric_num_11_1 (numbered fabric underlay p2p links)"
+    )
