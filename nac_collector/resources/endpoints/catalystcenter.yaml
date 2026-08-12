@@ -404,6 +404,8 @@
 - name: wireless_cleanair_configuration
   import_id_attributes:
   - field: id
+  import_id_key:
+    field: designName
   endpoint: /dna/intent/api/v1/featureTemplates/wireless/cleanAirConfigurations
 - name: wireless_controller_primary_managed_ap_locations
   endpoint: /dna/intent/api/v1/wirelessControllers/%v/primaryManagedApLocations
@@ -450,4 +452,6 @@
 - name: wireless_rrm_fra_configuration
   import_id_attributes:
   - field: id
+  import_id_key:
+    field: designName
   endpoint: /dna/intent/api/v1/featureTemplates/wireless/rrmFraConfigurations

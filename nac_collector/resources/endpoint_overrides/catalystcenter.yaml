@@ -339,6 +339,9 @@ import_ids:
   import_id_key:
     join:
     - site_hierarchy: siteId
+- name: wireless_cleanair_configuration
+  import_id_key:
+    field: designName
 - name: wireless_enterprise_ssid
   import_id_key:
     field: ssidName
@@ -351,3 +354,6 @@ import_ids:
 - name: wireless_rf_profile
   import_id_key:
     field: rfProfileName
+- name: wireless_rrm_fra_configuration
+  import_id_key:
+    field: designName
