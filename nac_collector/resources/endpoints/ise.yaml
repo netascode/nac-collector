@@ -108,6 +108,8 @@
   endpoint: /ers/config/networkdevice
 - name: network_device_group
   endpoint: /ers/config/networkdevicegroup
+- name: profiler_profile
+  endpoint: /ers/config/profilerprofile
 - name: repository
   endpoint: /api/v1/repository
 - name: sxp_domain_filter
