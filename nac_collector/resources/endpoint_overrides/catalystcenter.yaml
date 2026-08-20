@@ -100,6 +100,15 @@ extra_endpoints:
 - name: fabric_multicast_virtual_network
   endpoint: /dna/intent/api/v1/sda/multicast/virtualNetworks
 
+- name: dot11be_profile
+  endpoint: /dna/intent/api/v1/wirelessSettings/dot11beProfiles
+
+- name: extranet_policy
+  endpoint: /dna/intent/api/v1/sda/extranetPolicies
+
+- name: wireless_feature_template_summary
+  endpoint: /dna/intent/api/v1/featureTemplates/wireless/summary
+
 # Endpoint overrides format:
 # A flat list of endpoints (no tree with "children").
 #   "name" refers to an endpoint anywhere in the main endpoint tree.

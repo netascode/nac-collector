@@ -2,6 +2,10 @@
   endpoint: /dna/intent/api/v1/wirelessSettings/anchorGroups
 - name: anycast_gateway
   endpoint: /dna/intent/api/v1/sda/anycastGateways
+- name: dot11be_profile
+  endpoint: /dna/intent/api/v1/wirelessSettings/dot11beProfiles
+- name: extranet_policy
+  endpoint: /dna/intent/api/v1/sda/extranetPolicies
 - name: area
   endpoint: /dna/intent/api/v2/site
 - name: assign_credentials
@@ -165,6 +169,8 @@
     /dna/intent/api/v1/wirelessControllers/%v/secondaryManagedApLocations
 - name: wireless_enterprise_ssid
   endpoint: /dna/intent/api/v1/enterprise-ssid
+- name: wireless_feature_template_summary
+  endpoint: /dna/intent/api/v1/featureTemplates/wireless/summary
 - name: wireless_interface
   endpoint: /dna/intent/api/v1/wirelessSettings/interfaces
 - name: wireless_preauth_acl
