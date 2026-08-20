@@ -261,6 +261,17 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
                     for tpl in el.get("templates", [])
                     if isinstance(el, dict)
                 ]
+        summary_type = self.id_lookup.get(endpoint.get("endpoint", ""), {}).get(
+            "summary_type"
+        )
+        if summary_type and isinstance(look_data, list):
+            look_data = [
+                inst
+                for group in look_data
+                if isinstance(group, dict) and group.get("type") == summary_type
+                for inst in group.get("instances", [])
+                if isinstance(inst, dict) and not inst.get("systemTemplate")
+            ]
         endpoint_key = endpoint.get("endpoint", "")
         if endpoint_key in self.id_lookup:
             source_key = self.id_lookup[endpoint_key]["source_key"]

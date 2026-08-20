@@ -73,4 +73,16 @@
   source_key: id
   target_endpoint: /dna/intent/api/v1/wirelessControllers/%v/secondaryManagedApLocations
   target_key: deviceId
+- endpoint: /dna/intent/api/v1/featureTemplates/wireless/cleanAirConfigurations
+  source_endpoint: /dna/intent/api/v1/featureTemplates/wireless/summary
+  source_key: id
+  summary_type: CLEANAIR_CONFIGURATION
+  target_endpoint: /dna/intent/api/v1/featureTemplates/wireless/cleanAirConfigurations/%v
+  target_key: id
+- endpoint: /dna/intent/api/v1/featureTemplates/wireless/rrmFraConfigurations
+  source_endpoint: /dna/intent/api/v1/featureTemplates/wireless/summary
+  source_key: id
+  summary_type: RRM_FRA_CONFIGURATION
+  target_endpoint: /dna/intent/api/v1/featureTemplates/wireless/rrmFraConfigurations/%v
+  target_key: id
 
