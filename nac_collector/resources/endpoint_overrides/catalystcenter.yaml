@@ -109,6 +109,9 @@ extra_endpoints:
 - name: wireless_feature_template_summary
   endpoint: /dna/intent/api/v1/featureTemplates/wireless/summary
 
+- name: ap_profile
+  endpoint: /dna/intent/api/v1/wirelessSettings/apProfiles
+
 # Endpoint overrides format:
 # A flat list of endpoints (no tree with "children").
 #   "name" refers to an endpoint anywhere in the main endpoint tree.

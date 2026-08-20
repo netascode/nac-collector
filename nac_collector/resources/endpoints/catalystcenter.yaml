@@ -2,6 +2,8 @@
   endpoint: /dna/intent/api/v1/wirelessSettings/anchorGroups
 - name: anycast_gateway
   endpoint: /dna/intent/api/v1/sda/anycastGateways
+- name: ap_profile
+  endpoint: /dna/intent/api/v1/wirelessSettings/apProfiles
 - name: dot11be_profile
   endpoint: /dna/intent/api/v1/wirelessSettings/dot11beProfiles
 - name: extranet_policy
