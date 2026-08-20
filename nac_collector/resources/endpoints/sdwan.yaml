@@ -110,6 +110,8 @@
   children:
   - name: service_dhcp_server
     endpoint: /dhcp-server
+  - name: service_dual_router_ha
+    endpoint: /dual-router-ha
   - name: service_ipv4_acl
     endpoint: /ipv4-acl
   - name: service_ipv6_acl
