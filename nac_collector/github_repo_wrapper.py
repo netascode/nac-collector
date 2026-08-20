@@ -162,6 +162,13 @@ class GithubRepoWrapper:
                                     id_name = self.get_id_attr_name(data)
                                     if has_own_id and id_name is not None:
                                         entry["id_name"] = id_name
+                                if self.solution == "catalystcenter":
+                                    recipe = self.catc_import_id_attributes(data)
+                                    if recipe is not None:
+                                        entry["import_id_attributes"] = recipe
+                                    key = self.catc_import_id_key(data)
+                                    if key is not None:
+                                        entry["import_id_key"] = key
                                 endpoints_list.append(entry)
 
                     # for SDWAN feature_templates
@@ -231,6 +238,118 @@ class GithubRepoWrapper:
             return None
 
         return id_name if isinstance(id_name, str) else None
+
+    def catc_import_id_attributes(
+        self, provider_definition: dict[str, Any]
+    ) -> list[dict[str, str]] | None:
+        """
+        Compose the ordered Terraform import-ID recipe for a Catalyst Center
+        resource, porting the provider's ``ImportAttributes`` (gen/generator.go).
+
+        ``ImportAttributes`` keeps every top-level attribute flagged
+        ``reference | query_param | get_query_param | id`` **in YAML order**, then
+        appends a synthetic ``id`` **unless** ``id_from_attribute`` or
+        ``import_no_id`` is set. Resources flagged ``no_import`` are skipped
+        entirely (no import.sh is generated for them).
+
+        For each kept attribute this records where the collector must read the
+        value, so the runtime consumer never re-derives it:
+          - ``query_param`` / ``get_query_param`` -> ``{"field": <response_model_name
+            or model_name>}`` (value is in the response body).
+          - ``reference`` with a ``response_model_name`` -> ``{"field":
+            <response_model_name>}`` (value is in the response body, e.g.
+            template.project_id -> projectId).
+          - ``reference`` without a ``response_model_name`` -> ``{"source":
+            "parent"}`` (the ``%v`` path segment, threaded as the parent id).
+          - plain ``id`` attribute -> ``{"field": <response_model_name or
+            model_name>}``.
+          - the synthetic id part -> ``{"field": <id_from_query_path_attribute or
+            "id">}`` (read from the response body).
+
+        Returns:
+            list[dict]: the ordered recipe parts.
+            None: if the resource is ``no_import`` (emit no recipe key), or the
+                recipe would be empty.
+        """
+        if provider_definition.get("no_import"):
+            return None
+
+        recipe: list[dict[str, str]] = []
+        for attr in provider_definition.get("attributes", []):
+            is_query = attr.get("query_param") or attr.get("get_query_param")
+            is_reference = attr.get("reference")
+            is_id = attr.get("id")
+            if not (is_query or is_reference or is_id):
+                continue
+
+            if is_query:
+                field = attr.get("response_model_name") or attr.get("model_name")
+                if isinstance(field, str):
+                    recipe.append({"field": field})
+            elif is_reference:
+                response_model_name = attr.get("response_model_name")
+                if isinstance(response_model_name, str):
+                    recipe.append({"field": response_model_name})
+                else:
+                    recipe.append({"source": "parent"})
+            else:  # plain id attribute (value lives in the response body)
+                field = attr.get("response_model_name") or attr.get("model_name")
+                if isinstance(field, str):
+                    recipe.append({"field": field})
+
+        # Synthetic id appended unless suppressed (mirrors ImportAttributes).
+        if not provider_definition.get("id_from_attribute") and not (
+            provider_definition.get("import_no_id")
+        ):
+            id_field = provider_definition.get("id_from_query_path_attribute") or "id"
+            recipe.append({"field": id_field})
+
+        return recipe or None
+
+    def catc_import_id_key(
+        self, provider_definition: dict[str, Any]
+    ) -> dict[str, str] | None:
+        """
+        Derive the natural *key* the terraform plan indexes on (``import_id_key``)
+        from the provider definition.
+
+        The provider flags exactly the identifying attribute with ``match_id:
+        true`` -- the field it uses to match a config object to a live one. That is
+        precisely the natural key ``change["index"]`` carries in the plan, so a
+        definition with a **single** ``match_id`` attribute yields
+        ``{"field": <that attr>}``. The field name is resolved the same way the
+        collector reads the response body:
+        ``response_model_name`` -> ``fallback_response_model_name`` ->
+        ``model_name`` (e.g. ip_pool's ``name`` / ``ipPoolName``).
+
+        Returns ``None`` -- leaving the key to the ``import_ids:`` override section
+        -- when the resource is ``no_import``, has no ``match_id`` attribute, has
+        **more than one** (a compound key the provider can express but the plain
+        ``{field}`` recipe cannot), or the sole ``match_id`` attribute exposes no
+        usable body field name. Those are the hierarchy / grouped / compound recipes
+        the provider cannot express as a single field.
+        """
+        if provider_definition.get("no_import"):
+            return None
+
+        matches = [
+            attr
+            for attr in provider_definition.get("attributes", [])
+            if attr.get("match_id")
+        ]
+        if len(matches) != 1:
+            return None
+
+        attr = matches[0]
+        field = (
+            attr.get("response_model_name")
+            or attr.get("fallback_response_model_name")
+            or attr.get("model_name")
+        )
+        if not isinstance(field, str):
+            return None
+
+        return {"field": field}
 
     def parent_children(
         self, endpoints_list: list[dict[str, str]]
@@ -485,6 +604,10 @@ class GithubRepoWrapper:
             endpoints, overrides_config.get("extra_endpoints", [])
         )
         self.apply_overrides(endpoints, overrides_config.get("overrides", []))
+        # Import-ID key recipes live in their own section so the whole keyed-import
+        # layer is authored (and audited) in one place, and re-applied on every
+        # regeneration instead of being hand-edited into the generated file.
+        self.apply_import_ids(endpoints, overrides_config.get("import_ids", []))
 
     def remove_endpoints(
         self,
@@ -577,3 +700,43 @@ class GithubRepoWrapper:
             self.move_endpoint_to_parent(
                 root_endpoints, endpoints, endpoint, new_parent_path
             )
+
+    def apply_import_ids(
+        self,
+        endpoints: list[dict[str, Any]],
+        import_ids: list[dict[str, Any]],
+    ) -> None:
+        """
+        Merge ``import_id_key`` recipes from the override file's ``import_ids:``
+        section onto the (regenerated) endpoint tree, matched by ``name``.
+
+        Recurses into ``children`` so nested endpoints (e.g. the ``site`` settings
+        singletons) are reached. Each entry is ``{"name": <endpoint name>,
+        "import_id_key": <recipe>}``; any keys other than ``name`` are copied onto
+        the matched endpoint (so an entry may also override ``import_id_attributes``
+        if ever needed). Endpoints not named in the section are left untouched, and
+        an absent/empty section is a no-op -- keeping the change backward compatible.
+        """
+        if not import_ids:
+            return
+
+        for endpoint in endpoints:
+            matches = [
+                entry for entry in import_ids if entry["name"] == endpoint["name"]
+            ]
+            if len(matches) > 1:
+                logger.warning(
+                    "import_ids override lists %d entries named %r; using the "
+                    "first and ignoring %d duplicate(s)",
+                    len(matches),
+                    endpoint["name"],
+                    len(matches) - 1,
+                )
+            if matches:
+                spec = matches[0]
+                for key, value in spec.items():
+                    if key == "name":
+                        continue
+                    endpoint[key] = value
+
+            self.apply_import_ids(endpoint.get("children", []), import_ids)
