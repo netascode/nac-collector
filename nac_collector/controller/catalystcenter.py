@@ -242,14 +242,23 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
         if not endpoint_key or endpoint_key not in self.id_lookup:
             return None
 
-        id_lookup_data = self.fetch_data_pagination(
-            self.id_lookup[endpoint_key]["source_endpoint"]
+        source_endpoints = [self.id_lookup[endpoint_key]["source_endpoint"]]
+        source_endpoints.extend(
+            self.id_lookup[endpoint_key].get("additional_source_endpoints", [])
         )
-        if id_lookup_data is None:
-            return None
-        if isinstance(id_lookup_data, dict) and "response" in id_lookup_data:
-            look_data = id_lookup_data["response"]
-        else:
+        look_data: Any = None
+        for source_endpoint in source_endpoints:
+            id_lookup_data = self.fetch_data_pagination(source_endpoint)
+            if not (
+                isinstance(id_lookup_data, dict) and "response" in id_lookup_data
+            ):
+                continue
+            response = id_lookup_data["response"]
+            if look_data is None:
+                look_data = response
+            elif isinstance(look_data, list) and isinstance(response, list):
+                look_data.extend(response)
+        if look_data is None:
             return None
         if "/template-programmer/template/version" in endpoint.get(
             "endpoint", ""
