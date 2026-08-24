@@ -15,12 +15,9 @@ remove_endpoints:
 - fabric_multicast_virtual_networks
 - provision_devices
 - provision_device
-- ap_profile
 - apply_pending_fabric_events
 - device
 - discovery
-- dot11be_profile
-- extranet_policy
 - fabric_multicast_virtual_network
 - global_credential_netconf
 - integrate_ise
@@ -99,6 +96,9 @@ extra_endpoints:
 
 - name: fabric_multicast_virtual_network
   endpoint: /dna/intent/api/v1/sda/multicast/virtualNetworks
+
+- name: wireless_feature_template_summary
+  endpoint: /dna/intent/api/v1/featureTemplates/wireless/summary
 
 # Endpoint overrides format:
 # A flat list of endpoints (no tree with "children").
