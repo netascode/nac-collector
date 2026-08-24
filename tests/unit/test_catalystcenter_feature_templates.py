@@ -44,18 +44,22 @@ class TestFeatureTemplateAlternateFetch:
             ]
         }
         detail_a = {
-            "response": {
-                "id": "id-a",
-                "designName": "template-a",
-                "featureAttributes": {"fraStatus": True},
-            }
+            "response": [
+                {
+                    "id": "id-a",
+                    "designName": "template-a",
+                    "featureAttributes": {"fraStatus": True},
+                }
+            ]
         }
         detail_b = {
-            "response": {
-                "id": "id-b",
-                "designName": "template-b",
-                "featureAttributes": {"fraStatus": False},
-            }
+            "response": [
+                {
+                    "id": "id-b",
+                    "designName": "template-b",
+                    "featureAttributes": {"fraStatus": False},
+                }
+            ]
         }
 
         with patch.object(

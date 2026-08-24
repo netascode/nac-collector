@@ -79,10 +79,12 @@
   source_key: id
   target_endpoint: /dna/intent/api/v1/featureTemplates/wireless/cleanAirConfigurations/%v
   unwrap_single_response: true
+  emit_per_item: true
 - endpoint: /dna/intent/api/v1/featureTemplates/wireless/rrmFraConfigurations
   source_endpoint: /dna/intent/api/v1/featureTemplates/wireless/summary?type=RRM_FRA_CONFIGURATION&limit=25
   source_nested_key: instances
   source_key: id
   target_endpoint: /dna/intent/api/v1/featureTemplates/wireless/rrmFraConfigurations/%v
   unwrap_single_response: true
+  emit_per_item: true
 

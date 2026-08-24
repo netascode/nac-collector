@@ -212,11 +212,11 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
                             elem["id"] = id_
                         endpoint_dict[endpoint["name"]].append(elem)
 
-        elif isinstance(data.get("response"), list):
-            response_list = data.get("response")
+        elif isinstance(data, dict) and isinstance(data.get("response"), list):
+            response_list = data["response"]
+            lookup_config = self.id_lookup.get(endpoint_key, {}) if endpoint_key else {}
             if (
-                endpoint_key
-                and endpoint_key in self.id_lookup
+                lookup_config.get("emit_per_item")
                 and response_list
                 and all(isinstance(i, dict) for i in response_list)
             ):
