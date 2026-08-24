@@ -249,9 +249,7 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
         look_data: Any = None
         for source_endpoint in source_endpoints:
             id_lookup_data = self.fetch_data_pagination(source_endpoint)
-            if not (
-                isinstance(id_lookup_data, dict) and "response" in id_lookup_data
-            ):
+            if not (isinstance(id_lookup_data, dict) and "response" in id_lookup_data):
                 continue
             response = id_lookup_data["response"]
             if look_data is None:
