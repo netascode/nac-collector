@@ -100,7 +100,11 @@ class GithubRepoWrapper:
         endpoints = []
         endpoints_list = []
 
-        for root, _, files in os.walk(definitions_dir):
+        for root, dirs, files in os.walk(definitions_dir):
+            # os.walk (os.listdir) yields directories in arbitrary order.
+            # Sort in place so the traversal itself is deterministic
+            # (files are sorted below).
+            dirs.sort()
             # Iterate over all endpoints
             with Progress(
                 SpinnerColumn(),
@@ -316,6 +320,13 @@ class GithubRepoWrapper:
         def build_hierarchy(node: dict[str, Any]) -> list[dict[str, Any]]:
             """
             Recursively build the YAML structure from the hierarchical dictionary.
+
+            Every level is sorted by name. `parent_map` is keyed by endpoint URL,
+            so iterating it in insertion order groups endpoints sharing a URL
+            together and makes the result depend on `os.walk` order.
+            Sorting by name yields a canonical order and establishes the invariant
+            that `add_endpoint_to_list` relies on: endpoint lists are sorted by
+            name, so `bisect.insort` finds the correct insertion point.
             """
             output = []
             for part, content in node.items():
@@ -325,6 +336,7 @@ class GithubRepoWrapper:
                     if content["children"]:
                         entry["children"] = build_hierarchy(content["children"])
                     output.append(entry)
+            output.sort(key=lambda e: e["name"])
             return output
 
         # Build the final list from the parent_map
