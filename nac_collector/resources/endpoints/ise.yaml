@@ -112,8 +112,14 @@
   endpoint: /ers/config/profilerprofile
 - name: repository
   endpoint: /api/v1/repository
+- name: sxp_connection
+  endpoint: /ers/config/sxpconnections
 - name: sxp_domain_filter
   endpoint: /ers/config/filterpolicy
+- name: sxp_local_binding
+  endpoint: /ers/config/sxplocalbindings
+- name: sxp_vpn
+  endpoint: /ers/config/sxpvpns
 - name: tacacs_command_set
   endpoint: /ers/config/tacacscommandsets
 - name: tacacs_profile
