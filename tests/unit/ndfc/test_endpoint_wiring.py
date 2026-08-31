@@ -63,3 +63,45 @@ def test_routed_ethernet_ports_excludes_numbered_fabric_underlay_links():
         "RoutedEthernetPorts endpoint must exclude underlayPolicies=="
         "int_fabric_num_11_1 (numbered fabric underlay p2p links)"
     )
+
+
+# Port-channel member interface types: parent-endpoint filter template ->
+# child nvpairs policyName. Members carry their own per-member policy whose
+# CONF holds the physical-port freeform (e.g. "no cdp enable").
+MEMBER_INTERFACE_POLICIES = {
+    "TrunkPortChannelMembers": "int_port_channel_trunk_member_11_1",
+    "vPCTrunkPortChannelMembers": "int_vpc_trunk_po_member_11_1",
+    "AccessPortChannelMembers": "int_port_channel_access_member_11_1",
+    "vPCAccessPortChannelMembers": "int_vpc_access_po_member_11_1",
+}
+
+
+@pytest.mark.parametrize(
+    ("interface_type", "policy_name"), sorted(MEMBER_INTERFACE_POLICIES.items())
+)
+def test_port_channel_member_endpoints_wired_to_member_policy(
+    interface_type, policy_name
+):
+    """Each member interface type must filter its parent globalInterface query on
+    the member policy template and fetch that same policy's nvpairs as its child."""
+    entry = ENDPOINT_BY_INTERFACE_TYPE.get(interface_type)
+    assert entry is not None, f"{interface_type} not wired into Discovered_Switches"
+
+    # Parent endpoint filters on underlayPolicies==<member policy> (URL-encoded ==).
+    assert f"underlayPolicies%3D%3D{policy_name}" in entry["endpoint"], (
+        f"{interface_type} parent endpoint must filter on underlayPolicies=={policy_name}"
+    )
+
+    # Child nvpairs endpoint must request the same member policy by name.
+    child_urls = _child_urls_for_interface_type(interface_type)
+    assert all(f"policyName={policy_name}" in url for url in child_urls), (
+        f"{interface_type} child nvpairs must use policyName={policy_name}"
+    )
+
+
+def test_port_channel_member_types_are_serial_based():
+    """Member policies use a single serialNumber in their nvpairs endpoint, so all
+    member interface types must be registered as serial-based (not vpcEntityId)."""
+    for interface_type in MEMBER_INTERFACE_POLICIES:
+        assert interface_type in CiscoClientNDFC.SERIAL_INTERFACE_TYPES
+        assert interface_type not in CiscoClientNDFC.VPC_PORT_CHANNEL_INTERFACE_TYPES
