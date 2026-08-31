@@ -27,10 +27,10 @@ class CiscoClientNDFC(CiscoClientController):
     # 1. A 'vpcEntityId' field with format "serial1~serial2~vpcX"
     # 2. Children endpoints defined in YAML configuration
     # 3. The same processing pattern for child endpoints like vPCInterfaceSetting
-    PORT_CHANNEL_INTERFACE_TYPES = [
-        "TrunkPort-Channel",
-        "AccessPort-Channel",
-        # Add new Port-Channel interface types here as needed
+    VPC_PORT_CHANNEL_INTERFACE_TYPES = [
+        "vPCTrunkPortChannel",
+        "vPCAccessPortChannel",
+        # Add new vPC Port-Channel interface types here as needed
     ]
 
     # Interface types that use serial number + interface name processing logic
@@ -42,6 +42,14 @@ class CiscoClientNDFC(CiscoClientController):
         "LoopbackInterfaces",
         "AccessEthernetPorts",
         "TrunkEthernetPorts",
+        "TrunkPortChannel",
+        "AccessPortChannel",
+        "RoutedEthernetPorts",
+        "L3PortChannel",
+        "TrunkPortChannelMembers",
+        "vPCTrunkPortChannelMembers",
+        "AccessPortChannelMembers",
+        "vPCAccessPortChannelMembers",
         # Add new serial-based interface types here as needed
     ]
 
@@ -512,6 +520,13 @@ class CiscoClientNDFC(CiscoClientController):
                 )
                 continue
 
+            # Skip TorPairing for MSD root fabric - it has no physical switches
+            # (same rationale as the Discovered_Switches skip above); ToR pairing
+            # only exists within member fabrics.
+            if endpoint_name == "TorPairing" and self._is_msd_root_fabric(fabric_name):
+                logger.info("Skipping TorPairing for MSD root fabric: %s", fabric_name)
+                continue
+
             # Skip Policies, VRF_Configuration, and Network_Configuration for child fabrics
             # (collect these only from MSD root fabric)
             if endpoint_name in [
@@ -570,6 +585,14 @@ class CiscoClientNDFC(CiscoClientController):
         # Special handling for Policies endpoint with filtering
         if endpoint_name == "Policies":
             self._process_policies_endpoint_with_filtering(endpoint, result)
+            return
+
+        # Special handling for TorPairing: requires a leaf switch serial number
+        # resolved from already-collected Discovered_Switches data. ndfc.yaml
+        # places TorPairing directly after Discovered_Switches to guarantee
+        # ordering (endpoints are processed sequentially in YAML list order).
+        if endpoint_name == "TorPairing":
+            self._process_tor_pairing_endpoint(endpoint, result)
             return
 
         # Replace %v placeholder with fabric name if present
@@ -730,6 +753,126 @@ class CiscoClientNDFC(CiscoClientController):
             "Extracted %d serial numbers from discovered switches", len(serial_numbers)
         )
         return serial_numbers
+
+    def _find_leaf_serial_number(self, endpoint_dict: dict[str, Any]) -> str | None:
+        """
+        Find the serial number of a leaf-role switch for the current fabric from
+        already-collected Discovered_Switches data.
+
+        A single leaf switch's serial number is sufficient to query NDFC's
+        ToR-pairing discovery API, which returns the complete, fabric-wide
+        leaf/ToR pairing list in one call - no per-switch looping is required.
+
+        Parameters:
+            endpoint_dict (dict): The dictionary containing already-processed
+                endpoint data, expected to contain Discovered_Switches.
+
+        Returns:
+            str | None: Serial number of a leaf switch for the current fabric,
+                or None if no leaf switch was found.
+        """
+        for fabric_entry in endpoint_dict.get("Discovered_Switches", []):
+            if fabric_entry.get("fabric") != self.fabric_name:
+                continue
+
+            switches = fabric_entry.get("data", [])
+            if not isinstance(switches, list):
+                continue
+
+            for switch in switches:
+                if not isinstance(switch, dict):
+                    continue
+                if switch.get("switchRole") == "leaf":
+                    serial_number = switch.get("serialNumber")
+                    if serial_number:
+                        return str(serial_number)
+
+        return None
+
+    def _process_tor_pairing_endpoint(
+        self, endpoint: dict[str, Any], endpoint_dict: dict[str, Any]
+    ) -> None:
+        """
+        Process the TorPairing endpoint.
+
+        Parameters:
+            endpoint (dict): The endpoint configuration containing name and endpoint URL.
+            endpoint_dict (dict): The dictionary to store results in.
+        """
+        endpoint_name = endpoint["name"]
+        endpoint_url = endpoint["endpoint"]
+
+        if endpoint_name not in endpoint_dict:
+            endpoint_dict[endpoint_name] = []
+
+        if "Discovered_Switches" not in endpoint_dict:
+            logger.error(
+                "Cannot process TorPairing endpoint: Discovered_Switches data not available"
+            )
+            logger.error(
+                "Make sure Discovered_Switches endpoint is defined before TorPairing endpoint"
+            )
+            endpoint_dict[endpoint_name].append(
+                {
+                    "data": {},
+                    "endpoint": endpoint_url,
+                    "fabric": self.fabric_name,
+                    "error": "Discovered_Switches data not available",
+                }
+            )
+            return
+
+        leaf_serial_number = self._find_leaf_serial_number(endpoint_dict)
+
+        if not leaf_serial_number:
+            logger.warning(
+                "No leaf switch found for fabric %s - skipping TorPairing collection",
+                self.fabric_name,
+            )
+            endpoint_dict[endpoint_name].append(
+                {
+                    "data": {},
+                    "endpoint": endpoint_url,
+                    "fabric": self.fabric_name,
+                }
+            )
+            return
+
+        # Replace %v placeholder with fabric name if present
+        if self.fabric_name and "%v" in endpoint_url:
+            endpoint_url = endpoint_url.replace("%v", self.fabric_name)
+
+        # Replace {{leafSerialNumber}} placeholder with the resolved leaf serial
+        endpoint_url = endpoint_url.replace("{{leafSerialNumber}}", leaf_serial_number)
+
+        logger.debug(
+            "Processing TorPairing endpoint using leaf serial %s: %s",
+            leaf_serial_number,
+            endpoint_url,
+        )
+
+        try:
+            data = self.fetch_data(endpoint_url)
+            endpoint_dict[endpoint_name].append(
+                {
+                    "data": data if data is not None else {},
+                    "endpoint": endpoint_url,
+                    "fabric": self.fabric_name,
+                }
+            )
+            logger.debug("Successfully processed TorPairing endpoint")
+        except Exception as e:
+            logger.error(
+                "Error fetching TorPairing data from %s: %s", endpoint_url, str(e)
+            )
+            endpoint_dict[endpoint_name].append(
+                {
+                    "data": {},
+                    "endpoint": endpoint_url,
+                    "fabric": self.fabric_name,
+                    "error": str(e),
+                }
+            )
 
     def _process_policies_endpoint_with_filtering(
         self, endpoint: dict[str, Any], endpoint_dict: dict[str, Any]
@@ -1304,11 +1447,11 @@ class CiscoClientNDFC(CiscoClientController):
                 if (
                     not switch
                     or not isinstance(switch, dict)
-                    or not switch.get("hostName")
+                    or not switch.get("logicalName")
                 ):
                     continue
 
-                host_name = switch.get("hostName")
+                sys_name = switch.get("logicalName")
                 serial_number = switch.get("serialNumber")
                 switch_fabric_name = switch.get("fabricName")
 
@@ -1318,7 +1461,7 @@ class CiscoClientNDFC(CiscoClientController):
                 current_fabric = config_entry.get("fabric")
                 logger.debug(
                     "Switch fabric check: switch %s belongs to fabric %s, currently processing fabric %s",
-                    host_name,
+                    sys_name,
                     switch_fabric_name,
                     current_fabric,
                 )
@@ -1329,7 +1472,7 @@ class CiscoClientNDFC(CiscoClientController):
                 ):
                     logger.debug(
                         "Skipping switch %s (belongs to fabric %s, currently processing fabric %s)",
-                        host_name,
+                        sys_name,
                         switch_fabric_name,
                         current_fabric,
                     )
@@ -1337,7 +1480,7 @@ class CiscoClientNDFC(CiscoClientController):
 
                 logger.debug(
                     "Processing interfaces for switch: %s (serial: %s)",
-                    host_name,
+                    sys_name,
                     serial_number,
                 )
 
@@ -1353,7 +1496,7 @@ class CiscoClientNDFC(CiscoClientController):
                     logger.debug(
                         "Processing child endpoint %s for switch %s",
                         child_name,
-                        host_name,
+                        sys_name,
                     )
 
                     # Get the switch's actual fabric information
@@ -1371,12 +1514,12 @@ class CiscoClientNDFC(CiscoClientController):
                         logger.debug(
                             "Using switch's fabric ID %s for %s in fabric %s",
                             switch_fabric_id,
-                            host_name,
+                            sys_name,
                             switch_fabric_name,
                         )
 
-                    if host_name and "{{hostName}}" in child_url:
-                        child_url = child_url.replace("{{hostName}}", host_name)
+                    if sys_name and "{{sysName}}" in child_url:
+                        child_url = child_url.replace("{{sysName}}", sys_name)
 
                     if serial_number and "{{serialNumber}}" in child_url:
                         child_url = child_url.replace("{{serialNumber}}", serial_number)
@@ -1393,7 +1536,7 @@ class CiscoClientNDFC(CiscoClientController):
                             logger.debug(
                                 "Successfully retrieved %s for switch: %s",
                                 child_name,
-                                host_name,
+                                sys_name,
                             )
 
                             # Process the interface data (normalize structure)
@@ -1412,10 +1555,10 @@ class CiscoClientNDFC(CiscoClientController):
                                     logger.debug(
                                         "Processing nested children for %s on switch %s",
                                         child_name,
-                                        host_name,
+                                        sys_name,
                                     )
                                     self._process_nested_children_for_interfaces(
-                                        child_endpoint, processed_interfaces, host_name
+                                        child_endpoint, processed_interfaces, sys_name
                                     )
 
                             logger.debug("Processed child name: %s", child_name)
@@ -1426,13 +1569,13 @@ class CiscoClientNDFC(CiscoClientController):
                                 if isinstance(processed_interfaces, list)
                                 else 1,
                                 child_name,
-                                host_name,
+                                sys_name,
                             )
                         else:
                             logger.warning(
                                 "Failed to fetch %s for switch: %s",
                                 child_name,
-                                host_name,
+                                sys_name,
                             )
                             switch["interfaces"][child_name] = []
 
@@ -1440,7 +1583,7 @@ class CiscoClientNDFC(CiscoClientController):
                         logger.error(
                             "Error fetching %s for switch %s: %s",
                             child_name,
-                            host_name,
+                            sys_name,
                             str(e),
                         )
                         switch["interfaces"][child_name] = []
@@ -1814,15 +1957,15 @@ class CiscoClientNDFC(CiscoClientController):
         )
 
     def _process_nested_children_for_interfaces(
-        self, parent_endpoint: dict[str, Any], interface_data: Any, host_name: str
+        self, parent_endpoint: dict[str, Any], interface_data: Any, sys_name: str
     ) -> None:
         """
-        Process nested children endpoints for interface data (like Port-Channel interfaces -> vPCInterfaceSetting).
+        Process nested children endpoints for interface data (like vPC Port-Channel interfaces -> vPCInterfaceSetting).
 
         Parameters:
             parent_endpoint (dict): The parent endpoint configuration with children
             interface_data (list): The interface data from the parent endpoint
-            host_name (str): The hostname of the switch being processed
+            sys_name (str): The sysName (logicalName) of the switch being processed
         """
         parent_name = parent_endpoint["name"]
         children_endpoints = parent_endpoint.get("children", [])
@@ -1834,7 +1977,7 @@ class CiscoClientNDFC(CiscoClientController):
             "Processing %d nested children for %s interfaces on switch %s",
             len(children_endpoints),
             parent_name,
-            host_name,
+            sys_name,
         )
 
         if self.client is None:
@@ -1848,8 +1991,8 @@ class CiscoClientNDFC(CiscoClientController):
             if not isinstance(interface_entry, dict):
                 continue
 
-            # For Port-Channel interfaces (TrunkPort-Channel, AccessPort-Channel, etc.), look for vpcEntityId
-            if parent_name in self.PORT_CHANNEL_INTERFACE_TYPES:
+            # For vPC Port-Channel interfaces (vPCTrunkPortChannel, vPCAccessPortChannel, etc.), look for vpcEntityId
+            if parent_name in self.VPC_PORT_CHANNEL_INTERFACE_TYPES:
                 vpc_entity_id = interface_entry.get("vpcEntityId")
 
                 if not vpc_entity_id:
@@ -1870,7 +2013,7 @@ class CiscoClientNDFC(CiscoClientController):
                     "Processing nested children for vpcPair=%s, vPC_name=%s on switch %s",
                     vpc_pair,
                     vpc_name,
-                    host_name,
+                    sys_name,
                 )
 
                 # Process each nested child endpoint
@@ -1904,7 +2047,7 @@ class CiscoClientNDFC(CiscoClientController):
                             "Successfully processed and saved nested child endpoint %s to interface entry for %s on switch %s",
                             child_name,
                             vpc_name,
-                            host_name,
+                            sys_name,
                         )
 
                     except Exception as e:
@@ -1912,7 +2055,7 @@ class CiscoClientNDFC(CiscoClientController):
                             "Error processing nested child endpoint %s for %s on switch %s: %s",
                             child_name,
                             vpc_name,
-                            host_name,
+                            sys_name,
                             str(e),
                         )
                         # Set empty data on error to maintain consistent structure
@@ -1934,7 +2077,7 @@ class CiscoClientNDFC(CiscoClientController):
                     "Processing nested children for serialNumber=%s, ifName=%s on switch %s",
                     serial_number,
                     if_name,
-                    host_name,
+                    sys_name,
                 )
 
                 # Process each nested child endpoint
@@ -1968,7 +2111,7 @@ class CiscoClientNDFC(CiscoClientController):
                             "Successfully processed and saved nested child endpoint %s to interface entry for %s on switch %s",
                             child_name,
                             if_name,
-                            host_name,
+                            sys_name,
                         )
 
                     except Exception as e:
@@ -1976,7 +2119,7 @@ class CiscoClientNDFC(CiscoClientController):
                             "Error processing nested child endpoint %s for %s on switch %s: %s",
                             child_name,
                             if_name,
-                            host_name,
+                            sys_name,
                             str(e),
                         )
                         # Set empty data on error to maintain consistent structure
