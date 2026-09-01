@@ -475,7 +475,6 @@ class TestSolutionEnum:
         assert Solution.IOSXR == "IOSXR"
 
     def test_all_solutions_present(self):
-        # Test that all expected solutions are present
         expected_solutions = [
             "SDWAN",
             "ISE",
@@ -484,8 +483,135 @@ class TestSolutionEnum:
             "CATALYSTCENTER",
             "IOSXE",
             "IOSXR",
+            "INTERSIGHT",
         ]
         actual_solutions = [solution.value for solution in Solution]
 
         for expected in expected_solutions:
             assert expected in actual_solutions
+
+    def test_solution_enum_contains_intersight(self):
+        assert hasattr(Solution, "INTERSIGHT")
+        assert Solution.INTERSIGHT == "INTERSIGHT"
+
+
+class TestIntersightCLI:
+    @patch("nac_collector.cli.main.CiscoClientINTERSIGHT")
+    @patch("nac_collector.cli.main.EndpointResolver.resolve_endpoint_data")
+    def test_intersight_solution_success(self, mock_resolver, mock_intersight_class):
+        mock_endpoints_data = [{"name": "organization", "endpoint": "/api/v1/organization/Organizations"}]
+        mock_resolver.return_value = mock_endpoints_data
+
+        mock_client = MagicMock()
+        mock_client.authenticate.return_value = True
+        mock_client.get_from_endpoints_data.return_value = {"organization": []}
+        mock_intersight_class.return_value = mock_client
+
+        with patch("nac_collector.cli.main.time.time", side_effect=[0, 5]):
+            with pytest.raises(typer.Exit) as exc_info:
+                main(
+                    solution=Solution.INTERSIGHT,
+                    username=None,
+                    password=None,
+                    url="https://intersight.com",
+                    api_key="test-key-id",
+                    api_secret_key="test-secret-key",
+                    devices_file=None,
+                    verbosity=LogLevel.WARNING,
+                    fetch_latest=False,
+                    endpoints_file=None,
+                    timeout=30,
+                    output=None,
+                    version=None,
+                )
+
+        assert exc_info.value.exit_code == 0
+
+        mock_intersight_class.assert_called_once_with(
+            api_key_id="test-key-id",
+            secret_key="test-secret-key",
+            base_url="https://intersight.com",
+            max_retries=5,
+            retry_after=60,
+            timeout=30,
+            ssl_verify=False,
+        )
+        mock_client.authenticate.assert_called_once()
+        mock_client.get_from_endpoints_data.assert_called_once_with(mock_endpoints_data)
+        mock_client.write_to_archive.assert_called_once_with(
+            {"organization": []}, "nac-collector.zip", "intersight"
+        )
+
+    @patch("nac_collector.cli.main.EndpointResolver.resolve_endpoint_data")
+    def test_intersight_missing_api_key_exits(self, mock_resolver):
+        mock_resolver.return_value = [{"name": "organization", "endpoint": "/api/v1/organization/Organizations"}]
+
+        with pytest.raises(typer.Exit) as exc_info:
+            main(
+                solution=Solution.INTERSIGHT,
+                username=None,
+                password=None,
+                url="https://intersight.com",
+                api_key=None,
+                api_secret_key="test-secret",
+                devices_file=None,
+                verbosity=LogLevel.WARNING,
+                fetch_latest=False,
+                endpoints_file=None,
+                timeout=30,
+                output=None,
+                version=None,
+            )
+
+        assert exc_info.value.exit_code == 1
+
+    @patch("nac_collector.cli.main.EndpointResolver.resolve_endpoint_data")
+    def test_intersight_missing_secret_key_exits(self, mock_resolver):
+        mock_resolver.return_value = [{"name": "organization", "endpoint": "/api/v1/organization/Organizations"}]
+
+        with pytest.raises(typer.Exit) as exc_info:
+            main(
+                solution=Solution.INTERSIGHT,
+                username=None,
+                password=None,
+                url="https://intersight.com",
+                api_key="test-key-id",
+                api_secret_key=None,
+                devices_file=None,
+                verbosity=LogLevel.WARNING,
+                fetch_latest=False,
+                endpoints_file=None,
+                timeout=30,
+                output=None,
+                version=None,
+            )
+
+        assert exc_info.value.exit_code == 1
+
+    @patch("nac_collector.cli.main.CiscoClientINTERSIGHT")
+    @patch("nac_collector.cli.main.EndpointResolver.resolve_endpoint_data")
+    def test_intersight_auth_failure_exits(self, mock_resolver, mock_intersight_class):
+        mock_resolver.return_value = [{"name": "organization", "endpoint": "/test"}]
+        mock_client = MagicMock()
+        mock_client.authenticate.return_value = False
+        mock_intersight_class.return_value = mock_client
+
+        with pytest.raises(typer.Exit) as exc_info:
+            main(
+                solution=Solution.INTERSIGHT,
+                username=None,
+                password=None,
+                url="https://intersight.com",
+                api_key="test-key-id",
+                api_secret_key="bad-key",
+                devices_file=None,
+                verbosity=LogLevel.WARNING,
+                fetch_latest=False,
+                endpoints_file=None,
+                timeout=30,
+                output=None,
+                version=None,
+            )
+
+        assert exc_info.value.exit_code == 1
+        mock_client.get_from_endpoints_data.assert_not_called()
