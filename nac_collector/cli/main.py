@@ -12,6 +12,7 @@ from nac_collector.constants import MAX_RETRIES, RETRY_AFTER, TIMEOUT
 from nac_collector.controller.base import CiscoClientController
 from nac_collector.controller.catalystcenter import CiscoClientCATALYSTCENTER
 from nac_collector.controller.fmc import CiscoClientFMC
+from nac_collector.controller.intersight import CiscoClientINTERSIGHT
 from nac_collector.controller.ise import CiscoClientISE
 from nac_collector.controller.meraki import CiscoClientMERAKI
 from nac_collector.controller.ndfc import CiscoClientNDFC
@@ -58,6 +59,7 @@ class Solution(str, Enum):
     CATALYSTCENTER = "CATALYSTCENTER"
     MERAKI = "MERAKI"
     NDFC = "NDFC"
+    INTERSIGHT = "INTERSIGHT"
     IOSXE = "IOSXE"
     IOSXR = "IOSXR"
     NXOS = "NXOS"
@@ -149,6 +151,22 @@ def main(
             "--api-token",
             envvar="NAC_API_TOKEN",
             help="API token for authentication (supported for SDWAN 20.18+). If set, username/password are not required.",
+        ),
+    ] = None,
+    api_key: Annotated[
+        str | None,
+        typer.Option(
+            "--api-key",
+            envvar="NAC_API_KEY",
+            help="API key ID for authentication (needed for Intersight authentication).",
+        ),
+    ] = None,
+    api_secret_key: Annotated[
+        str | None,
+        typer.Option(
+            "--api-secret-key",
+            envvar="NAC_API_SECRET_KEY",
+            help="Path to the secret PEM private key file, or the PEM key contents for authentication (needed for Intersight authentication).",
         ),
     ] = None,
     verbosity: Annotated[
@@ -307,6 +325,8 @@ def main(
             cisco_client_class = CiscoClientMERAKI
         elif solution == Solution.NDFC:
             cisco_client_class = CiscoClientNDFC
+        elif solution == Solution.INTERSIGHT:
+            cisco_client_class = CiscoClientINTERSIGHT
 
         # Validate that api_token is only used with SDWAN
         if api_token and solution != Solution.SDWAN:
@@ -315,17 +335,24 @@ def main(
             )
             raise typer.Exit(1)
 
-        # Validate required credentials for controller-based solutions
-        # Either api_token (SDWAN only) OR (username AND password) must be provided
-        if not api_token and not (username and password):
-            console.print(
-                "[red]Either --api-token (NAC_API_TOKEN) [SDWAN 20.18+ only] or both --username (NAC_USERNAME) "
-                "and --password (NAC_PASSWORD) must be provided[/red]"
-            )
-            raise typer.Exit(1)
-        if not url:
-            console.print("[red]URL is required for controller-based solutions[/red]")
-            raise typer.Exit(1)
+        # Validate required credentials
+        if solution == Solution.INTERSIGHT:
+            if not api_key or not api_secret_key:
+                console.print(
+                    "[red]--api-key-id (NAC_API_KEY) and --secret-key "
+                    "(NAC_API_SECRET_KEY) are required for INTERSIGHT[/red]"
+                )
+                raise typer.Exit(1)
+        else:
+            if not api_token and not (username and password):
+                console.print(
+                    "[red]Either --api-token (NAC_API_TOKEN) [SDWAN 20.18+ only] or both --username (NAC_USERNAME) "
+                    "and --password (NAC_PASSWORD) must be provided[/red]"
+                )
+                raise typer.Exit(1)
+            if not url:
+                console.print("[red]URL is required for controller-based solutions[/red]")
+                raise typer.Exit(1)
 
         if cisco_client_class:
             client: CiscoClientController
@@ -377,6 +404,16 @@ def main(
                     timeout=timeout,
                     ssl_verify=False,
                     domain=domain or "local",
+                )
+            elif solution == Solution.INTERSIGHT:
+                client = CiscoClientINTERSIGHT(
+                    api_key_id=api_key or "",
+                    secret_key=api_secret_key or "",
+                    base_url=url or CiscoClientINTERSIGHT.DEFAULT_BASE_URL,
+                    max_retries=MAX_RETRIES,
+                    retry_after=RETRY_AFTER,
+                    timeout=timeout,
+                    ssl_verify=False,
                 )
             else:
                 # For other solutions, no api_token support

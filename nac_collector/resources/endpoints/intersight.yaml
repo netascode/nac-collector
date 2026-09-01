@@ -1,0 +1,214 @@
+# Intersight endpoints for nac-compute resource collection.
+# Each entry maps a nac-compute resource key to its Intersight REST API path.
+# The optional `filter` field is appended as ?$filter=<value> (URL-encoded by the controller).
+
+- name: organization
+  endpoint: /api/v1/organization/Organizations
+
+# --- Pools ---
+
+- name: ip_pool
+  endpoint: /api/v1/ippool/Pools
+
+- name: iqn_pool
+  endpoint: /api/v1/iqnpool/Pools
+
+- name: mac_pool
+  endpoint: /api/v1/macpool/Pools
+
+- name: resource_pool
+  endpoint: /api/v1/resourcepool/Pools
+
+- name: uuid_pool
+  endpoint: /api/v1/uuidpool/Pools
+
+- name: wwnn_pool
+  endpoint: /api/v1/fcpool/Pools
+  filter: PoolPurpose eq 'WWNN'
+
+- name: wwpn_pool
+  endpoint: /api/v1/fcpool/Pools
+  filter: PoolPurpose eq 'WWPN'
+
+# --- Policies ---
+
+- name: adapter_configuration_policy
+  endpoint: /api/v1/adapter/ConfigPolicies
+
+- name: bios_policy
+  endpoint: /api/v1/bios/Policies
+
+- name: boot_order_policy
+  endpoint: /api/v1/boot/PrecisionPolicies
+
+- name: certificate_management_policy
+  endpoint: /api/v1/certificatemanagement/Policies
+
+- name: device_connector_policy
+  endpoint: /api/v1/deviceconnector/Policies
+
+- name: drive_security_policy
+  endpoint: /api/v1/storage/DriveSecurityPolicies
+
+- name: ethernet_adapter_policy
+  endpoint: /api/v1/vnic/EthAdapterPolicies
+
+- name: ethernet_network_control_policy
+  endpoint: /api/v1/fabric/EthNetworkControlPolicies
+
+- name: ethernet_network_group_policy
+  endpoint: /api/v1/fabric/EthNetworkGroupPolicies
+
+- name: ethernet_network_policy
+  endpoint: /api/v1/vnic/EthNetworkPolicies
+
+- name: ethernet_qos_policy
+  endpoint: /api/v1/vnic/EthQosPolicies
+
+- name: fc_zone_policy
+  endpoint: /api/v1/fabric/FcZonePolicies
+
+- name: fibre_channel_adapter_policy
+  endpoint: /api/v1/vnic/FcAdapterPolicies
+
+- name: fibre_channel_network_policy
+  endpoint: /api/v1/vnic/FcNetworkPolicies
+
+- name: fibre_channel_qos_policy
+  endpoint: /api/v1/vnic/FcQosPolicies
+
+- name: firmware_policy
+  endpoint: /api/v1/firmware/Policies
+
+- name: flow_control_policy
+  endpoint: /api/v1/fabric/FlowControlPolicies
+
+- name: imc_access_policy
+  endpoint: /api/v1/access/Policies
+
+- name: ipmi_over_lan_policy
+  endpoint: /api/v1/ipmioverlan/Policies
+
+- name: iscsi_adapter_policy
+  endpoint: /api/v1/vnic/IscsiAdapterPolicies
+
+- name: iscsi_boot_policy
+  endpoint: /api/v1/vnic/IscsiBootPolicies
+
+- name: iscsi_static_target_policy
+  endpoint: /api/v1/vnic/IscsiStaticTargetPolicies
+
+- name: lan_connectivity_policy
+  endpoint: /api/v1/vnic/LanConnectivityPolicies
+
+- name: ldap_policy
+  endpoint: /api/v1/iam/LdapPolicies
+
+- name: link_aggregation_policy
+  endpoint: /api/v1/fabric/LinkAggregationPolicies
+
+- name: link_control_policy
+  endpoint: /api/v1/fabric/LinkControlPolicies
+
+- name: local_user_policy
+  endpoint: /api/v1/iam/EndPointUserPolicies
+
+- name: mac_sec_policy
+  endpoint: /api/v1/fabric/MacSecPolicies
+
+- name: memory_policy
+  endpoint: /api/v1/memory/PersistentMemoryPolicies
+
+- name: multicast_policy
+  endpoint: /api/v1/fabric/MulticastPolicies
+
+- name: network_connectivity_policy
+  endpoint: /api/v1/networkconfig/Policies
+
+- name: ntp_policy
+  endpoint: /api/v1/ntp/Policies
+
+- name: persistent_memory_policy
+  endpoint: /api/v1/memory/PersistentMemoryPolicies
+
+- name: port_policy
+  endpoint: /api/v1/fabric/PortPolicies
+
+- name: power_policy
+  endpoint: /api/v1/power/Policies
+
+- name: san_connectivity_policy
+  endpoint: /api/v1/vnic/SanConnectivityPolicies
+
+- name: scrub_policy
+  endpoint: /api/v1/compute/ScrubPolicies
+
+- name: sd_card_policy
+  endpoint: /api/v1/sdcard/Policies
+
+- name: serial_over_lan_policy
+  endpoint: /api/v1/sol/Policies
+
+- name: smtp_policy
+  endpoint: /api/v1/smtp/Policies
+
+- name: snmp_policy
+  endpoint: /api/v1/snmp/Policies
+
+- name: ssh_policy
+  endpoint: /api/v1/ssh/Policies
+
+- name: storage_policy
+  endpoint: /api/v1/storage/StoragePolicies
+
+- name: switch_control_policy
+  endpoint: /api/v1/fabric/SwitchControlPolicies
+
+- name: syslog_policy
+  endpoint: /api/v1/syslog/Policies
+
+- name: system_qos_policy
+  endpoint: /api/v1/fabric/SystemQosPolicies
+
+- name: thermal_policy
+  endpoint: /api/v1/thermal/Policies
+
+- name: virtual_kvm_policy
+  endpoint: /api/v1/kvm/Policies
+
+- name: virtual_media_policy
+  endpoint: /api/v1/vmedia/Policies
+
+- name: vlan_policy
+  endpoint: /api/v1/fabric/EthNetworkPolicies
+
+- name: vsan_policy
+  endpoint: /api/v1/fabric/FcNetworkPolicies
+
+# --- Templates ---
+
+- name: chassis_template
+  endpoint: /api/v1/chassis/ProfileTemplates
+
+- name: domain_template
+  endpoint: /api/v1/fabric/SwitchClusterProfileTemplates
+
+- name: server_template
+  endpoint: /api/v1/server/ProfileTemplates
+
+- name: vhba_template
+  endpoint: /api/v1/vnic/VhbaTemplates
+
+- name: vnic_template
+  endpoint: /api/v1/vnic/VnicTemplates
+
+# --- Profiles ---
+
+- name: chassis_profile
+  endpoint: /api/v1/chassis/Profiles
+
+- name: domain_profile
+  endpoint: /api/v1/fabric/SwitchClusterProfiles
+
+- name: server_profile
+  endpoint: /api/v1/server/Profiles

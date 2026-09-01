@@ -31,7 +31,7 @@ Usage: nac-collector [OPTIONS]
 A CLI tool to collect various network configurations.
 
 Options:
-  * -s, --solution [SDWAN|ISE|NDO|FMC|CATALYSTCENTER|IOSXE|IOSXR|NXOS]
+  * -s, --solution [SDWAN|ISE|NDO|FMC|CDFMC|CATALYSTCENTER|MERAKI|NDFC|INTERSIGHT|IOSXE|IOSXR|NXOS|]
                         Solutions supported [required]
   * -u, --username TEXT Username for authentication [required]
                         [env var: NAC_USERNAME]
@@ -42,6 +42,11 @@ Options:
   --api-token TEXT      API token for authentication (SDWAN 20.18+ only).
                         If set, --username/--password are not required.
                         [env var: NAC_API_TOKEN]
+  --api-key TEXT        API key ID for authentication (needed for Intersight authentication).
+                        [env var: NAC_API_TOKEN]
+  --api-secret-key TEXT Path to the secret PEM private key file, or the PEM key contents for
+                        authentication (needed for Intersight authentication).
+                        [env var: NAC_API_SECRET_KEY] 
   -v, --verbosity [CRITICAL|ERROR|WARNING|INFO|DEBUG]
                         Log level [default: WARNING]
   -f, --fetch-latest    Fetch the latest endpoint definitions from
@@ -206,6 +211,21 @@ All child data for each network that passes the filter is still collected in ful
 export NDFC_FABRIC_NAME="FAB1"
 
 nac-collector -s NDFC --username USERNAME --password PASSWORD --url URL -v INFO
+```
+
+### Intersight
+
+The Meraki collector authenticates with an API key and secret key.
+
+
+```sh
+# With environment variables
+export NAC_API_KEY=<api key>
+export NAC_API_SECRET_KEY=<file path to secret key file>
+uv run nac-collector -s INTERSIGHT
+
+# Without environment variables
+uv run nac-collector -s INTERSIGHT --api-key API_KEY --api-secret-key FILE_PATH_TO_SECRET_KEY_FILE
 ```
 
 ### IOSXE (Device-Based Collection)
