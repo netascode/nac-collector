@@ -193,11 +193,20 @@
 - name: domain_template
   endpoint: /api/v1/fabric/SwitchClusterProfileTemplates
 
+- name: fabric_vlan
+  endpoint: /api/v1/fabric/Vlans
+
 - name: server_template
   endpoint: /api/v1/server/ProfileTemplates
 
 - name: vhba_template
   endpoint: /api/v1/vnic/VhbaTemplates
+
+- name: vnic_eth_if
+  endpoint: /api/v1/vnic/EthIfs
+
+- name: vnic_fc_if
+  endpoint: /api/v1/vnic/FcIfs
 
 - name: vnic_template
   endpoint: /api/v1/vnic/VnicTemplates
