@@ -134,6 +134,39 @@
 - name: port_policy
   endpoint: /api/v1/fabric/PortPolicies
 
+- name: port_mode
+  endpoint: /api/v1/fabric/PortModes
+
+- name: port_role_server
+  endpoint: /api/v1/fabric/ServerRoles
+
+- name: port_role_ethernet_uplink
+  endpoint: /api/v1/fabric/UplinkRoles
+
+- name: port_channel_ethernet_uplink
+  endpoint: /api/v1/fabric/UplinkPcRoles
+
+- name: port_role_fc_uplink
+  endpoint: /api/v1/fabric/FcUplinkRoles
+
+- name: port_channel_fc_uplink
+  endpoint: /api/v1/fabric/FcUplinkPcRoles
+
+- name: port_role_fcoe_uplink
+  endpoint: /api/v1/fabric/FcoeUplinkRoles
+
+- name: port_channel_fcoe_uplink
+  endpoint: /api/v1/fabric/FcoeUplinkPcRoles
+
+- name: port_role_appliance
+  endpoint: /api/v1/fabric/ApplianceRoles
+
+- name: port_channel_appliance
+  endpoint: /api/v1/fabric/AppliancePcRoles
+
+- name: port_role_fc_storage
+  endpoint: /api/v1/fabric/FcStorageRoles
+
 - name: power_policy
   endpoint: /api/v1/power/Policies
 
