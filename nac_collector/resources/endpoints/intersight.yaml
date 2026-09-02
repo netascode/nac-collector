@@ -196,6 +196,9 @@
 - name: fabric_vlan
   endpoint: /api/v1/fabric/Vlans
 
+- name: fabric_vsan
+  endpoint: /api/v1/fabric/Vsans
+
 - name: server_template
   endpoint: /api/v1/server/ProfileTemplates
 
