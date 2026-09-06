@@ -17,6 +17,12 @@ from nac_collector.controller.base import CiscoClientController
 
 logger = logging.getLogger("main")
 
+# Some parcel types from manager are different from the endpoints type and this break the logic to properly extract the childrens data
+# because get requests never get built. This dict helps introduce the logic to build the GET requests properly for this and future
+# similar scenarios
+PARCEL_TYPE_TO_ENDPOINT_TYPE = {
+    "cisco-sse": "cisco",
+}
 
 class CiscoClientSDWAN(CiscoClientController):
     """
@@ -679,6 +685,17 @@ class CiscoClientSDWAN(CiscoClientController):
                                 parcel,
                             )
                         )
+                    elif parcel["parcelType"] in PARCEL_TYPE_TO_ENDPOINT_TYPE:
+                            for k, v in PARCEL_TYPE_TO_ENDPOINT_TYPE.items():
+                                if parcel["parcelType"] == k and children_endpoint_type == v:
+                                    children_entries.append(
+                                        self.extract_feature_parcel(
+                                            profile_endpoint,
+                                            "",
+                                            children_endpoint.get("children", []),
+                                            parcel,
+                                        )
+                                    )
             if children_entries:
                 main_entry["children"] = children_entries
             endpoint_dict[endpoint["name"]].append(main_entry)
@@ -696,6 +713,9 @@ class CiscoClientSDWAN(CiscoClientController):
         if parcel_type.startswith(upstream_parcel_type):
             parcel_type = parcel_type[len(upstream_parcel_type) :].lstrip("/")
         parcel_id = parcel["parcelId"]
+        if parcel_type in PARCEL_TYPE_TO_ENDPOINT_TYPE:
+            new_parcel_type = PARCEL_TYPE_TO_ENDPOINT_TYPE[parcel_type]
+            parcel_type = new_parcel_type
         new_endpoint = upstream_endpoint + "/" + parcel_type + "/" + parcel_id
         response = self.get_request(self.base_url + new_endpoint)
         if response is None:
