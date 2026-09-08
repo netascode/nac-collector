@@ -266,3 +266,12 @@
 
 - name: server_profile
   endpoint: /api/v1/server/Profiles
+
+- name: compute_physical_summary
+  endpoint: /api/v1/compute/PhysicalSummaries
+
+- name: network_element_summary
+  endpoint: /api/v1/network/ElementSummaries
+
+- name: equipment_chassis
+  endpoint: /api/v1/equipment/Chasses
