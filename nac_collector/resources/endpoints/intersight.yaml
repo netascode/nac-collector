@@ -226,6 +226,9 @@
 - name: domain_template
   endpoint: /api/v1/fabric/SwitchClusterProfileTemplates
 
+- name: fabric_switch_profile_template
+  endpoint: /api/v1/fabric/SwitchProfileTemplates
+
 - name: fabric_vlan
   endpoint: /api/v1/fabric/Vlans
 
@@ -254,6 +257,9 @@
 
 - name: domain_profile
   endpoint: /api/v1/fabric/SwitchClusterProfiles
+
+- name: fabric_switch_profile
+  endpoint: /api/v1/fabric/SwitchProfiles
 
 - name: server_profile
   endpoint: /api/v1/server/Profiles
