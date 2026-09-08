@@ -170,6 +170,9 @@
 - name: power_policy
   endpoint: /api/v1/power/Policies
 
+- name: qualification_policy
+  endpoint: /api/v1/resourcepool/QualificationPolicies
+
 - name: san_connectivity_policy
   endpoint: /api/v1/vnic/SanConnectivityPolicies
 
