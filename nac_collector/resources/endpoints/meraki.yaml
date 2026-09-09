@@ -45,6 +45,8 @@
       - MX
     - name: appliance_uplinks_settings
       endpoint: /appliance/uplinks/settings
+    - name: blink_device_leds
+      endpoint: /liveTools/leds/blink
     - name: camera_custom_analytics
       endpoint: /camera/customAnalytics
       allowed_device_models:
@@ -77,6 +79,10 @@
       endpoint: /cellular/sims
     - name: device_management_interface
       endpoint: /managementInterface
+    - name: generate_appliance_vmx_authentication_token
+      endpoint: /appliance/vmx/authenticationToken
+    - name: reboot_device
+      endpoint: /reboot
     - name: sensor_relationships
       endpoint: /sensor/relationships
     - name: switch_port
