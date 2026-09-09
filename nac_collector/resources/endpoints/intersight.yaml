@@ -167,6 +167,12 @@
 - name: port_role_fc_storage
   endpoint: /api/v1/fabric/FcStorageRoles
 
+- name: lan_pin_group
+  endpoint: /api/v1/fabric/LanPinGroups
+
+- name: san_pin_group
+  endpoint: /api/v1/fabric/SanPinGroups
+
 - name: power_policy
   endpoint: /api/v1/power/Policies
 
