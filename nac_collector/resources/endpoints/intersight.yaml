@@ -113,6 +113,15 @@
 - name: local_user_policy
   endpoint: /api/v1/iam/EndPointUserPolicies
 
+- name: local_user
+  endpoint: /api/v1/iam/EndPointUsers
+
+- name: local_user_role
+  endpoint: /api/v1/iam/EndPointUserRoles
+
+- name: end_point_role
+  endpoint: /api/v1/iam/EndPointRoles
+
 - name: mac_sec_policy
   endpoint: /api/v1/fabric/MacSecPolicies
 
@@ -199,6 +208,9 @@
 
 - name: ssh_policy
   endpoint: /api/v1/ssh/Policies
+
+- name: storage_drive_group
+  endpoint: /api/v1/storage/DriveGroups
 
 - name: storage_policy
   endpoint: /api/v1/storage/StoragePolicies
