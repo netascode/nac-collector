@@ -21,4 +21,7 @@ def test_ip_pool_requests_explicit_page_limit() -> None:
         _endpoint(RESOURCES / "endpoint_overrides" / "catalystcenter.yaml", "ip_pool")
         == expected
     )
-    assert _endpoint(RESOURCES / "endpoints" / "catalystcenter.yaml", "ip_pool") == expected
+    assert (
+        _endpoint(RESOURCES / "endpoints" / "catalystcenter.yaml", "ip_pool")
+        == expected
+    )
