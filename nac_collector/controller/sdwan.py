@@ -24,6 +24,7 @@ PARCEL_TYPE_TO_ENDPOINT_TYPE = {
     "cisco-sse": "cisco",
 }
 
+
 class CiscoClientSDWAN(CiscoClientController):
     """
     This class inherits from the abstract class CiscoClientController. It's used for authenticating with the Cisco SD-WAN API
@@ -33,6 +34,10 @@ class CiscoClientSDWAN(CiscoClientController):
 
     SDWAN_AUTH_ENDPOINT = "/j_security_check"
     SOLUTION = "sdwan"
+
+    def _endpoint_segment(self, parcel_type: str) -> str:
+        """Translate a Manager parcelType to its URL segment (they usually match; a few, like cisco-sse, don't)."""
+        return PARCEL_TYPE_TO_ENDPOINT_TYPE.get(parcel_type, parcel_type)
 
     def __init__(
         self,
@@ -685,17 +690,18 @@ class CiscoClientSDWAN(CiscoClientController):
                                 parcel,
                             )
                         )
-                    elif parcel["parcelType"] in PARCEL_TYPE_TO_ENDPOINT_TYPE:
-                            for k, v in PARCEL_TYPE_TO_ENDPOINT_TYPE.items():
-                                if parcel["parcelType"] == k and children_endpoint_type == v:
-                                    children_entries.append(
-                                        self.extract_feature_parcel(
-                                            profile_endpoint,
-                                            "",
-                                            children_endpoint.get("children", []),
-                                            parcel,
-                                        )
-                                    )
+                    elif (
+                        self._endpoint_segment(parcel["parcelType"])
+                        == children_endpoint_type
+                    ):
+                        children_entries.append(
+                            self.extract_feature_parcel(
+                                profile_endpoint,
+                                "",
+                                children_endpoint.get("children", []),
+                                parcel,
+                            )
+                        )
             if children_entries:
                 main_entry["children"] = children_entries
             endpoint_dict[endpoint["name"]].append(main_entry)
@@ -713,10 +719,8 @@ class CiscoClientSDWAN(CiscoClientController):
         if parcel_type.startswith(upstream_parcel_type):
             parcel_type = parcel_type[len(upstream_parcel_type) :].lstrip("/")
         parcel_id = parcel["parcelId"]
-        if parcel_type in PARCEL_TYPE_TO_ENDPOINT_TYPE:
-            new_parcel_type = PARCEL_TYPE_TO_ENDPOINT_TYPE[parcel_type]
-            parcel_type = new_parcel_type
-        new_endpoint = upstream_endpoint + "/" + parcel_type + "/" + parcel_id
+        endpoint_type = self._endpoint_segment(parcel_type)
+        new_endpoint = upstream_endpoint + "/" + endpoint_type + "/" + parcel_id
         response = self.get_request(self.base_url + new_endpoint)
         if response is None:
             return {"data": {}, "endpoint": new_endpoint}
