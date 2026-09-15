@@ -205,6 +205,7 @@ class CiscoClientSDWAN(CiscoClientController):
             for endpoint in endpoints_data:
                 progress.advance(task)
                 endpoint_dict = CiscoClientController.create_endpoint_dict(endpoint)
+                is_network_hierarchy = endpoint.get("name") == "network_hierarchy_node"
 
                 if all(
                     x not in endpoint["endpoint"]
@@ -229,9 +230,10 @@ class CiscoClientSDWAN(CiscoClientController):
 
                         if isinstance(data, list):
                             for i in data:
-                                self._collect_network_hierarchy_children(
-                                    endpoint, i, final_dict
-                                )
+                                if is_network_hierarchy:
+                                    self._collect_network_hierarchy_children(
+                                        endpoint, i, final_dict
+                                    )
                                 endpoint_dict[endpoint["name"]].append(
                                     {
                                         "data": i,
@@ -243,9 +245,10 @@ class CiscoClientSDWAN(CiscoClientController):
                         elif data.get("data"):
                             if isinstance(data["data"], list):
                                 for i in data["data"]:
-                                    self._collect_network_hierarchy_children(
-                                        endpoint, i, final_dict
-                                    )
+                                    if is_network_hierarchy:
+                                        self._collect_network_hierarchy_children(
+                                            endpoint, i, final_dict
+                                        )
                                     try:
                                         endpoint_dict[endpoint["name"]].append(
                                             {
@@ -343,9 +346,6 @@ class CiscoClientSDWAN(CiscoClientController):
         node: dict[str, Any],
         final_dict: dict[str, Any],
     ) -> None:
-        if endpoint.get("name") != "network_hierarchy_node":
-            return
-
         node_name = node.get("name")
         if not node_name or str(node_name).lower() != "global":
             return
