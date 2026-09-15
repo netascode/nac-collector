@@ -117,7 +117,7 @@ overrides:
   endpoint: /dna/intent/api/v1/image/importation
 
 - name: ip_pool
-  endpoint: /api/v2/ippool
+  endpoint: /api/v2/ippool?limit=500
   import_id_attributes:
     - name: id
 
