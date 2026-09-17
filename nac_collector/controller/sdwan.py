@@ -36,9 +36,6 @@ class CiscoClientSDWAN(CiscoClientController):
     SDWAN_AUTH_ENDPOINT = "/j_security_check"
     SOLUTION = "sdwan"
 
-    def _endpoint_segment(self, parcel_type: str) -> str:
-        """Translate a Manager parcelType to its URL segment (they usually match; a few, like cisco-sse, don't)."""
-        return PARCEL_TYPE_TO_ENDPOINT_TYPE.get(parcel_type, parcel_type)
 
     def __init__(
         self,
@@ -796,6 +793,11 @@ class CiscoClientSDWAN(CiscoClientController):
         if children_entries:
             entry["children"] = children_entries
         return entry
+
+    @staticmethod
+    def _endpoint_segment(parcel_type: str) -> str:
+        """Translate a Manager parcelType to its URL segment (they usually match; a few, like cisco-sse, don't)."""
+        return PARCEL_TYPE_TO_ENDPOINT_TYPE.get(parcel_type, parcel_type)
 
     @staticmethod
     def _merge_url_list_endpoints(
