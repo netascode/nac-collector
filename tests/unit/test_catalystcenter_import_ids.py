@@ -173,9 +173,7 @@ def test_provider_match_id_derives_simple_key() -> None:
 
     wrapper = GithubRepoWrapper.__new__(GithubRepoWrapper)
 
-    assert wrapper.catc_import_id_key(definition) == {
-        "field": "ipPoolName"
-    }
+    assert wrapper.catc_import_id_key(definition) == {"field": "ipPoolName"}
 
 
 def test_import_id_overrides_survive_endpoint_regeneration() -> None:
