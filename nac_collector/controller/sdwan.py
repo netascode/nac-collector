@@ -3,6 +3,7 @@ import binascii
 import json
 import logging
 from typing import Any
+from urllib.parse import quote
 
 import httpx
 from rich.progress import (
@@ -190,7 +191,7 @@ class CiscoClientSDWAN(CiscoClientController):
         endpoints_data = self._merge_url_list_endpoints(endpoints_data)
 
         # Initialize an empty dictionary
-        final_dict = {}
+        final_dict: dict[str, Any] = {}
 
         # Iterate over all endpoints
         with Progress(
@@ -204,6 +205,7 @@ class CiscoClientSDWAN(CiscoClientController):
             for endpoint in endpoints_data:
                 progress.advance(task)
                 endpoint_dict = CiscoClientController.create_endpoint_dict(endpoint)
+                is_network_hierarchy = endpoint.get("name") == "network_hierarchy_node"
 
                 if all(
                     x not in endpoint["endpoint"]
@@ -228,6 +230,10 @@ class CiscoClientSDWAN(CiscoClientController):
 
                         if isinstance(data, list):
                             for i in data:
+                                if is_network_hierarchy:
+                                    self._collect_network_hierarchy_children(
+                                        endpoint, i, final_dict
+                                    )
                                 endpoint_dict[endpoint["name"]].append(
                                     {
                                         "data": i,
@@ -239,6 +245,10 @@ class CiscoClientSDWAN(CiscoClientController):
                         elif data.get("data"):
                             if isinstance(data["data"], list):
                                 for i in data["data"]:
+                                    if is_network_hierarchy:
+                                        self._collect_network_hierarchy_children(
+                                            endpoint, i, final_dict
+                                        )
                                     try:
                                         endpoint_dict[endpoint["name"]].append(
                                             {
@@ -329,6 +339,37 @@ class CiscoClientSDWAN(CiscoClientController):
                 else:
                     pass
         return final_dict
+
+    def _collect_network_hierarchy_children(
+        self,
+        endpoint: dict[str, Any],
+        node: dict[str, Any],
+        final_dict: dict[str, Any],
+    ) -> None:
+        node_name = node.get("name")
+        if not node_name or str(node_name).lower() != "global":
+            return
+        node_name = str(node_name).lower()
+
+        for child_endpoint in endpoint.get("children", []):
+            child_url = (
+                endpoint["endpoint"]
+                + "/name/"
+                + quote(str(node_name), safe="")
+                + child_endpoint["endpoint"]
+            )
+            child_response = self.get_request(self.base_url + child_url)
+            if child_response is None:
+                continue
+
+            child_data = child_response.json()
+            final_dict.setdefault(child_endpoint["name"], []).append(
+                {
+                    "data": child_data,
+                    "endpoint": child_url,
+                }
+            )
+            self.log_response(child_url, child_response)
 
     def get_device_templates(
         self, endpoint: dict[str, Any], endpoint_dict: dict[str, Any]

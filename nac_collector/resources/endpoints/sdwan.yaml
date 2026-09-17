@@ -29,13 +29,13 @@
   endpoint: /template/policy/definition/cflowd/
 - name: class_map_policy_object
   endpoint: /template/policy/list/class/
+- name: cli_device_template
+  endpoint: /template/device/
 - name: cli_feature_profile
   endpoint: /v1/feature-profile/sdwan/cli
   children:
   - name: cli_config_feature
     endpoint: /config
-- name: cli_device_template
-  endpoint: /template/device/
 - name: cloud_provider_settings
   endpoint: /settings/configuration/cloudProviderSetting
 - name: color_list_policy_object
@@ -76,6 +76,8 @@
   endpoint: /template/policy/list/extcommunity/
 - name: feature_device_template
   endpoint: /template/device/object/%i
+- name: feature_templates
+  endpoint: /template/feature/object/%i
 - name: geo_location_list_policy_object
   endpoint: /template/policy/list/geolocation/
 - name: hub_and_spoke_topology_policy_definition
@@ -224,28 +226,17 @@
 - name: service_feature_profile
   endpoint: /v1/feature-profile/sdwan/service
   children:
+  - name: service_dhcp_server
+    endpoint: /dhcp-server
+  - name: service_dual_router_ha
+    endpoint: /dual-router-ha
+  - name: service_ipv4_acl
+    endpoint: /ipv4-acl
+  - name: service_ipv6_acl
+    endpoint: /ipv6-acl
   - name: service_lan_vpn
     endpoint: /lan/vpn
     children:
-    - name: service_lan_vpn_interface_ethernet
-      endpoint: /interface/ethernet
-      children:
-      - name: service_lan_vpn_ethernet_interface_feature_associate_dhcp_server
-        endpoint: /dhcp-server
-      - name: service_lan_vpn_ethernet_interface_feature_associate_tracker
-        endpoint: /tracker
-      - name: service_lan_vpn_ethernet_interface_feature_associate_tracker_group
-        endpoint: /trackergroup
-    - name: service_lan_vpn_interface_ipsec
-      endpoint: /interface/ipsec
-      children:
-      - name: service_lan_vpn_ethernet_ipsec_feature_associate_dhcp_server
-        endpoint: /dhcp-server
-    - name: service_lan_vpn_interface_svi
-      endpoint: /interface/svi
-      children:
-      - name: service_lan_vpn_ethernet_svi_feature_associate_dhcp_server
-        endpoint: /dhcp-server
     - name: service_lan_vpn_feature_associate_mulitcast
       endpoint: /routing/multicast
     - name: service_lan_vpn_feature_associate_routing_bgp
@@ -258,14 +249,27 @@
       endpoint: /routing/ospfv3/ipv4
     - name: service_lan_vpn_feature_associate_routing_ospfv3_ipv6
       endpoint: /routing/ospfv3/ipv6
+    - name: service_lan_vpn_interface_ethernet
+      endpoint: /interface/ethernet
+      children:
+      - name: service_lan_vpn_ethernet_interface_feature_associate_dhcp_server
+        endpoint: /dhcp-server
+      - name: service_lan_vpn_ethernet_interface_feature_associate_tracker
+        endpoint: /tracker
+      - name: service_lan_vpn_ethernet_interface_feature_associate_tracker_group
+        endpoint: /trackergroup
     - name: service_lan_vpn_interface_gre
       endpoint: /interface/gre
-  - name: service_dhcp_server
-    endpoint: /dhcp-server
-  - name: service_ipv4_acl
-    endpoint: /ipv4-acl
-  - name: service_ipv6_acl
-    endpoint: /ipv6-acl
+    - name: service_lan_vpn_interface_ipsec
+      endpoint: /interface/ipsec
+      children:
+      - name: service_lan_vpn_ethernet_ipsec_feature_associate_dhcp_server
+        endpoint: /dhcp-server
+    - name: service_lan_vpn_interface_svi
+      endpoint: /interface/svi
+      children:
+      - name: service_lan_vpn_ethernet_svi_feature_associate_dhcp_server
+        endpoint: /dhcp-server
   - name: service_multicast
     endpoint: /routing/multicast
   - name: service_object_tracker
@@ -366,6 +370,41 @@
 - name: transport_feature_profile
   endpoint: /v1/feature-profile/sdwan/transport
   children:
+  - name: transport_cellular_controller
+    endpoint: /cellular-controller
+  - name: transport_cellular_profile
+    endpoint: /cellular-profile
+  - name: transport_gps
+    endpoint: /gps
+  - name: transport_ipv4_acl
+    endpoint: /ipv4-acl
+  - name: transport_ipv6_acl
+    endpoint: /ipv6-acl
+  - name: transport_ipv6_tracker
+    endpoint: /ipv6-tracker
+  - name: transport_ipv6_tracker_group
+    endpoint: /ipv6-trackergroup
+  - name: transport_management_vpn
+    endpoint: /management/vpn
+    children:
+    - name: transport_management_vpn_interface_ethernet
+      endpoint: /interface/ethernet
+  - name: transport_route_policy
+    endpoint: /route-policy
+  - name: transport_routing_bgp
+    endpoint: /routing/bgp
+  - name: transport_routing_ospf
+    endpoint: /routing/ospf
+  - name: transport_routing_ospfv3_ipv4
+    endpoint: /routing/ospfv3/ipv4
+  - name: transport_routing_ospfv3_ipv6
+    endpoint: /routing/ospfv3/ipv6
+  - name: transport_t1_e1_controller
+    endpoint: /t1-e1-controller
+  - name: transport_tracker
+    endpoint: /tracker
+  - name: transport_tracker_group
+    endpoint: /trackergroup
   - name: transport_wan_vpn
     endpoint: /wan/vpn
     children:
@@ -411,41 +450,6 @@
         endpoint: /tracker
     - name: transport_wan_vpn_interface_t1_e1_serial
       endpoint: /interface/serial
-  - name: transport_cellular_controller
-    endpoint: /cellular-controller
-  - name: transport_cellular_profile
-    endpoint: /cellular-profile
-  - name: transport_gps
-    endpoint: /gps
-  - name: transport_ipv4_acl
-    endpoint: /ipv4-acl
-  - name: transport_ipv6_acl
-    endpoint: /ipv6-acl
-  - name: transport_ipv6_tracker
-    endpoint: /ipv6-tracker
-  - name: transport_ipv6_tracker_group
-    endpoint: /ipv6-trackergroup
-  - name: transport_management_vpn
-    endpoint: /management/vpn
-    children:
-    - name: transport_management_vpn_interface_ethernet
-      endpoint: /interface/ethernet
-  - name: transport_route_policy
-    endpoint: /route-policy
-  - name: transport_routing_bgp
-    endpoint: /routing/bgp
-  - name: transport_routing_ospf
-    endpoint: /routing/ospf
-  - name: transport_routing_ospfv3_ipv4
-    endpoint: /routing/ospfv3/ipv4
-  - name: transport_routing_ospfv3_ipv6
-    endpoint: /routing/ospfv3/ipv6
-  - name: transport_t1_e1_controller
-    endpoint: /t1-e1-controller
-  - name: transport_tracker
-    endpoint: /tracker
-  - name: transport_tracker_group
-    endpoint: /trackergroup
 - name: url_filtering_definition
   endpoint: /template/policy/definition/urlfiltering/
 - name: vedge_inventory
@@ -458,5 +462,3 @@
   endpoint: /template/policy/definition/zonebasedfw/
 - name: zone_list_policy_object
   endpoint: /template/policy/list/zone/
-- name: feature_templates
-  endpoint: /template/feature/object/%i

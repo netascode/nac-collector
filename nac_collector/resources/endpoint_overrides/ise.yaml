@@ -4,6 +4,10 @@
 # To apply modifications in this file,
 # regenerate the endpoints YAML with "uv run ./scripts/update_endpoints.py".
 
+extra_endpoints:
+- name: profiler_profile
+  endpoint: /ers/config/profilerprofile
+
 overrides:
 - name: network_access_dictionary
   id_field: name

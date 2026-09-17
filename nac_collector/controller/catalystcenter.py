@@ -208,10 +208,29 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
                             elem["id"] = id_
                         endpoint_dict[endpoint["name"]].append(elem)
 
-        elif isinstance(data.get("response"), list):
-            response_list = data.get("response")
-            entry = {"data": response_list, "endpoint": endpoint["endpoint"]}
-            endpoint_dict[endpoint["name"]].append(entry)
+        elif isinstance(data, dict) and isinstance(data.get("response"), list):
+            response_list = data["response"]
+            lookup_config = self.id_lookup.get(endpoint_key, {}) if endpoint_key else {}
+            if (
+                lookup_config.get("emit_per_item")
+                and response_list
+                and all(isinstance(i, dict) for i in response_list)
+            ):
+                for item in response_list:
+                    item_id = self.get_id_value(item)
+                    item_endpoint = (
+                        new_endpoint.replace("%v", item_id) if item_id else new_endpoint
+                    )
+                    endpoint_dict[endpoint["name"]].append(
+                        {
+                            "data": item,
+                            "endpoint": item_endpoint,
+                        }
+                    )
+            else:
+                endpoint_dict[endpoint["name"]].append(
+                    {"data": response_list, "endpoint": endpoint["endpoint"]}
+                )
         elif data and data.get("response"):
             response_items = data.get("response")
             if response_items:
@@ -257,6 +276,16 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
                     if isinstance(el, dict)
                 ]
         endpoint_key = endpoint.get("endpoint", "")
+        lookup_config = self.id_lookup.get(endpoint_key, {})
+        nested_key = lookup_config.get("source_nested_key")
+        if nested_key and isinstance(look_data, list):
+            look_data = [
+                instance
+                for group in look_data
+                if isinstance(group, dict)
+                for instance in group.get(nested_key, [])
+                if isinstance(instance, dict)
+            ]
         if endpoint_key in self.id_lookup:
             source_key = self.id_lookup[endpoint_key]["source_key"]
             id_list = [
@@ -275,6 +304,13 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
             data = self.fetch_data_pagination(lookup_endpoint)
             if isinstance(data, dict) and data.get("response"):
                 data = data["response"]
+            if (
+                lookup_config.get("unwrap_single_response")
+                and isinstance(data, list)
+                and len(data) == 1
+                and isinstance(data[0], dict)
+            ):
+                data = data[0]
             if isinstance(data, dict):
                 data[self.id_lookup[endpoint_key].get("target_key", "id")] = id_
             elif isinstance(data, list):
@@ -352,6 +388,11 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
         return re.sub(r"[\x00-\x1f\x7f-\x9f\s]", "", value)
 
     @staticmethod
+    def _sanitize_import_id(value: str) -> str:
+        """Trim an import-ID part without removing meaningful inner spaces."""
+        return re.sub(r"[\x00-\x1f\x7f-\x9f]", "", value).strip()
+
+    @staticmethod
     def build_terraform_import_ids(
         endpoint: dict[str, Any],
         obj: dict[str, Any],
@@ -390,7 +431,9 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
                         endpoint["name"],
                     )
                     return None
-                parts.append(CiscoClientCATALYSTCENTER._sanitize_id(str(parent_id)))
+                parts.append(
+                    CiscoClientCATALYSTCENTER._sanitize_import_id(str(parent_id))
+                )
                 continue
 
             field = part.get("field")
@@ -412,7 +455,7 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
                     field,
                 )
                 return None
-            parts.append(CiscoClientCATALYSTCENTER._sanitize_id(str(value)))
+            parts.append(CiscoClientCATALYSTCENTER._sanitize_import_id(str(value)))
 
         return parts
 

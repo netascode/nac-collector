@@ -8,6 +8,8 @@
   import_id_key:
     field: ipPoolName
   endpoint: /dna/intent/api/v1/sda/anycastGateways
+- name: ap_profile
+  endpoint: /dna/intent/api/v1/wirelessSettings/apProfiles
 - name: area
   import_id_attributes:
   - field: id
@@ -33,17 +35,6 @@
     join:
     - site_hierarchy: siteId
   endpoint: /dna/intent/api/v1/networkDevices/assignedToSite
-- name: tag
-  import_id_attributes:
-  - field: name
-  import_id_key:
-    field: name
-  endpoint: /dna/intent/api/v1/tag
-  children:
-  - name: assign_devices_to_tag
-    import_id_attributes:
-    - source: parent
-    endpoint: /member?memberType=networkdevice
 - name: authentication_policy_server
   import_id_attributes:
   - field: instanceUuid
@@ -100,12 +91,12 @@
   endpoint: /dna/intent/api/v2/global-credential
 - name: device_detail
   endpoint: /dna/intent/api/v1/device-detail
-- name: update_device_management_address
-  endpoint: /dna/intent/api/v1/network-device
 - name: device_replacement
   import_id_attributes:
   - field: id
   endpoint: /dna/intent/api/v1/device-replacement
+- name: dot11be_profile
+  endpoint: /dna/intent/api/v1/wirelessSettings/dot11beProfiles
 - name: extended_templates
   endpoint: /api/v1/template-programmer/extendedTemplates
 - name: external_authentication
@@ -118,6 +109,8 @@
   import_id_key:
     field: attributeName
   endpoint: /dna/system/api/v1/users/external-servers/aaa-attribute
+- name: extranet_policy
+  endpoint: /dna/intent/api/v1/sda/extranetPolicies
 - name: fabric_authentication_profile
   endpoint: /dna/intent/api/v1/business/sda/authentication-profile
 - name: fabric_device
@@ -175,19 +168,13 @@
   import_id_key:
     field: virtualNetworkName
   endpoint: /dna/intent/api/v1/sda/layer3VirtualNetworks
-- name: fabric_multicast_virtual_network
-  endpoint: /dna/intent/api/v1/sda/multicast/virtualNetworks
-- name: virtual_network_to_fabric_site
-  import_id_attributes:
-  - field: id
-  import_id_key:
-    field: virtualNetworkName
-  endpoint: /dna/intent/api/v1/sda/layer3VirtualNetworks
 - name: fabric_multicast_replication_mode
   import_id_attributes:
   - field: fabricId
   - field: id
   endpoint: /dna/intent/api/v1/sda/multicast
+- name: fabric_multicast_virtual_network
+  endpoint: /dna/intent/api/v1/sda/multicast/virtualNetworks
 - name: fabric_port_assignments
   import_id_attributes:
   - field: fabricId
@@ -241,7 +228,7 @@
 - name: image
   endpoint: /dna/intent/api/v1/image/importation
 - name: ip_pool
-  endpoint: /api/v2/ippool
+  endpoint: /api/v2/ippool?limit=500
   import_id_attributes:
   - field: id
   import_id_key:
@@ -355,6 +342,17 @@
   import_id_key:
     field: spProfileName
   endpoint: /dna/intent/api/v2/service-provider
+- name: tag
+  import_id_attributes:
+  - field: name
+  import_id_key:
+    field: name
+  endpoint: /dna/intent/api/v1/tag
+  children:
+  - name: assign_devices_to_tag
+    import_id_attributes:
+    - source: parent
+    endpoint: /member?memberType=networkdevice
 - name: template
   import_id_attributes:
   - field: projectId
@@ -384,6 +382,8 @@
     - field: authenticationProfileName
     sep: "#_#"
   endpoint: /dna/intent/api/v1/sda/authenticationProfiles
+- name: update_device_management_address
+  endpoint: /dna/intent/api/v1/network-device
 - name: user
   import_id_attributes:
   - field: userId
@@ -393,6 +393,12 @@
   endpoint: /dna/system/api/v1/user
 - name: virtual_network_ip_pool
   endpoint: /dna/intent/api/v1/business/sda/virtualnetwork/ippool
+- name: virtual_network_to_fabric_site
+  import_id_attributes:
+  - field: id
+  import_id_key:
+    field: virtualNetworkName
+  endpoint: /dna/intent/api/v1/sda/layer3VirtualNetworks
 - name: vlanToSsids
   import_id_no_descend: true
   import_id_attributes:
