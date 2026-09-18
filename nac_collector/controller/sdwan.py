@@ -36,7 +36,6 @@ class CiscoClientSDWAN(CiscoClientController):
     SDWAN_AUTH_ENDPOINT = "/j_security_check"
     SOLUTION = "sdwan"
 
-
     def __init__(
         self,
         username: str,
