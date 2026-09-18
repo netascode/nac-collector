@@ -221,6 +221,8 @@
   endpoint: /template/policy/definition/vedgeroute/
 - name: rule_set_policy_definition
   endpoint: /template/policy/definition/ruleset/
+- name: scope
+  endpoint: /v1/resource-domain/
 - name: security_policy
   endpoint: /template/policy/security/
 - name: service_feature_profile
