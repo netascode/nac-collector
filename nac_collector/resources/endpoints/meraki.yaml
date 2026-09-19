@@ -256,6 +256,8 @@
       has_own_id: true
       id_name: payloadTemplateId
       endpoint: /webhooks/payloadTemplates
+    - name: network_wireless_radio_rrm
+      endpoint: /wireless/radio/rrm
     - name: sensor_alerts_profile
       has_own_id: true
       id_name: profileId

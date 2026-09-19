@@ -228,6 +228,8 @@
 - name: service_feature_profile
   endpoint: /v1/feature-profile/sdwan/service
   children:
+  - name: service_appqoe
+    endpoint: /appqoe
   - name: service_dhcp_server
     endpoint: /dhcp-server
   - name: service_dual_router_ha
