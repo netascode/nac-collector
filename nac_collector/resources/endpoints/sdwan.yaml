@@ -376,6 +376,11 @@
   children:
   - name: transport_cellular_controller
     endpoint: /cellular-controller
+    children:
+    - name: transport_cellular_controller_feature_associate_cellular_profile
+      endpoint: /cellular-profile
+    - name: transport_cellular_controller_feature_associate_gps
+      endpoint: /gps
   - name: transport_cellular_profile
     endpoint: /cellular-profile
   - name: transport_gps
