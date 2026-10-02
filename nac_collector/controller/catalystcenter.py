@@ -5,6 +5,7 @@ import os
 import re
 import threading
 from typing import Any
+from urllib.parse import quote
 
 import httpx
 from rich.progress import (
@@ -320,9 +321,11 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
             id_list = []
         data_list = []
         for id_ in id_list:
-            id_ = self._sanitize_id(str(id_))
+            # Lookup values may be names (e.g. siteNameHierarchy) whose spaces are
+            # significant, so keep them and URL-encode instead of stripping them.
+            id_ = self._sanitize_lookup_value(str(id_))
             lookup_endpoint = self.id_lookup[endpoint_key]["target_endpoint"].replace(
-                "%v", id_
+                "%v", quote(id_, safe="/")
             )
             data = self.fetch_data_pagination(lookup_endpoint)
             if isinstance(data, dict) and data.get("response"):
@@ -456,6 +459,14 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
         Strip whitespace and non-printable characters from an ID value.
         """
         return re.sub(r"[\x00-\x1f\x7f-\x9f\s]", "", value)
+
+    @staticmethod
+    def _sanitize_lookup_value(value: str) -> str:
+        """
+        Strip non-printable characters and surrounding whitespace from a lookup
+        value, preserving internal spaces.
+        """
+        return re.sub(r"[\x00-\x1f\x7f-\x9f]", "", value).strip()
 
     def process_endpoint(self, endpoint: dict[str, Any]) -> dict[str, Any] | None:
         with self.lock:

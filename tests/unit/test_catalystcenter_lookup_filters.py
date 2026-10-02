@@ -163,6 +163,33 @@ class TestAuthenticationProfileMembershipFilter:
             ]
         }
 
+    def test_site_name_spaces_are_encoded_not_stripped(self, catalyst_client):
+        sites = {
+            "response": [
+                {
+                    "id": "site-1",
+                    "groupNameHierarchy": "Global/Area/Tail Site 1 (SA-14)\n",
+                }
+            ]
+        }
+        fabric_sites = {"response": [{"id": "fabric-1", "siteId": "site-1"}]}
+        profile = {"siteNameHierarchy": "Global/Area/Tail Site 1 (SA-14)"}
+
+        with patch.object(
+            catalyst_client,
+            "fetch_data_pagination",
+            side_effect=[sites, fabric_sites, profile],
+        ) as mock_fetch:
+            result = catalyst_client.fetch_data_alternate(self.ENDPOINT)
+
+        assert mock_fetch.call_args_list[2].args[0] == (
+            "/dna/intent/api/v1/business/sda/authentication-profile"
+            "?siteNameHierarchy=Global/Area/Tail%20Site%201%20%28SA-14%29"
+        )
+        assert result == {
+            "response": [{"siteNameHierarchy": "Global/Area/Tail Site 1 (SA-14)"}]
+        }
+
     def test_no_fabric_sites_issues_no_target_requests(self, catalyst_client):
         with patch.object(
             catalyst_client,
