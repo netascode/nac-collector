@@ -25,6 +25,10 @@
   target_key: templateId
 - endpoint: /dna/intent/api/v1/business/sda/authentication-profile
   source_endpoint: /dna/intent/api/v2/site
+  source_membership_filter:
+    source_field: id
+    membership_endpoint: /dna/intent/api/v1/sda/fabricSites?limit=500
+    membership_key: siteId
   source_key: groupNameHierarchy
   target_endpoint: /dna/intent/api/v1/business/sda/authentication-profile?siteNameHierarchy=%v
   target_key: siteNameHierarchy
@@ -65,11 +69,29 @@
   target_key: fabricId
 - endpoint: /dna/intent/api/v1/wirelessControllers/%v/primaryManagedApLocations
   source_endpoint: /dna/intent/api/v1/network-device
+  source_filter_any:
+  - source_filter:
+      family: Wireless Controller
+  - source_membership_filter:
+      source_field: id
+      membership_source_endpoint: /dna/intent/api/v1/sda/fabricSites?limit=500
+      membership_source_key: id
+      membership_endpoint: /dna/intent/api/v1/sda/fabricDevices?fabricId=%v&deviceRoles=WIRELESS_CONTROLLER_NODE
+      membership_key: networkDeviceId
   source_key: id
   target_endpoint: /dna/intent/api/v1/wirelessControllers/%v/primaryManagedApLocations
   target_key: deviceId
 - endpoint: /dna/intent/api/v1/wirelessControllers/%v/secondaryManagedApLocations
   source_endpoint: /dna/intent/api/v1/network-device
+  source_filter_any:
+  - source_filter:
+      family: Wireless Controller
+  - source_membership_filter:
+      source_field: id
+      membership_source_endpoint: /dna/intent/api/v1/sda/fabricSites?limit=500
+      membership_source_key: id
+      membership_endpoint: /dna/intent/api/v1/sda/fabricDevices?fabricId=%v&deviceRoles=WIRELESS_CONTROLLER_NODE
+      membership_key: networkDeviceId
   source_key: id
   target_endpoint: /dna/intent/api/v1/wirelessControllers/%v/secondaryManagedApLocations
   target_key: deviceId
@@ -87,4 +109,9 @@
   target_endpoint: /dna/intent/api/v1/featureTemplates/wireless/rrmFraConfigurations/%v
   unwrap_single_response: true
   emit_per_item: true
-
+- endpoint: /dna/intent/api/v1/device-detail
+  source_endpoint: /dna/intent/api/v1/network-device
+  source_key: id
+  target_endpoint: /dna/intent/api/v1/device-detail?identifier=uuid&searchBy=%v
+  target_key: deviceId
+  unwrap_single_response: true
