@@ -144,8 +144,5 @@ overrides:
   import_id_attributes:
     - name: templateId
 
-- name: wireless_profile
-  endpoint: /intent/api/v1/wirelessProfiles
-
 - name: assign_devices_to_tag
   endpoint: /member?memberType=networkdevice
