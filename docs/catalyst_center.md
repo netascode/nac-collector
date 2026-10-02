@@ -71,13 +71,8 @@ Some target endpoints only apply to a subset of the items returned by the source
 **source_filter**: Keep only source items whose fields match the given values. Each value may be a single value or a list of allowed values, and every listed field must match.
 
 ```yaml
-- endpoint: /dna/intent/api/v1/wirelessControllers/%v/primaryManagedApLocations
-  source_endpoint: /dna/intent/api/v1/network-device
-  source_filter:
-    family: Wireless Controller
-  source_key: id
-  target_endpoint: /dna/intent/api/v1/wirelessControllers/%v/primaryManagedApLocations
-  target_key: deviceId
+source_filter:
+  family: Wireless Controller
 ```
 
 **source_membership_filter**: Keep only source items whose `source_field` value appears in the `membership_key` field of a second endpoint's items. Use this when the source items carry no field that identifies whether they apply, but another endpoint lists the ones that do. For example, `/dna/intent/api/v2/site` does not say which sites are fabric sites, but `/dna/intent/api/v1/sda/fabricSites` lists their `siteId`s:
@@ -95,6 +90,29 @@ Some target endpoints only apply to a subset of the items returned by the source
 ```
 
 If the membership endpoint cannot be fetched, the lookup is skipped rather than querying every source item.
+
+When the membership endpoint must itself be queried once per item of another endpoint, set `membership_source_endpoint` and `membership_source_key`; `membership_endpoint` then takes a `%v` placeholder. The allowed values are collected across all of those queries.
+
+**source_filter_any**: Keep a source item if it matches *any* of the listed conditions, each of which is a `source_filter` or a `source_membership_filter`. For example, managed AP locations exist on dedicated wireless controllers and on switches running embedded wireless, which only show up as fabric devices with the `WIRELESS_CONTROLLER_NODE` role:
+
+```yaml
+- endpoint: /dna/intent/api/v1/wirelessControllers/%v/primaryManagedApLocations
+  source_endpoint: /dna/intent/api/v1/network-device
+  source_filter_any:
+  - source_filter:
+      family: Wireless Controller
+  - source_membership_filter:
+      source_field: id
+      membership_source_endpoint: /dna/intent/api/v1/sda/fabricSites?limit=500
+      membership_source_key: id
+      membership_endpoint: /dna/intent/api/v1/sda/fabricDevices?fabricId=%v&deviceRoles=WIRELESS_CONTROLLER_NODE
+      membership_key: networkDeviceId
+  source_key: id
+  target_endpoint: /dna/intent/api/v1/wirelessControllers/%v/primaryManagedApLocations
+  target_key: deviceId
+```
+
+Inside `source_filter_any`, a membership condition whose endpoint cannot be fetched matches nothing, so the other conditions still apply.
 
 ### Where is this used?
 

@@ -69,15 +69,29 @@
   target_key: fabricId
 - endpoint: /dna/intent/api/v1/wirelessControllers/%v/primaryManagedApLocations
   source_endpoint: /dna/intent/api/v1/network-device
-  source_filter:
-    family: Wireless Controller
+  source_filter_any:
+  - source_filter:
+      family: Wireless Controller
+  - source_membership_filter:
+      source_field: id
+      membership_source_endpoint: /dna/intent/api/v1/sda/fabricSites?limit=500
+      membership_source_key: id
+      membership_endpoint: /dna/intent/api/v1/sda/fabricDevices?fabricId=%v&deviceRoles=WIRELESS_CONTROLLER_NODE
+      membership_key: networkDeviceId
   source_key: id
   target_endpoint: /dna/intent/api/v1/wirelessControllers/%v/primaryManagedApLocations
   target_key: deviceId
 - endpoint: /dna/intent/api/v1/wirelessControllers/%v/secondaryManagedApLocations
   source_endpoint: /dna/intent/api/v1/network-device
-  source_filter:
-    family: Wireless Controller
+  source_filter_any:
+  - source_filter:
+      family: Wireless Controller
+  - source_membership_filter:
+      source_field: id
+      membership_source_endpoint: /dna/intent/api/v1/sda/fabricSites?limit=500
+      membership_source_key: id
+      membership_endpoint: /dna/intent/api/v1/sda/fabricDevices?fabricId=%v&deviceRoles=WIRELESS_CONTROLLER_NODE
+      membership_key: networkDeviceId
   source_key: id
   target_endpoint: /dna/intent/api/v1/wirelessControllers/%v/secondaryManagedApLocations
   target_key: deviceId

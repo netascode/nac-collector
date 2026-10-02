@@ -60,33 +60,92 @@ class TestMatchesFilter:
         )
 
 
+WIRELESS_DEVICES = {
+    "response": [
+        {"id": "wlc-1", "family": "Wireless Controller"},
+        {"id": "ewc-switch", "family": "Switches and Hubs"},
+        {"id": "edge-switch", "family": "Switches and Hubs"},
+        {"id": "ap-1", "family": "Unified AP"},
+    ]
+}
+FABRIC_SITES = {"response": [{"id": "fabric-1"}, {"id": "fabric-2"}]}
+FABRIC_DEVICES_URL = (
+    "/dna/intent/api/v1/sda/fabricDevices?fabricId={}"
+    "&deviceRoles=WIRELESS_CONTROLLER_NODE"
+)
+
+
+def _fake_fetch(responses):
+    """Return a fetch_data_pagination stand-in that answers by exact URL."""
+
+    def fetch(url):
+        return responses.get(url)
+
+    return fetch
+
+
 class TestWirelessControllerSourceFilter:
     @pytest.mark.parametrize("kind", ["primary", "secondary"])
-    def test_only_wireless_controllers_are_queried(self, catalyst_client, kind):
+    def test_wlcs_and_fabric_wireless_nodes_are_queried(self, catalyst_client, kind):
         endpoint = {
             "name": f"wireless_controller_{kind}_managed_ap_locations",
             "endpoint": (
                 f"/dna/intent/api/v1/wirelessControllers/%v/{kind}ManagedApLocations"
             ),
         }
-        locations = {"response": {"managedApLocations": [{"siteId": "s1"}]}}
+        target = (
+            "/dna/intent/api/v1/wirelessControllers/{}/" + kind + "ManagedApLocations"
+        )
+        responses = {
+            "/dna/intent/api/v1/network-device": WIRELESS_DEVICES,
+            "/dna/intent/api/v1/sda/fabricSites?limit=500": FABRIC_SITES,
+            FABRIC_DEVICES_URL.format("fabric-1"): {
+                "response": [{"networkDeviceId": "ewc-switch"}]
+            },
+            FABRIC_DEVICES_URL.format("fabric-2"): {"response": []},
+            target.format("wlc-1"): {"response": {"managedApLocations": [1]}},
+            target.format("ewc-switch"): {"response": {"managedApLocations": [2]}},
+        }
 
         with patch.object(
             catalyst_client,
             "fetch_data_pagination",
-            side_effect=[NETWORK_DEVICES, locations],
+            side_effect=_fake_fetch(responses),
         ) as mock_fetch:
             result = catalyst_client.fetch_data_alternate(endpoint)
 
         requested = [c.args[0] for c in mock_fetch.call_args_list]
-        assert requested == [
-            "/dna/intent/api/v1/network-device",
-            f"/dna/intent/api/v1/wirelessControllers/wlc-1/{kind}ManagedApLocations",
-        ]
+        assert target.format("edge-switch") not in requested
+        assert target.format("ap-1") not in requested
         assert result == {
             "response": [
-                {"managedApLocations": [{"siteId": "s1"}], "deviceId": "wlc-1"}
+                {"managedApLocations": [1], "deviceId": "wlc-1"},
+                {"managedApLocations": [2], "deviceId": "ewc-switch"},
             ]
+        }
+
+    def test_fabric_lookup_failure_still_queries_family_matches(self, catalyst_client):
+        endpoint = {
+            "name": "wireless_controller_primary_managed_ap_locations",
+            "endpoint": (
+                "/dna/intent/api/v1/wirelessControllers/%v/primaryManagedApLocations"
+            ),
+        }
+        target = "/dna/intent/api/v1/wirelessControllers/{}/primaryManagedApLocations"
+        responses = {
+            "/dna/intent/api/v1/network-device": WIRELESS_DEVICES,
+            target.format("wlc-1"): {"response": {"managedApLocations": [1]}},
+        }
+
+        with patch.object(
+            catalyst_client,
+            "fetch_data_pagination",
+            side_effect=_fake_fetch(responses),
+        ):
+            result = catalyst_client.fetch_data_alternate(endpoint)
+
+        assert result == {
+            "response": [{"managedApLocations": [1], "deviceId": "wlc-1"}]
         }
 
 

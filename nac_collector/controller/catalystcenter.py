@@ -4,6 +4,8 @@ import logging
 import os
 import re
 import threading
+from collections.abc import Callable
+from functools import partial
 from typing import Any
 from urllib.parse import quote
 
@@ -310,6 +312,14 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
                 for i in look_data
                 if isinstance(i, dict) and i.get(source_field) in allowed_values
             ]
+        any_filters = lookup_config.get("source_filter_any")
+        if any_filters and isinstance(look_data, list):
+            matchers = self._build_any_matchers(any_filters)
+            look_data = [
+                i
+                for i in look_data
+                if isinstance(i, dict) and any(match(i) for match in matchers)
+            ]
         if endpoint_key in self.id_lookup:
             source_key = self.id_lookup[endpoint_key]["source_key"]
             id_list = [
@@ -367,6 +377,51 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
                 return False
         return True
 
+    def _build_any_matchers(
+        self, any_filters: list[dict[str, Any]]
+    ) -> list[Callable[[dict[str, Any]], bool]]:
+        """
+        Build one predicate per condition in a lookup's source_filter_any.
+
+        Each condition holds either a 'source_filter' or a 'source_membership_filter'.
+        A membership condition whose endpoint cannot be fetched matches nothing, so
+        the remaining conditions still apply.
+
+        Parameters:
+            any_filters (list): The source_filter_any conditions.
+
+        Returns:
+            list: Predicates that each take a source item and return a bool.
+        """
+        matchers: list[Callable[[dict[str, Any]], bool]] = []
+        for condition in any_filters:
+            if "source_filter" in condition:
+                matchers.append(
+                    partial(
+                        self._matches_filter, source_filter=condition["source_filter"]
+                    )
+                )
+            elif "source_membership_filter" in condition:
+                membership = condition["source_membership_filter"]
+                allowed = self._fetch_membership_values(membership) or set()
+                matchers.append(
+                    partial(
+                        self._matches_membership,
+                        field=membership["source_field"],
+                        allowed=allowed,
+                    )
+                )
+        return matchers
+
+    @staticmethod
+    def _matches_membership(
+        item: dict[str, Any], field: str, allowed: set[Any]
+    ) -> bool:
+        """
+        Check whether a source item's field value is in an allowed set.
+        """
+        return item.get(field) in allowed
+
     def _fetch_membership_values(
         self, membership_filter: dict[str, Any]
     ) -> set[Any] | None:
@@ -376,25 +431,55 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
         Parameters:
             membership_filter (dict): The filter config with 'membership_endpoint'
                 (queried for the allowed items) and 'membership_key' (the field
-                read from them).
+                read from them). If 'membership_source_endpoint' and
+                'membership_source_key' are set, membership_endpoint contains a
+                '%v' placeholder and is queried once per value of
+                membership_source_key in the membership_source_endpoint response.
 
         Returns:
             set or None: The allowed values, or None if the endpoint could not be fetched.
         """
         membership_endpoint = membership_filter["membership_endpoint"]
-        membership_data = self.fetch_data_pagination(membership_endpoint)
-        if not isinstance(membership_data, dict) or "response" not in membership_data:
-            logger.warning(
-                "Could not fetch membership filter endpoint: %s",
-                membership_endpoint,
-            )
-            return None
+        membership_source = membership_filter.get("membership_source_endpoint")
+        if membership_source:
+            source_data = self.fetch_data_pagination(membership_source)
+            if not isinstance(source_data, dict) or "response" not in source_data:
+                logger.warning(
+                    "Could not fetch membership source endpoint: %s",
+                    membership_source,
+                )
+                return None
+            source_key = membership_filter["membership_source_key"]
+            endpoints = [
+                membership_endpoint.replace(
+                    "%v", quote(self._sanitize_lookup_value(str(i[source_key])))
+                )
+                for i in source_data["response"]
+                if isinstance(i, dict) and source_key in i
+            ]
+        else:
+            endpoints = [membership_endpoint]
+
         membership_key = membership_filter["membership_key"]
-        return {
-            i[membership_key]
-            for i in membership_data["response"]
-            if isinstance(i, dict) and membership_key in i
-        }
+        values: set[Any] = set()
+        fetched_any = False
+        for url in endpoints:
+            membership_data = self.fetch_data_pagination(url)
+            if (
+                not isinstance(membership_data, dict)
+                or "response" not in membership_data
+            ):
+                logger.warning("Could not fetch membership filter endpoint: %s", url)
+                continue
+            fetched_any = True
+            values.update(
+                i[membership_key]
+                for i in membership_data["response"]
+                if isinstance(i, dict) and membership_key in i
+            )
+        if endpoints and not fetched_any:
+            return None
+        return values
 
     def get_from_endpoints_data(
         self, endpoints_data: list[dict[str, Any]]
