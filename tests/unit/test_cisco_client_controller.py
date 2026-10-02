@@ -299,6 +299,59 @@ class TestGetRequest:
         assert "returned 404 with no body" in caplog.text
         assert "may not be supported on this platform version" in caplog.text
 
+    def test_get_request_expected_status_code_logs_warning(
+        self, cisco_client, mock_httpx_client, caplog
+    ):
+        cisco_client.client = mock_httpx_client
+        mock_response = MagicMock()
+        mock_response.status_code = 400
+        mock_httpx_client.get.return_value = mock_response
+
+        import logging
+
+        with caplog.at_level(logging.WARNING):
+            result = cisco_client.get_request(
+                "https://example.com/api/test", expected_status_codes=[400]
+            )
+
+        assert result is None
+        assert mock_httpx_client.get.call_count == 1
+        assert "returned expected status code 400" in caplog.text
+        assert not [r for r in caplog.records if r.levelno >= logging.ERROR]
+
+    def test_get_request_unlisted_status_code_still_logs_error(
+        self, cisco_client, mock_httpx_client, caplog
+    ):
+        cisco_client.client = mock_httpx_client
+        mock_response = MagicMock()
+        mock_response.status_code = 500
+        mock_httpx_client.get.return_value = mock_response
+
+        import logging
+
+        with caplog.at_level(logging.WARNING):
+            result = cisco_client.get_request(
+                "https://example.com/api/test", expected_status_codes=[400]
+            )
+
+        assert result is None
+        assert [r for r in caplog.records if r.levelno == logging.ERROR]
+
+    def test_get_request_default_has_no_expected_status_codes(
+        self, cisco_client, mock_httpx_client, caplog
+    ):
+        cisco_client.client = mock_httpx_client
+        mock_response = MagicMock()
+        mock_response.status_code = 400
+        mock_httpx_client.get.return_value = mock_response
+
+        import logging
+
+        with caplog.at_level(logging.WARNING):
+            cisco_client.get_request("https://example.com/api/test")
+
+        assert [r for r in caplog.records if r.levelno == logging.ERROR]
+
 
 class TestPostRequest:
     def test_post_request_success(self, cisco_client, mock_httpx_client):
@@ -497,6 +550,13 @@ class TestFetchData:
 
 
 class TestFetchDataPagination:
+    def test_fetch_data_pagination_passes_expected_status_codes(self, cisco_client):
+        with patch.object(cisco_client, "get_request", return_value=None) as mock_get:
+            result = cisco_client.fetch_data_pagination("/api/test", [400])
+
+        assert result is None
+        mock_get.assert_called_once_with("https://example.com/api/test?offset=1", [400])
+
     def test_fetch_data_pagination_single_page(self, cisco_client):
         mock_response = MagicMock()
         mock_response.status_code = 200

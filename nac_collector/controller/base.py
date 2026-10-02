@@ -3,6 +3,7 @@ import logging
 import time
 import zipfile
 from abc import ABC, abstractmethod
+from collections.abc import Collection
 from typing import Any
 
 import httpx
@@ -77,12 +78,17 @@ class CiscoClientController(ABC):
             NotImplementedError: If this method is not overridden in a concrete subclass.
         """
 
-    def get_request(self, url: str) -> httpx.Response | None:
+    def get_request(
+        self, url: str, expected_status_codes: Collection[int] = ()
+    ) -> httpx.Response | None:
         """
         Send a GET request to a specific URL and handle a 429 status code.
 
         Parameters:
             url (str): The URL to send the GET request to.
+            expected_status_codes (Collection[int]): Non-success status codes
+                that are known to be benign for this endpoint. They are logged
+                at WARNING instead of ERROR, so they do not fail the run.
 
         Returns:
             response (httpx.Response): The response from the GET request.
@@ -143,6 +149,16 @@ class CiscoClientController(ABC):
                         " supported on this platform version.",
                         url,
                     )
+                return None
+            elif response.status_code in expected_status_codes:
+                # The endpoint definition declares this status as benign (e.g. a
+                # contextual parameter the collector does not supply). Surface it
+                # without marking the collection as failed.
+                self.logger.warning(
+                    "GET %s returned expected status code %s — treating as no data.",
+                    url,
+                    response.status_code,
+                )
                 return None
             else:
                 # If the status code is neither 429, 200, nor 404, log an error and continue to the next iteration
@@ -239,12 +255,15 @@ class CiscoClientController(ABC):
                 response.status_code,
             )
 
-    def fetch_data_pagination(self, endpoint: str) -> dict[str, Any] | list[Any] | None:
+    def fetch_data_pagination(
+        self, endpoint: str, expected_status_codes: Collection[int] = ()
+    ) -> dict[str, Any] | list[Any] | None:
         """
         Fetch all data from a specified endpoint, handling pagination via the "offset" parameter.
 
         Parameters:
             endpoint (str): Endpoint URL.
+            expected_status_codes (Collection[int]): Benign status codes, see get_request().
 
         Returns:
             data (dict): The combined JSON content of all responses or None if an error occurred.
@@ -259,7 +278,9 @@ class CiscoClientController(ABC):
             paginated_endpoint = f"{endpoint}{connector}offset={offset}"
 
             # Make the request to the given endpoint
-            response = self.get_request(self.base_url + paginated_endpoint)
+            response = self.get_request(
+                self.base_url + paginated_endpoint, expected_status_codes
+            )
             if not response:
                 self.logger.debug(
                     "No valid response received for endpoint: %s", paginated_endpoint
