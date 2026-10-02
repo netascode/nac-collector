@@ -291,6 +291,24 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
                 for instance in group.get(nested_key, [])
                 if isinstance(instance, dict)
             ]
+        source_filter = lookup_config.get("source_filter")
+        if source_filter and isinstance(look_data, list):
+            look_data = [
+                i
+                for i in look_data
+                if isinstance(i, dict) and self._matches_filter(i, source_filter)
+            ]
+        membership_filter = lookup_config.get("source_membership_filter")
+        if membership_filter and isinstance(look_data, list):
+            allowed_values = self._fetch_membership_values(membership_filter)
+            if allowed_values is None:
+                return None
+            source_field = membership_filter["source_field"]
+            look_data = [
+                i
+                for i in look_data
+                if isinstance(i, dict) and i.get(source_field) in allowed_values
+            ]
         if endpoint_key in self.id_lookup:
             source_key = self.id_lookup[endpoint_key]["source_key"]
             id_list = [
@@ -326,6 +344,54 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
             data_list.append(data)
         data = {"response": data_list}
         return data
+
+    @staticmethod
+    def _matches_filter(item: dict[str, Any], source_filter: dict[str, Any]) -> bool:
+        """
+        Check whether a source item matches every field in a lookup's source_filter.
+
+        Parameters:
+            item (dict): A single item from the source endpoint response.
+            source_filter (dict): Mapping of field name to an allowed value, or a
+                list of allowed values.
+
+        Returns:
+            bool: True if every filtered field holds an allowed value.
+        """
+        for field, allowed in source_filter.items():
+            allowed_values = allowed if isinstance(allowed, list) else [allowed]
+            if item.get(field) not in allowed_values:
+                return False
+        return True
+
+    def _fetch_membership_values(
+        self, membership_filter: dict[str, Any]
+    ) -> set[Any] | None:
+        """
+        Collect the values a source item must match to pass a source_membership_filter.
+
+        Parameters:
+            membership_filter (dict): The filter config with 'membership_endpoint'
+                (queried for the allowed items) and 'membership_key' (the field
+                read from them).
+
+        Returns:
+            set or None: The allowed values, or None if the endpoint could not be fetched.
+        """
+        membership_endpoint = membership_filter["membership_endpoint"]
+        membership_data = self.fetch_data_pagination(membership_endpoint)
+        if not isinstance(membership_data, dict) or "response" not in membership_data:
+            logger.warning(
+                "Could not fetch membership filter endpoint: %s",
+                membership_endpoint,
+            )
+            return None
+        membership_key = membership_filter["membership_key"]
+        return {
+            i[membership_key]
+            for i in membership_data["response"]
+            if isinstance(i, dict) and membership_key in i
+        }
 
     def get_from_endpoints_data(
         self, endpoints_data: list[dict[str, Any]]
