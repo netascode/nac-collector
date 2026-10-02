@@ -76,9 +76,6 @@ extra_endpoints:
 - name: ip_pools
   endpoint: /dna/intent/api/v1/ipam/globalIpAddressPools
 
-- name: virtual_network_ip_pool
-  endpoint: /dna/intent/api/v1/business/sda/virtualnetwork/ippool
-
 - name: wireless_enterprise_ssid
   endpoint: /dna/intent/api/v1/enterprise-ssid
 

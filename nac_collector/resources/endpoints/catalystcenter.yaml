@@ -156,8 +156,6 @@
   endpoint: /dna/intent/api/v1/network-device
 - name: user
   endpoint: /dna/system/api/v1/user
-- name: virtual_network_ip_pool
-  endpoint: /dna/intent/api/v1/business/sda/virtualnetwork/ippool
 - name: virtual_network_to_fabric_site
   endpoint: /dna/intent/api/v1/sda/layer3VirtualNetworks
 - name: vlanToSsids
