@@ -176,7 +176,7 @@
 - name: wireless_preauth_acl
   endpoint: /dna/intent/api/v1/wirelessSettings/preAuthAcls
 - name: wireless_profile
-  endpoint: /intent/api/v1/wirelessProfiles
+  endpoint: /dna/intent/api/v1/wirelessProfiles
   children:
   - name: wireless_profile_policy_tag
     endpoint: /policyTags
