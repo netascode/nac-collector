@@ -161,6 +161,8 @@
     endpoint: /preferred-color-group
   - name: policy_object_security_data_ipv4_prefix_list
     endpoint: /security-data-ip-prefix
+  - name: policy_object_security_data_ipv6_prefix_list
+    endpoint: /security-data-ipv6-prefix
   - name: policy_object_security_fqdn_list
     endpoint: /security-fqdn
   - name: policy_object_security_geolocation_list
