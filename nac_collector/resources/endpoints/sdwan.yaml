@@ -175,10 +175,14 @@
     endpoint: /security-localapp
   - name: policy_object_security_local_domain_list
     endpoint: /security-localdomain
+  - name: policy_object_security_object_group
+    endpoint: /security-object-group
   - name: policy_object_security_port_list
     endpoint: /security-port
   - name: policy_object_security_protocol_list
     endpoint: /security-protocolname
+  - name: policy_object_security_rule_set
+    endpoint: /security-rule-set
   - name: policy_object_security_scalable_group_tag_list
     endpoint: /security-scalablegrouptag
   - name: policy_object_security_url_allow_list
