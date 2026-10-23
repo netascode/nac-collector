@@ -306,7 +306,9 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
             lookup_endpoint = self.id_lookup[endpoint_key]["target_endpoint"].replace(
                 "%v", id_
             )
-            data = self.fetch_data_pagination(lookup_endpoint)
+            data = self.fetch_data_pagination(
+                lookup_endpoint, endpoint.get("expected_status_codes", ())
+            )
             if isinstance(data, dict) and data.get("response"):
                 data = data["response"]
             if (
@@ -417,7 +419,9 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
             if data is None:
                 return None
         else:
-            fetched_data = self.fetch_data_pagination(endpoint["endpoint"])
+            fetched_data = self.fetch_data_pagination(
+                endpoint["endpoint"], endpoint.get("expected_status_codes", ())
+            )
             if isinstance(fetched_data, dict):
                 data = fetched_data
             else:
@@ -474,7 +478,10 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
                     )
 
                     joined_endpoint = f"{endpoint['endpoint']}/{sanitized_parent_id}{children_endpoint['endpoint']}"
-                    data = self.fetch_data_pagination(joined_endpoint)
+                    data = self.fetch_data_pagination(
+                        joined_endpoint,
+                        children_endpoint.get("expected_status_codes", ()),
+                    )
                     child_dict = self.process_endpoint_data(
                         children_endpoint, child_dict, data, parent_id
                     )

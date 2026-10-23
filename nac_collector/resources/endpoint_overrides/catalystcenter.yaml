@@ -51,17 +51,28 @@ extra_endpoints:
 - name: network_devices
   endpoint: /dna/intent/api/v1/network-device
 
+# "expected_status_codes" lists non-success responses that are benign for an
+# endpoint. They are logged at WARNING and treated as no data, instead of being
+# logged at ERROR (which fails the whole collection run).
+
+# Queried for every device in inventory; non-WLC devices return 400.
 - name: wireless_controller_primary_managed_ap_locations
   endpoint: /dna/intent/api/v1/wirelessControllers/%v/primaryManagedApLocations
+  expected_status_codes: [400]
 
 - name: wireless_controller_secondary_managed_ap_locations
   endpoint: /dna/intent/api/v1/wirelessControllers/%v/secondaryManagedApLocations
+  expected_status_codes: [400]
 
+# Returns 500 when the identifier query parameter is not supplied.
 - name: device_detail
   endpoint: /dna/intent/api/v1/device-detail
+  expected_status_codes: [500]
 
+# Queried per site; non-fabric sites return 400.
 - name: fabric_authentication_profile
   endpoint: /dna/intent/api/v1/business/sda/authentication-profile
+  expected_status_codes: [400]
 
 - name: fabric_provision_device
   endpoint: /dna/intent/api/v1/sda/provisionDevices
@@ -75,8 +86,10 @@ extra_endpoints:
 - name: ip_pools
   endpoint: /dna/intent/api/v1/ipam/globalIpAddressPools
 
+# Returns 400 when siteNameHierarchy is not supplied.
 - name: virtual_network_ip_pool
   endpoint: /dna/intent/api/v1/business/sda/virtualnetwork/ippool
+  expected_status_codes: [400]
 
 - name: wireless_enterprise_ssid
   endpoint: /dna/intent/api/v1/enterprise-ssid
