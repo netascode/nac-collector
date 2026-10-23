@@ -1,0 +1,3185 @@
+{
+ "nd42_isn_loopback": [
+  {
+   "configData": {
+    "mode": "managed",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": true,
+      "description": "CERT ISN route-server / RP address",
+      "ip": "10.130.0.1",
+      "linkStateRoutingTag": "UNDERLAY",
+      "policyType": "loopback",
+      "routeMapTag": 54331,
+      "speed": "auto",
+      "vrfInterface": "default"
+     }
+    }
+   },
+   "interfaceName": "loopback40",
+   "interfaceType": "loopback",
+   "switchId": "99KJ98WGZ3Q"
+  }
+ ],
+ "nd42_leaf": [
+  {
+   "configData": {
+    "mode": "routed",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": true,
+      "mtu": 9216,
+      "netflow": false,
+      "policyType": "routedHost",
+      "ptp": false,
+      "speed": "auto"
+     }
+    }
+   },
+   "interfaceName": "Ethernet1/29",
+   "interfaceType": "ethernet",
+   "switchId": "9C2NEBE3MRE"
+  },
+  {
+   "configData": {
+    "mode": "routed",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": true,
+      "mtu": 9216,
+      "netflow": false,
+      "policyType": "routedHost",
+      "ptp": false,
+      "speed": "auto"
+     }
+    }
+   },
+   "interfaceName": "Ethernet1/27",
+   "interfaceType": "ethernet",
+   "switchId": "9C2NEBE3MRE"
+  },
+  {
+   "configData": {
+    "mode": "managed",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": true,
+      "description": "Routing loopback interface",
+      "ip": "10.131.0.4",
+      "linkStateRoutingTag": "UNDERLAY",
+      "ospfAreaId": "0.0.0.0",
+      "policyType": "underlayLoopback",
+      "replicationMode": "multicast",
+      "routeMapTag": 54330
+     }
+    }
+   },
+   "interfaceName": "loopback0",
+   "interfaceType": "loopback",
+   "switchId": "9C2NEBE3MRE"
+  },
+  {
+   "configData": {
+    "mode": "managed",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": true,
+      "description": "RP loopback interface",
+      "ip": "10.131.8.1",
+      "linkStateRoutingTag": "UNDERLAY",
+      "ospfAreaId": "0.0.0.0",
+      "policyType": "underlayLoopback",
+      "replicationMode": "multicast"
+     }
+    }
+   },
+   "interfaceName": "loopback254",
+   "interfaceType": "loopback",
+   "switchId": "9C2NEBE3MRE"
+  },
+  {
+   "configData": {
+    "mode": "unknown",
+    "networkOS": {
+     "networkOSType": "nx-os"
+    }
+   },
+   "interfaceName": "Vlan1",
+   "interfaceType": "svi",
+   "switchId": "9C2NEBE3MRE"
+  },
+  {
+   "configData": {
+    "mode": "unknown",
+    "networkOS": {
+     "networkOSType": "nx-os"
+    }
+   },
+   "interfaceName": "Vlan2031",
+   "interfaceType": "svi",
+   "switchId": "9C2NEBE3MRE"
+  },
+  {
+   "configData": {
+    "mode": "trunk",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": true,
+      "allowedVlans": "none",
+      "bpduGuard": "default",
+      "mtu": "jumbo",
+      "netflow": false,
+      "policyType": "trunkHost",
+      "portTypeEdgeTrunk": true,
+      "ptp": false,
+      "speed": "auto"
+     }
+    }
+   },
+   "interfaceName": "Ethernet1/29",
+   "interfaceType": "ethernet",
+   "switchId": "9SUOVQVJR60"
+  },
+  {
+   "configData": {
+    "mode": "trunk",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": true,
+      "allowedVlans": "none",
+      "bpduGuard": "default",
+      "mtu": "jumbo",
+      "netflow": false,
+      "policyType": "trunkHost",
+      "portTypeEdgeTrunk": true,
+      "ptp": false,
+      "speed": "auto"
+     }
+    }
+   },
+   "interfaceName": "Ethernet1/27",
+   "interfaceType": "ethernet",
+   "switchId": "9SUOVQVJR60"
+  },
+  {
+   "configData": {
+    "mode": "unknown",
+    "networkOS": {
+     "networkOSType": "nx-os"
+    }
+   },
+   "interfaceName": "Loopback42",
+   "interfaceType": "loopback",
+   "switchId": "9SUOVQVJR60"
+  },
+  {
+   "configData": {
+    "mode": "unknown",
+    "networkOS": {
+     "networkOSType": "nx-os"
+    }
+   },
+   "interfaceName": "Loopback42",
+   "interfaceType": "loopback",
+   "switchId": "9URCFBELUUJ"
+  },
+  {
+   "configData": {
+    "mode": "routed",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "policyType": "userDefined",
+      "templateConfig": {
+       "ADMIN_STATE": "true",
+       "DESC": "\"PO 500 (vpc-peer-link) member A-AZ1-Gold-TOR1-Ethernet1/3 to A-AZ1-Gold-TOR2-Ethernet1/3\"",
+       "FEC": "auto",
+       "INTF_NAME": "Ethernet1/3",
+       "INTF_PTP": "false",
+       "PC_MODE": "active",
+       "POLICY_ID": "POLICY-390790",
+       "PO_ID": "port-channel500",
+       "PRIORITY": "350",
+       "SWITCH_PORT_MODE": "trunk"
+      },
+      "templateName": "vpc_pair_peer_link_po_member"
+     }
+    }
+   },
+   "interfaceName": "Ethernet1/3",
+   "interfaceType": "ethernet",
+   "switchId": "9CQTWCAUSLL"
+  },
+  {
+   "configData": {
+    "mode": "trunk",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "policyType": "userDefined",
+      "templateConfig": {
+       "ADMIN_STATE": "true",
+       "ALLOWED_VLANS": "all",
+       "DESC": "\"vpc-peer-link A-AZ1-Gold-TOR1--A-AZ1-Gold-TOR2\"",
+       "MEMBER_INTERFACES": "Ethernet1/3",
+       "PC_MODE": "active",
+       "POLICY_ID": "POLICY-390740",
+       "PO_ID": "port-channel500",
+       "PRIORITY": "250",
+       "SWITCH_PORT_MODE": "trunk"
+      },
+      "templateName": "vpc_pair_peer_link_po"
+     }
+    }
+   },
+   "interfaceName": "port-channel500",
+   "interfaceType": "portChannel",
+   "switchId": "9CQTWCAUSLL"
+  },
+  {
+   "configData": {
+    "mode": "routed",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "policyType": "userDefined",
+      "templateConfig": {
+       "ADMIN_STATE": "true",
+       "DESC": "\"PO 500 (vpc-peer-link) member A-AZ1-Gold-TOR2-Ethernet1/3 to A-AZ1-Gold-TOR1-Ethernet1/3\"",
+       "FEC": "auto",
+       "INTF_NAME": "Ethernet1/3",
+       "INTF_PTP": "false",
+       "PC_MODE": "active",
+       "POLICY_ID": "POLICY-390690",
+       "PO_ID": "port-channel500",
+       "PRIORITY": "350",
+       "SWITCH_PORT_MODE": "trunk"
+      },
+      "templateName": "vpc_pair_peer_link_po_member"
+     }
+    }
+   },
+   "interfaceName": "Ethernet1/3",
+   "interfaceType": "ethernet",
+   "switchId": "99KZ8NQMI93"
+  },
+  {
+   "configData": {
+    "mode": "trunk",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "policyType": "userDefined",
+      "templateConfig": {
+       "ADMIN_STATE": "true",
+       "ALLOWED_VLANS": "all",
+       "DESC": "\"vpc-peer-link A-AZ1-Gold-TOR2--A-AZ1-Gold-TOR1\"",
+       "MEMBER_INTERFACES": "Ethernet1/3",
+       "PC_MODE": "active",
+       "POLICY_ID": "POLICY-390640",
+       "PO_ID": "port-channel500",
+       "PRIORITY": "250",
+       "SWITCH_PORT_MODE": "trunk"
+      },
+      "templateName": "vpc_pair_peer_link_po"
+     }
+    }
+   },
+   "interfaceName": "port-channel500",
+   "interfaceType": "portChannel",
+   "switchId": "99KZ8NQMI93"
+  }
+ ],
+ "nd42_templates": {
+  "int_routed_host": {
+   "parameters": [
+    {
+     "metaProperties": {
+      "maxLength": "32",
+      "minLength": "1"
+     },
+     "name": "vrfInterface"
+    },
+    {
+     "metaProperties": null,
+     "name": "ip"
+    },
+    {
+     "metaProperties": {
+      "max": "31",
+      "min": "1"
+     },
+     "name": "prefix"
+    },
+    {
+     "metaProperties": null,
+     "name": "routingTag"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "9216",
+      "max": "9216",
+      "min": "576"
+     },
+     "name": "mtu"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "auto",
+      "validValues": "auto,10Mb,100Mb,1Gb,2.5Gb,5Gb,10Gb,25Gb,40Gb,50Gb,100Gb,200Gb,400Gb,800Gb"
+     },
+     "name": "speed"
+    },
+    {
+     "metaProperties": {
+      "maxLength": "254",
+      "minLength": "1"
+     },
+     "name": "description"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "ipRedirects"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "pimSparse"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "1",
+      "max": "4294967295",
+      "min": "1"
+     },
+     "name": "pimDrPriority"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "auto",
+      "validValues": "auto,fcFec,off,rsCons16,rsFec,rsIEEE"
+     },
+     "name": "fec"
+    },
+    {
+     "metaProperties": null,
+     "name": "extraConfig"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "true"
+     },
+     "name": "adminState"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "netflow"
+    },
+    {
+     "metaProperties": null,
+     "name": "netflowMonitor"
+    },
+    {
+     "metaProperties": null,
+     "name": "netflowSampler"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "pfc"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "qos"
+    },
+    {
+     "metaProperties": null,
+     "name": "qosPolicy"
+    },
+    {
+     "metaProperties": null,
+     "name": "queuingPolicy"
+    }
+   ]
+  },
+  "int_trunk_host": {
+   "parameters": [
+    {
+     "metaProperties": {
+      "defaultValue": "default",
+      "validValues": "enable,disable,default"
+     },
+     "name": "bpduGuard"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "default",
+      "validValues": "enable,disable,default"
+     },
+     "name": "bpduFilter"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "auto",
+      "validValues": "auto,pointToPoint,shared"
+     },
+     "name": "linkType"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "true"
+     },
+     "name": "portTypeEdgeTrunk"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "jumbo",
+      "validValues": "default,jumbo"
+     },
+     "name": "mtu"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "auto",
+      "validValues": "auto,10Mb,100Mb,1Gb,2.5Gb,5Gb,10Gb,25Gb,40Gb,50Gb,100Gb,200Gb,400Gb,800Gb"
+     },
+     "name": "speed"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "none"
+     },
+     "name": "allowedVlans"
+    },
+    {
+     "metaProperties": {
+      "max": "4094",
+      "min": "1"
+     },
+     "name": "nativeVlan"
+    },
+    {
+     "metaProperties": {
+      "maxLength": "254",
+      "minLength": "1"
+     },
+     "name": "description"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "true"
+     },
+     "name": "negotiateAuto"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "true"
+     },
+     "name": "cdp"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "orphanPort"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "auto"
+     },
+     "name": "duplexMode"
+    },
+    {
+     "metaProperties": {
+      "max": "100000000",
+      "min": "1"
+     },
+     "name": "bandwidth"
+    },
+    {
+     "metaProperties": {
+      "max": "100000000",
+      "min": "1"
+     },
+     "name": "inheritBandwidth"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "100",
+      "max": "20000",
+      "min": "0"
+     },
+     "name": "debounceTimer"
+    },
+    {
+     "metaProperties": {
+      "max": "10000",
+      "min": "1000"
+     },
+     "name": "debounceLinkupTimer"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "true"
+     },
+     "name": "errorDetectionAcl"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "auto",
+      "validValues": "auto,fcFec,off,rsCons16,rsFec,rsIEEE"
+     },
+     "name": "fec"
+    },
+    {
+     "metaProperties": null,
+     "name": "extraConfig"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "true"
+     },
+     "name": "adminState"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "netflow"
+    },
+    {
+     "metaProperties": null,
+     "name": "netflowMonitor"
+    },
+    {
+     "metaProperties": null,
+     "name": "netflowSampler"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "pfc"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "qos"
+    },
+    {
+     "metaProperties": null,
+     "name": "qosPolicy"
+    },
+    {
+     "metaProperties": null,
+     "name": "queuingPolicy"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "monitor"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "vlanMapping"
+    },
+    {
+     "metaProperties": null,
+     "name": "vlanMappingEntries"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "stormControl"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "default",
+      "validValues": "shutdown,trap,default"
+     },
+     "name": "stormControlAction"
+    },
+    {
+     "metaProperties": {
+      "regularExpr": "^(100|100\\.|100\\.0|100\\.00|((?:\\d{0,2})(?:\\.\\d{0,2})?))$"
+     },
+     "name": "stormControlBroadcastLevel"
+    },
+    {
+     "metaProperties": {
+      "regularExpr": "^(100|100\\.|100\\.0|100\\.00|((?:\\d{0,2})(?:\\.\\d{0,2})?))$"
+     },
+     "name": "stormControlMulticastLevel"
+    },
+    {
+     "metaProperties": {
+      "regularExpr": "^(100|100\\.|100\\.0|100\\.00|((?:\\d{0,2})(?:\\.\\d{0,2})?))$"
+     },
+     "name": "stormControlUnicastLevel"
+    },
+    {
+     "metaProperties": {
+      "max": "200000000",
+      "min": "0"
+     },
+     "name": "stormControlBroadcastLevelPps"
+    },
+    {
+     "metaProperties": {
+      "max": "200000000",
+      "min": "0"
+     },
+     "name": "stormControlMulticastLevelPps"
+    },
+    {
+     "metaProperties": {
+      "max": "200000000",
+      "min": "0"
+     },
+     "name": "stormControlUnicastLevelPps"
+    }
+   ]
+  }
+ },
+ "nd43_dot1q": [
+  {
+   "configData": {
+    "mode": "dot1qTunnel",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "accessVlan": 2330,
+      "adminState": true,
+      "bpduFilter": "enable",
+      "bpduGuard": "disable",
+      "cdp": false,
+      "debounceTimer": 100,
+      "description": "NC02 dot1q tunnel host",
+      "duplexMode": "full",
+      "errorDetectionAcl": true,
+      "extraConfig": "load-interval counter 1 30",
+      "fec": "auto",
+      "linkType": "auto",
+      "mtu": "default",
+      "negotiateAuto": true,
+      "netflow": false,
+      "orphanPort": false,
+      "pfc": false,
+      "policyType": "dot1qTunnelHost",
+      "portTypeEdgeTrunk": false,
+      "ptp": "false",
+      "qos": false,
+      "speed": "10Gb",
+      "stormControl": false,
+      "stormControlAction": "default"
+     }
+    }
+   },
+   "interfaceName": "Ethernet1/30",
+   "interfaceType": "ethernet",
+   "switchId": "9G1WD9V3YJW"
+  }
+ ],
+ "nd43_leaf": [
+  {
+   "configData": {
+    "mode": "access",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "accessVlan": 2340,
+      "adminState": true,
+      "bpduFilter": "default",
+      "bpduGuard": "enable",
+      "cdp": true,
+      "copyDescription": false,
+      "duplexMode": "auto",
+      "lacpPortPriority": 32768,
+      "lacpRate": "normal",
+      "lacpSuspend": false,
+      "lacpVpcConvergence": false,
+      "linkType": "auto",
+      "mirrorConfig": false,
+      "mtu": "jumbo",
+      "negotiateAuto": true,
+      "netflow": false,
+      "peer1MemberPorts": [
+       "Ethernet1/40"
+      ],
+      "peer1PortChannelDescription": "NC04 vPC40 access L1",
+      "peer1PortChannelId": 40,
+      "peer2MemberPorts": [
+       "Ethernet1/40"
+      ],
+      "peer2PortChannelDescription": "NC04 vPC40 access L2",
+      "peer2PortChannelId": 40,
+      "peerSwitchId": "9X9AHLA3XMC",
+      "pfc": false,
+      "policyType": "accessVpcHost",
+      "portChannelMode": "active",
+      "portTypeEdgeTrunk": true,
+      "ptp": "false",
+      "qos": false,
+      "speed": "auto",
+      "stormControl": false,
+      "stormControlAction": "default"
+     }
+    }
+   },
+   "interfaceName": "vpc40",
+   "interfaceType": "vpc",
+   "switchId": "97QB6TAGC4D"
+  },
+  {
+   "configData": {
+    "mode": "trunk",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": true,
+      "description": "\"PO 500 (vpc-peer-link) member A-AZ1-Gold-Leaf1-Ethernet1/5 to A-AZ1-Gold-Leaf2-Ethernet1/1\"",
+      "fec": "auto",
+      "policyType": "vpcPeerLinkMember",
+      "portChannelId": "port-channel500"
+     }
+    }
+   },
+   "interfaceName": "Ethernet1/5",
+   "interfaceType": "ethernet",
+   "switchId": "97QB6TAGC4D"
+  },
+  {
+   "configData": {
+    "mode": "trunk",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": true,
+      "allowedVlans": "2341-2345",
+      "bpduFilter": "default",
+      "bpduGuard": "enable",
+      "cdp": true,
+      "copyDescription": false,
+      "duplexMode": "auto",
+      "lacpPortPriority": 32768,
+      "lacpRate": "normal",
+      "lacpSuspend": false,
+      "lacpVpcConvergence": false,
+      "linkType": "auto",
+      "mirrorConfig": false,
+      "mtu": "jumbo",
+      "nativeVlan": 2341,
+      "negotiateAuto": true,
+      "netflow": false,
+      "peer1MemberPorts": [
+       "Ethernet1/41",
+       "Ethernet1/42"
+      ],
+      "peer1PortChannelDescription": "NC04 vPC41 trunk L1",
+      "peer1PortChannelId": 41,
+      "peer2MemberPorts": [
+       "Ethernet1/41",
+       "Ethernet1/42"
+      ],
+      "peer2PortChannelDescription": "NC04 vPC41 trunk L2",
+      "peer2PortChannelId": 41,
+      "peerSwitchId": "9X9AHLA3XMC",
+      "pfc": false,
+      "policyType": "trunkVpcHost",
+      "portChannelMode": "active",
+      "portTypeEdgeTrunk": true,
+      "ptp": "false",
+      "qos": false,
+      "speed": "auto",
+      "stormControl": false,
+      "stormControlAction": "default",
+      "vlanMapping": false
+     }
+    }
+   },
+   "interfaceName": "vpc41",
+   "interfaceType": "vpc",
+   "switchId": "97QB6TAGC4D"
+  },
+  {
+   "configData": {
+    "mode": "trunk",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": true,
+      "allowedVlans": "2341-2345",
+      "cdp": true,
+      "debounceTimer": 100,
+      "fec": "auto",
+      "lacpPortPriority": 32768,
+      "lacpRate": "normal",
+      "policyType": "vpcMember",
+      "portChannelId": "port-channel41",
+      "portChannelMode": "active",
+      "primaryInterface": "vPC41",
+      "ptp": "false"
+     }
+    }
+   },
+   "interfaceName": "Ethernet1/41",
+   "interfaceType": "ethernet",
+   "switchId": "97QB6TAGC4D"
+  },
+  {
+   "configData": {
+    "mode": "trunk",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": true,
+      "allowedVlans": "none",
+      "bpduGuard": "disable",
+      "description": "vPC-leaf-connected-to-vPC-tor:A-AZ1-Gold-TOR2~A-AZ1-Gold-TOR1-vPC1",
+      "mtu": "jumbo",
+      "policyType": "vpcUplinkPo",
+      "portChannelId": "port-channel1",
+      "primaryInterface": "vPC1",
+      "speed": "auto",
+      "switchRole": "leaf"
+     }
+    }
+   },
+   "interfaceName": "port-channel1",
+   "interfaceType": "portChannel",
+   "switchId": "97QB6TAGC4D"
+  },
+  {
+   "configData": {
+    "mode": "trunk",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": true,
+      "allowedVlans": "2341-2345",
+      "bpduFilter": "default",
+      "bpduGuard": "enable",
+      "description": "NC04 vPC41 trunk L1",
+      "duplexMode": "auto",
+      "lacpSuspend": false,
+      "lacpVpcConvergence": false,
+      "linkType": "auto",
+      "mtu": "jumbo",
+      "nativeVlan": 2341,
+      "negotiateAuto": true,
+      "netflow": false,
+      "pfc": false,
+      "policyType": "trunkVpcMember",
+      "portChannelId": "port-channel41",
+      "portTypeEdgeTrunk": true,
+      "primaryInterface": "vPC41",
+      "qos": false,
+      "speed": "auto",
+      "stormControl": false,
+      "stormControlAction": "default",
+      "vlanMapping": false
+     }
+    }
+   },
+   "interfaceName": "port-channel41",
+   "interfaceType": "portChannel",
+   "switchId": "97QB6TAGC4D"
+  },
+  {
+   "configData": {
+    "mode": "trunk",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": true,
+      "policyType": "vpcPeerlinkPo",
+      "portChannelId": "port-channel500",
+      "ports": [
+       "Ethernet1/5"
+      ],
+      "ptp": "false"
+     }
+    }
+   },
+   "interfaceName": "port-channel500",
+   "interfaceType": "portChannel",
+   "switchId": "97QB6TAGC4D"
+  },
+  {
+   "configData": {
+    "mode": "access",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": true,
+      "cdp": true,
+      "debounceTimer": 100,
+      "fec": "auto",
+      "lacpPortPriority": 32768,
+      "lacpRate": "normal",
+      "policyType": "accessVpcPoMember",
+      "portChannelId": "port-channel40",
+      "portChannelMode": "active",
+      "primaryInterface": "vPC40",
+      "ptp": "false"
+     }
+    }
+   },
+   "interfaceName": "Ethernet1/40",
+   "interfaceType": "ethernet",
+   "switchId": "97QB6TAGC4D"
+  },
+  {
+   "configData": {
+    "mode": "access",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "accessVlan": 2340,
+      "adminState": true,
+      "bpduFilter": "default",
+      "bpduGuard": "enable",
+      "description": "NC04 vPC40 access L1",
+      "duplexMode": "auto",
+      "lacpSuspend": false,
+      "lacpVpcConvergence": false,
+      "linkType": "auto",
+      "mtu": "jumbo",
+      "negotiateAuto": true,
+      "netflow": false,
+      "pfc": false,
+      "policyType": "accessVpcMember",
+      "portChannelId": "port-channel40",
+      "portTypeEdgeTrunk": true,
+      "primaryInterface": "vPC40",
+      "qos": false,
+      "speed": "auto",
+      "stormControl": false,
+      "stormControlAction": "default"
+     }
+    }
+   },
+   "interfaceName": "port-channel40",
+   "interfaceType": "portChannel",
+   "switchId": "97QB6TAGC4D"
+  },
+  {
+   "configData": {
+    "mode": "trunk",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": true,
+      "allowedVlans": "none",
+      "bpduGuard": "default",
+      "mtu": "jumbo",
+      "netflow": false,
+      "policyType": "trunkHost",
+      "portTypeEdgeTrunk": true,
+      "speed": "auto"
+     }
+    }
+   },
+   "interfaceName": "Ethernet1/29",
+   "interfaceType": "ethernet",
+   "switchId": "97QB6TAGC4D"
+  },
+  {
+   "configData": {
+    "mode": "trunk",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": true,
+      "allowedVlans": "none",
+      "bpduGuard": "default",
+      "mtu": "jumbo",
+      "netflow": false,
+      "policyType": "trunkHost",
+      "portTypeEdgeTrunk": true,
+      "speed": "auto"
+     }
+    }
+   },
+   "interfaceName": "Ethernet1/27",
+   "interfaceType": "ethernet",
+   "switchId": "97QB6TAGC4D"
+  },
+  {
+   "configData": {
+    "mode": "managed",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": true,
+      "cdp": false,
+      "extraConfig": "  ip address 198.18.133.135/18",
+      "policyType": "mgmt"
+     }
+    }
+   },
+   "interfaceName": "mgmt0",
+   "interfaceType": "management",
+   "switchId": "97QB6TAGC4D"
+  },
+  {
+   "configData": {
+    "mode": "trunk",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": true,
+      "allowedVlans": "none",
+      "policyType": "vpcUplinkMember",
+      "portChannelId": "port-channel1",
+      "portChannelMode": "active",
+      "primaryInterface": "vPC1",
+      "ptp": "false"
+     }
+    }
+   },
+   "interfaceName": "Ethernet1/4",
+   "interfaceType": "ethernet",
+   "switchId": "97QB6TAGC4D"
+  },
+  {
+   "configData": {
+    "mode": "managed",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": true,
+      "bfd": false,
+      "bfdEchoDisable": true,
+      "description": "VPC-Peer-Link SVI",
+      "ip": "10.131.64.17",
+      "isType": "level2",
+      "linkStateRouting": "ospf",
+      "linkStateRoutingTag": "UNDERLAY",
+      "mtu": 9216,
+      "ospfAreaId": "0.0.0.0",
+      "policyType": "vpcBackupSvi",
+      "prefix": 30,
+      "replicationMode": "multicast"
+     }
+    }
+   },
+   "interfaceName": "Vlan3600",
+   "interfaceType": "svi",
+   "switchId": "97QB6TAGC4D"
+  },
+  {
+   "configData": {
+    "mode": "trunk",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": true,
+      "allowedVlans": "none",
+      "bpduGuard": "disable",
+      "mirrorConfig": false,
+      "mtu": "jumbo",
+      "nbrInterfaceName": "vPC1",
+      "nbrSwitchId": "9JF7XN1WNFK~9P2R9F06YTE",
+      "peer1MemberPorts": [
+       "Ethernet1/4",
+       "Ethernet1/3"
+      ],
+      "peer1PortChannelDescription": "vPC-leaf-connected-to-vPC-tor:A-AZ1-Gold-TOR2~A-AZ1-Gold-TOR1-vPC1",
+      "peer1PortChannelId": 1,
+      "peer2MemberPorts": [
+       "Ethernet1/5",
+       "Ethernet1/4"
+      ],
+      "peer2PortChannelDescription": "vPC-leaf-connected-to-vPC-tor:A-AZ1-Gold-TOR2~A-AZ1-Gold-TOR1-vPC1",
+      "peer2PortChannelId": 1,
+      "peerSwitchId": "9X9AHLA3XMC",
+      "policyType": "vpcUplink",
+      "portChannelMode": "active",
+      "speed": "auto",
+      "switchRole": "leaf"
+     }
+    }
+   },
+   "interfaceName": "vPC1",
+   "interfaceType": "vpc",
+   "switchId": "97QB6TAGC4D"
+  },
+  {
+   "configData": {
+    "mode": "managed",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": true,
+      "description": "Routing loopback interface",
+      "ip": "10.131.0.2",
+      "linkStateRoutingTag": "UNDERLAY",
+      "ospfAreaId": "0.0.0.0",
+      "policyType": "underlayLoopback",
+      "replicationMode": "multicast"
+     }
+    }
+   },
+   "interfaceName": "loopback0",
+   "interfaceType": "loopback",
+   "switchId": "97QB6TAGC4D"
+  },
+  {
+   "configData": {
+    "mode": "routed",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": true,
+      "description": "connected-to-A-AZ1-Gold-BGW_Spine2-Ethernet1/1",
+      "fec": "auto",
+      "ip": "10.131.64.5",
+      "mtu": 9216,
+      "policyType": "numbered",
+      "prefix": 30,
+      "speed": "auto",
+      "v6prefix": 126
+     }
+    }
+   },
+   "interfaceName": "Ethernet1/2",
+   "interfaceType": "ethernet",
+   "switchId": "97QB6TAGC4D"
+  },
+  {
+   "configData": {
+    "mode": "managed",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": true,
+      "policyType": "nve",
+      "sourceInterfaceName": "loopback1"
+     }
+    }
+   },
+   "interfaceName": "nve1",
+   "interfaceType": "nve",
+   "switchId": "97QB6TAGC4D"
+  },
+  {
+   "configData": {
+    "mode": "unknown",
+    "networkOS": {
+     "networkOSType": "nx-os"
+    }
+   },
+   "interfaceName": "Vlan1",
+   "interfaceType": "svi",
+   "switchId": "97QB6TAGC4D"
+  },
+  {
+   "configData": {
+    "mode": "unknown",
+    "networkOS": {
+     "networkOSType": "nx-os"
+    }
+   },
+   "interfaceName": "Vlan2031",
+   "interfaceType": "svi",
+   "switchId": "97QB6TAGC4D"
+  },
+  {
+   "configData": {
+    "mode": "unknown",
+    "networkOS": {
+     "networkOSType": "nx-os"
+    }
+   },
+   "interfaceName": "Loopback42",
+   "interfaceType": "loopback",
+   "switchId": "97QB6TAGC4D"
+  }
+ ],
+ "nd43_links": [
+  {
+   "aggregatedAdminStatus": "up",
+   "aggregatedOperStatus": "up",
+   "dstFabricName": "",
+   "dstInterfaceName": "Ethernet1/2",
+   "dstSwitchId": "9EXCI99GAAW",
+   "dstSwitchInfo": {
+    "interfaceOperReason": "",
+    "switchModelName": "N9K-C9300V",
+    "switchRole": "",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "dstSwitchName": "legacy-endhost1",
+   "ipMtu": 9216,
+   "linkDiscovered": true,
+   "linkId": "LINK-UUID-460180",
+   "linkPlanned": false,
+   "linkPresent": true,
+   "linkState": "neighborPresent",
+   "linkType": "lan_neighbor_link",
+   "memberLink": false,
+   "portChannel": false,
+   "srcFabricName": "CERT43-R3-S1",
+   "srcInterfaceName": "Ethernet1/4",
+   "srcSwitchId": "9JF7XN1WNFK",
+   "srcSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "tor",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "srcSwitchName": "A-AZ1-Gold-TOR2"
+  },
+  {
+   "aggregatedAdminStatus": "up",
+   "aggregatedOperStatus": "up",
+   "dstFabricName": "",
+   "dstInterfaceName": "Ethernet1/1",
+   "dstSwitchId": "9EXCI99GAAW",
+   "dstSwitchInfo": {
+    "interfaceOperReason": "",
+    "switchModelName": "N9K-C9300V",
+    "switchRole": "",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "dstSwitchName": "legacy-endhost1",
+   "ipMtu": 9216,
+   "linkDiscovered": true,
+   "linkId": "LINK-UUID-460200",
+   "linkPlanned": false,
+   "linkPresent": true,
+   "linkState": "neighborPresent",
+   "linkType": "lan_neighbor_link",
+   "memberLink": false,
+   "portChannel": false,
+   "srcFabricName": "CERT43-R3-S1",
+   "srcInterfaceName": "Ethernet1/4",
+   "srcSwitchId": "9P2R9F06YTE",
+   "srcSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "tor",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "srcSwitchName": "A-AZ1-Gold-TOR1"
+  },
+  {
+   "aggregatedAdminStatus": "up",
+   "aggregatedOperStatus": "up",
+   "configData": {
+    "policyType": "multisiteUnderlay",
+    "templateInputs": {
+     "dciTrackingEnableFlag": false,
+     "dstEbgpAsn": "65130",
+     "dstInterfaceDescription": "connected-to-A-AZ1-Gold-BGW_Spine1-Ethernet1/2",
+     "dstIpAddress": "10.130.200.3",
+     "ebgpAuthKeyEncryptionType": "3des",
+     "ebgpBfd": true,
+     "ebgpLogNeighborChange": true,
+     "ebgpMaximumPaths": 64,
+     "ebgpSendComboth": true,
+     "enableEbgpPassword": true,
+     "inheritEbgpPasswordMsdSettings": true,
+     "inheritTtagFabricSetting": true,
+     "routingTag": "54330",
+     "speed": "auto",
+     "srcEbgpAsn": "65131",
+     "srcInterfaceDescription": "connected-to-A-AZ1-ISN1-Ethernet1/5",
+     "srcIpAddressMask": "10.130.200.2/31"
+    }
+   },
+   "displayName": "Multi-Site underlay",
+   "dstFabricName": "CERT43-R3-ISN",
+   "dstInterfaceName": "Ethernet1/5",
+   "dstSwitchId": "9KIT8N0J83I",
+   "dstSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "core router",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "dstSwitchName": "A-AZ1-ISN1",
+   "ipMtu": 9216,
+   "linkDiscovered": false,
+   "linkId": "LINK-UUID-456420",
+   "linkPlanned": false,
+   "linkPresent": true,
+   "linkState": "linkPresent",
+   "linkType": "ethisl",
+   "memberLink": false,
+   "portChannel": false,
+   "srcFabricName": "CERT43-R3-S1",
+   "srcInterfaceName": "Ethernet1/2",
+   "srcSwitchId": "9JBFQXYMQ5N",
+   "srcSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "border gateway spine",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "srcSwitchName": "A-AZ1-Gold-BGW_Spine1"
+  },
+  {
+   "aggregatedAdminStatus": "up",
+   "aggregatedOperStatus": "up",
+   "configData": {
+    "policyType": "multisiteUnderlay",
+    "templateInputs": {
+     "dciTrackingEnableFlag": false,
+     "dstEbgpAsn": "65130",
+     "dstInterfaceDescription": "connected-to-A-AZ1-Gold-BGW_Spine2-Ethernet1/2",
+     "dstIpAddress": "10.130.200.7",
+     "ebgpAuthKeyEncryptionType": "3des",
+     "ebgpBfd": true,
+     "ebgpLogNeighborChange": true,
+     "ebgpMaximumPaths": 64,
+     "ebgpSendComboth": true,
+     "enableEbgpPassword": true,
+     "inheritEbgpPasswordMsdSettings": true,
+     "inheritTtagFabricSetting": true,
+     "routingTag": "54330",
+     "speed": "auto",
+     "srcEbgpAsn": "65131",
+     "srcInterfaceDescription": "connected-to-A-AZ1-ISN1-Ethernet1/4",
+     "srcIpAddressMask": "10.130.200.6/31"
+    }
+   },
+   "displayName": "Multi-Site underlay",
+   "dstFabricName": "CERT43-R3-ISN",
+   "dstInterfaceName": "Ethernet1/4",
+   "dstSwitchId": "9KIT8N0J83I",
+   "dstSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "core router",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "dstSwitchName": "A-AZ1-ISN1",
+   "ipMtu": 9216,
+   "linkDiscovered": false,
+   "linkId": "LINK-UUID-456530",
+   "linkPlanned": false,
+   "linkPresent": true,
+   "linkState": "linkPresent",
+   "linkType": "ethisl",
+   "memberLink": false,
+   "portChannel": false,
+   "srcFabricName": "CERT43-R3-S1",
+   "srcInterfaceName": "Ethernet1/2",
+   "srcSwitchId": "9CDCCDMQE7W",
+   "srcSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "border gateway spine",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "srcSwitchName": "A-AZ1-Gold-BGW_Spine2"
+  },
+  {
+   "aggregatedAdminStatus": "up",
+   "aggregatedOperStatus": "up",
+   "configData": {
+    "policyType": "multisiteUnderlay",
+    "templateInputs": {
+     "dciTrackingEnableFlag": false,
+     "dstEbgpAsn": "65130",
+     "dstInterfaceDescription": "connected-to-A-AZ1-Gold-BGW_Spine2-Ethernet1/3",
+     "dstIpAddress": "10.130.200.5",
+     "ebgpAuthKeyEncryptionType": "3des",
+     "ebgpBfd": true,
+     "ebgpLogNeighborChange": true,
+     "ebgpMaximumPaths": 64,
+     "ebgpSendComboth": true,
+     "enableEbgpPassword": true,
+     "inheritEbgpPasswordMsdSettings": true,
+     "inheritTtagFabricSetting": true,
+     "routingTag": "54330",
+     "speed": "auto",
+     "srcEbgpAsn": "65131",
+     "srcInterfaceDescription": "connected-to-A-AZ1-ISN2-Ethernet1/2",
+     "srcIpAddressMask": "10.130.200.4/31"
+    }
+   },
+   "displayName": "Multi-Site underlay",
+   "dstFabricName": "CERT43-R3-ISN",
+   "dstInterfaceName": "Ethernet1/2",
+   "dstSwitchId": "9TLRTVYYZ51",
+   "dstSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "core router",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "dstSwitchName": "A-AZ1-ISN2",
+   "ipMtu": 9216,
+   "linkDiscovered": false,
+   "linkId": "LINK-UUID-456550",
+   "linkPlanned": false,
+   "linkPresent": true,
+   "linkState": "linkPresent",
+   "linkType": "ethisl",
+   "memberLink": false,
+   "portChannel": false,
+   "srcFabricName": "CERT43-R3-S1",
+   "srcInterfaceName": "Ethernet1/3",
+   "srcSwitchId": "9CDCCDMQE7W",
+   "srcSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "border gateway spine",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "srcSwitchName": "A-AZ1-Gold-BGW_Spine2"
+  },
+  {
+   "aggregatedAdminStatus": "up",
+   "aggregatedOperStatus": "up",
+   "configData": {
+    "policyType": "multisiteUnderlay",
+    "templateInputs": {
+     "dciTrackingEnableFlag": false,
+     "dstEbgpAsn": "65130",
+     "dstInterfaceDescription": "connected-to-A-AZ1-Gold-BGW_Spine1-Ethernet1/3",
+     "dstIpAddress": "10.130.200.1",
+     "ebgpAuthKeyEncryptionType": "3des",
+     "ebgpBfd": true,
+     "ebgpLogNeighborChange": true,
+     "ebgpMaximumPaths": 64,
+     "ebgpSendComboth": true,
+     "enableEbgpPassword": true,
+     "inheritEbgpPasswordMsdSettings": true,
+     "inheritTtagFabricSetting": true,
+     "routingTag": "54330",
+     "speed": "auto",
+     "srcEbgpAsn": "65131",
+     "srcInterfaceDescription": "connected-to-A-AZ1-ISN2-Ethernet1/1",
+     "srcIpAddressMask": "10.130.200.0/31"
+    }
+   },
+   "displayName": "Multi-Site underlay",
+   "dstFabricName": "CERT43-R3-ISN",
+   "dstInterfaceName": "Ethernet1/1",
+   "dstSwitchId": "9TLRTVYYZ51",
+   "dstSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "core router",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "dstSwitchName": "A-AZ1-ISN2",
+   "ipMtu": 9216,
+   "linkDiscovered": false,
+   "linkId": "LINK-UUID-456480",
+   "linkPlanned": false,
+   "linkPresent": true,
+   "linkState": "linkPresent",
+   "linkType": "ethisl",
+   "memberLink": false,
+   "portChannel": false,
+   "srcFabricName": "CERT43-R3-S1",
+   "srcInterfaceName": "Ethernet1/3",
+   "srcSwitchId": "9JBFQXYMQ5N",
+   "srcSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "border gateway spine",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "srcSwitchName": "A-AZ1-Gold-BGW_Spine1"
+  },
+  {
+   "aggregatedAdminStatus": "up",
+   "aggregatedOperStatus": "up",
+   "configData": {
+    "policyType": "numbered",
+    "templateInputs": {
+     "bfdEchoOnDstInterface": false,
+     "bfdEchoOnSrcInterface": false,
+     "dhcpRelayOnDstInterface": false,
+     "dhcpRelayOnSrcInterface": false,
+     "dstInterfaceDescription": "connected-to-A-AZ1-Gold-BGW_Spine1-Ethernet1/1",
+     "dstIp": "10.131.64.2",
+     "fec": "auto",
+     "interfaceAdminState": true,
+     "mtu": 9216,
+     "speed": "auto",
+     "srcInterfaceDescription": "connected-to-A-AZ1-Gold-Leaf1-Ethernet1/1",
+     "srcIp": "10.131.64.1"
+    }
+   },
+   "displayName": "Numbered",
+   "dstFabricName": "CERT43-R3-S1",
+   "dstInterfaceName": "Ethernet1/1",
+   "dstSwitchId": "9JBFQXYMQ5N",
+   "dstSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "border gateway spine",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "dstSwitchName": "A-AZ1-Gold-BGW_Spine1",
+   "ipMtu": 9216,
+   "linkDiscovered": false,
+   "linkId": "LINK-UUID-456570",
+   "linkPlanned": false,
+   "linkPresent": true,
+   "linkState": "linkPresent",
+   "linkType": "ethisl",
+   "memberLink": false,
+   "portChannel": false,
+   "srcFabricName": "CERT43-R3-S1",
+   "srcInterfaceName": "Ethernet1/1",
+   "srcSwitchId": "97QB6TAGC4D",
+   "srcSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "leaf",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "srcSwitchName": "A-AZ1-Gold-Leaf1"
+  },
+  {
+   "aggregatedAdminStatus": "up",
+   "aggregatedOperStatus": "up",
+   "configData": {
+    "policyType": "numbered",
+    "templateInputs": {
+     "bfdEchoOnDstInterface": false,
+     "bfdEchoOnSrcInterface": false,
+     "dhcpRelayOnDstInterface": false,
+     "dhcpRelayOnSrcInterface": false,
+     "dstInterfaceDescription": "connected-to-A-AZ1-Gold-BGW_Spine2-Ethernet1/1",
+     "dstIp": "10.131.64.6",
+     "fec": "auto",
+     "interfaceAdminState": true,
+     "mtu": 9216,
+     "speed": "auto",
+     "srcInterfaceDescription": "connected-to-A-AZ1-Gold-Leaf1-Ethernet1/2",
+     "srcIp": "10.131.64.5"
+    }
+   },
+   "displayName": "Numbered",
+   "dstFabricName": "CERT43-R3-S1",
+   "dstInterfaceName": "Ethernet1/1",
+   "dstSwitchId": "9CDCCDMQE7W",
+   "dstSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "border gateway spine",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "dstSwitchName": "A-AZ1-Gold-BGW_Spine2",
+   "ipMtu": 9216,
+   "linkDiscovered": false,
+   "linkId": "LINK-UUID-456450",
+   "linkPlanned": false,
+   "linkPresent": true,
+   "linkState": "linkPresent",
+   "linkType": "ethisl",
+   "memberLink": false,
+   "portChannel": false,
+   "srcFabricName": "CERT43-R3-S1",
+   "srcInterfaceName": "Ethernet1/2",
+   "srcSwitchId": "97QB6TAGC4D",
+   "srcSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "leaf",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "srcSwitchName": "A-AZ1-Gold-Leaf1"
+  },
+  {
+   "aggregatedAdminStatus": "up",
+   "aggregatedOperStatus": "up",
+   "configData": {
+    "policyType": "numbered",
+    "templateInputs": {
+     "bfdEchoOnDstInterface": false,
+     "bfdEchoOnSrcInterface": false,
+     "dhcpRelayOnDstInterface": false,
+     "dhcpRelayOnSrcInterface": false,
+     "dstInterfaceDescription": "connected-to-A-AZ1-Gold-Leaf2-Ethernet1/2",
+     "dstIp": "10.131.64.10",
+     "fec": "auto",
+     "interfaceAdminState": true,
+     "mtu": 9216,
+     "speed": "auto",
+     "srcInterfaceDescription": "connected-to-A-AZ1-Gold-BGW_Spine1-Ethernet1/4",
+     "srcIp": "10.131.64.9"
+    }
+   },
+   "displayName": "Numbered",
+   "dstFabricName": "CERT43-R3-S1",
+   "dstInterfaceName": "Ethernet1/2",
+   "dstSwitchId": "9X9AHLA3XMC",
+   "dstSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "leaf",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "dstSwitchName": "A-AZ1-Gold-Leaf2",
+   "ipMtu": 9216,
+   "linkDiscovered": false,
+   "linkId": "LINK-UUID-456510",
+   "linkPlanned": false,
+   "linkPresent": true,
+   "linkState": "linkPresent",
+   "linkType": "ethisl",
+   "memberLink": false,
+   "portChannel": false,
+   "srcFabricName": "CERT43-R3-S1",
+   "srcInterfaceName": "Ethernet1/4",
+   "srcSwitchId": "9JBFQXYMQ5N",
+   "srcSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "border gateway spine",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "srcSwitchName": "A-AZ1-Gold-BGW_Spine1"
+  },
+  {
+   "aggregatedAdminStatus": "up",
+   "aggregatedOperStatus": "up",
+   "dstFabricName": "CERT43-R3-S1",
+   "dstInterfaceName": "Port-channel1",
+   "dstSwitchId": "9X9AHLA3XMC",
+   "dstSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "leaf",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "dstSwitchName": "A-AZ1-Gold-Leaf2",
+   "ipMtu": 9216,
+   "linkDiscovered": false,
+   "linkId": "LINK-UUID-480480",
+   "linkPlanned": false,
+   "linkPresent": true,
+   "linkState": "linkPresent",
+   "linkType": "ethisl",
+   "memberLink": false,
+   "portChannel": true,
+   "srcFabricName": "CERT43-R3-S1",
+   "srcInterfaceName": "Port-channel1",
+   "srcSwitchId": "9P2R9F06YTE",
+   "srcSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "tor",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "srcSwitchName": "A-AZ1-Gold-TOR1"
+  },
+  {
+   "aggregatedAdminStatus": "up",
+   "aggregatedOperStatus": "up",
+   "dstFabricName": "CERT43-R3-S1",
+   "dstInterfaceName": "Ethernet1/4",
+   "dstSwitchId": "9X9AHLA3XMC",
+   "dstSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "leaf",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "dstSwitchName": "A-AZ1-Gold-Leaf2",
+   "ipMtu": 9216,
+   "linkDiscovered": false,
+   "linkId": "LINK-UUID-460150",
+   "linkPlanned": false,
+   "linkPresent": true,
+   "linkState": "linkPresent",
+   "linkType": "ethisl",
+   "memberLink": true,
+   "portChannel": false,
+   "srcFabricName": "CERT43-R3-S1",
+   "srcInterfaceName": "Ethernet1/2",
+   "srcSwitchId": "9P2R9F06YTE",
+   "srcSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "tor",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "srcSwitchName": "A-AZ1-Gold-TOR1"
+  },
+  {
+   "aggregatedAdminStatus": "up",
+   "aggregatedOperStatus": "up",
+   "dstFabricName": "CERT43-R3-S1",
+   "dstInterfaceName": "Port-channel1",
+   "dstSwitchId": "9X9AHLA3XMC",
+   "dstSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "leaf",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "dstSwitchName": "A-AZ1-Gold-Leaf2",
+   "ipMtu": 9216,
+   "linkDiscovered": false,
+   "linkId": "LINK-UUID-480500",
+   "linkPlanned": false,
+   "linkPresent": true,
+   "linkState": "linkPresent",
+   "linkType": "ethisl",
+   "memberLink": false,
+   "portChannel": true,
+   "srcFabricName": "CERT43-R3-S1",
+   "srcInterfaceName": "Port-channel1",
+   "srcSwitchId": "9JF7XN1WNFK",
+   "srcSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "tor",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "srcSwitchName": "A-AZ1-Gold-TOR2"
+  },
+  {
+   "aggregatedAdminStatus": "up",
+   "aggregatedOperStatus": "up",
+   "dstFabricName": "CERT43-R3-S1",
+   "dstInterfaceName": "Ethernet1/5",
+   "dstSwitchId": "9X9AHLA3XMC",
+   "dstSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "leaf",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "dstSwitchName": "A-AZ1-Gold-Leaf2",
+   "ipMtu": 9216,
+   "linkDiscovered": false,
+   "linkId": "LINK-UUID-460130",
+   "linkPlanned": false,
+   "linkPresent": true,
+   "linkState": "linkPresent",
+   "linkType": "ethisl",
+   "memberLink": true,
+   "portChannel": false,
+   "srcFabricName": "CERT43-R3-S1",
+   "srcInterfaceName": "Ethernet1/2",
+   "srcSwitchId": "9JF7XN1WNFK",
+   "srcSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "tor",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "srcSwitchName": "A-AZ1-Gold-TOR2"
+  },
+  {
+   "aggregatedAdminStatus": "up",
+   "aggregatedOperStatus": "up",
+   "dstFabricName": "CERT43-R3-S1",
+   "dstInterfaceName": "Port-channel500",
+   "dstSwitchId": "9X9AHLA3XMC",
+   "dstSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "leaf",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "dstSwitchName": "A-AZ1-Gold-Leaf2",
+   "ipMtu": 9216,
+   "linkDiscovered": false,
+   "linkId": "LINK-UUID-480280",
+   "linkPlanned": false,
+   "linkPresent": true,
+   "linkState": "linkPresent",
+   "linkType": "ethisl",
+   "memberLink": false,
+   "portChannel": true,
+   "srcFabricName": "CERT43-R3-S1",
+   "srcInterfaceName": "Port-channel500",
+   "srcSwitchId": "97QB6TAGC4D",
+   "srcSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "leaf",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "srcSwitchName": "A-AZ1-Gold-Leaf1"
+  },
+  {
+   "aggregatedAdminStatus": "up",
+   "aggregatedOperStatus": "up",
+   "dstFabricName": "CERT43-R3-S1",
+   "dstInterfaceName": "Ethernet1/1",
+   "dstSwitchId": "9X9AHLA3XMC",
+   "dstSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "leaf",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "dstSwitchName": "A-AZ1-Gold-Leaf2",
+   "ipMtu": 9216,
+   "linkDiscovered": false,
+   "linkId": "LINK-UUID-464730",
+   "linkPlanned": false,
+   "linkPresent": true,
+   "linkState": "linkPresent",
+   "linkType": "ethisl",
+   "memberLink": true,
+   "portChannel": false,
+   "srcFabricName": "CERT43-R3-S1",
+   "srcInterfaceName": "Ethernet1/5",
+   "srcSwitchId": "97QB6TAGC4D",
+   "srcSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "leaf",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "srcSwitchName": "A-AZ1-Gold-Leaf1"
+  },
+  {
+   "aggregatedAdminStatus": "up",
+   "aggregatedOperStatus": "up",
+   "configData": {
+    "policyType": "numbered",
+    "templateInputs": {
+     "bfdEchoOnDstInterface": false,
+     "bfdEchoOnSrcInterface": false,
+     "dhcpRelayOnDstInterface": false,
+     "dhcpRelayOnSrcInterface": false,
+     "dstInterfaceDescription": "connected-to-A-AZ1-Gold-Leaf2-Ethernet1/3",
+     "dstIp": "10.131.64.14",
+     "fec": "auto",
+     "interfaceAdminState": true,
+     "mtu": 9216,
+     "speed": "auto",
+     "srcInterfaceDescription": "connected-to-A-AZ1-Gold-BGW_Spine2-Ethernet1/4",
+     "srcIp": "10.131.64.13"
+    }
+   },
+   "displayName": "Numbered",
+   "dstFabricName": "CERT43-R3-S1",
+   "dstInterfaceName": "Ethernet1/3",
+   "dstSwitchId": "9X9AHLA3XMC",
+   "dstSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "leaf",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "dstSwitchName": "A-AZ1-Gold-Leaf2",
+   "ipMtu": 9216,
+   "linkDiscovered": false,
+   "linkId": "LINK-UUID-456590",
+   "linkPlanned": false,
+   "linkPresent": true,
+   "linkState": "linkPresent",
+   "linkType": "ethisl",
+   "memberLink": false,
+   "portChannel": false,
+   "srcFabricName": "CERT43-R3-S1",
+   "srcInterfaceName": "Ethernet1/4",
+   "srcSwitchId": "9CDCCDMQE7W",
+   "srcSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "border gateway spine",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "srcSwitchName": "A-AZ1-Gold-BGW_Spine2"
+  },
+  {
+   "aggregatedAdminStatus": "up",
+   "aggregatedOperStatus": "up",
+   "dstFabricName": "CERT43-R3-S1",
+   "dstInterfaceName": "Ethernet1/1",
+   "dstSwitchId": "9JF7XN1WNFK",
+   "dstSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "tor",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "dstSwitchName": "A-AZ1-Gold-TOR2",
+   "ipMtu": 9216,
+   "linkDiscovered": false,
+   "linkId": "LINK-UUID-460110",
+   "linkPlanned": false,
+   "linkPresent": true,
+   "linkState": "linkPresent",
+   "linkType": "ethisl",
+   "memberLink": true,
+   "portChannel": false,
+   "srcFabricName": "CERT43-R3-S1",
+   "srcInterfaceName": "Ethernet1/4",
+   "srcSwitchId": "97QB6TAGC4D",
+   "srcSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "leaf",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "srcSwitchName": "A-AZ1-Gold-Leaf1"
+  },
+  {
+   "aggregatedAdminStatus": "up",
+   "aggregatedOperStatus": "up",
+   "dstFabricName": "CERT43-R3-S1",
+   "dstInterfaceName": "Port-channel1",
+   "dstSwitchId": "9JF7XN1WNFK",
+   "dstSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "tor",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "dstSwitchName": "A-AZ1-Gold-TOR2",
+   "ipMtu": 9216,
+   "linkDiscovered": false,
+   "linkId": "LINK-UUID-480840",
+   "linkPlanned": false,
+   "linkPresent": true,
+   "linkState": "linkPresent",
+   "linkType": "ethisl",
+   "memberLink": false,
+   "portChannel": true,
+   "srcFabricName": "CERT43-R3-S1",
+   "srcInterfaceName": "Port-channel1",
+   "srcSwitchId": "97QB6TAGC4D",
+   "srcSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "leaf",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "srcSwitchName": "A-AZ1-Gold-Leaf1"
+  },
+  {
+   "aggregatedAdminStatus": "up",
+   "aggregatedOperStatus": "up",
+   "dstFabricName": "CERT43-R3-S1",
+   "dstInterfaceName": "Ethernet1/1",
+   "dstSwitchId": "9P2R9F06YTE",
+   "dstSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "tor",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "dstSwitchName": "A-AZ1-Gold-TOR1",
+   "ipMtu": 9216,
+   "linkDiscovered": false,
+   "linkId": "LINK-UUID-460090",
+   "linkPlanned": false,
+   "linkPresent": true,
+   "linkState": "linkPresent",
+   "linkType": "ethisl",
+   "memberLink": true,
+   "portChannel": false,
+   "srcFabricName": "CERT43-R3-S1",
+   "srcInterfaceName": "Ethernet1/3",
+   "srcSwitchId": "97QB6TAGC4D",
+   "srcSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "leaf",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "srcSwitchName": "A-AZ1-Gold-Leaf1"
+  },
+  {
+   "aggregatedAdminStatus": "up",
+   "aggregatedOperStatus": "up",
+   "dstFabricName": "CERT43-R3-S1",
+   "dstInterfaceName": "Port-channel500",
+   "dstSwitchId": "9P2R9F06YTE",
+   "dstSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "tor",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "dstSwitchName": "A-AZ1-Gold-TOR1",
+   "ipMtu": 9216,
+   "linkDiscovered": false,
+   "linkId": "LINK-UUID-480520",
+   "linkPlanned": false,
+   "linkPresent": true,
+   "linkState": "linkPresent",
+   "linkType": "ethisl",
+   "memberLink": false,
+   "portChannel": true,
+   "srcFabricName": "CERT43-R3-S1",
+   "srcInterfaceName": "Port-channel500",
+   "srcSwitchId": "9JF7XN1WNFK",
+   "srcSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "tor",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "srcSwitchName": "A-AZ1-Gold-TOR2"
+  },
+  {
+   "aggregatedAdminStatus": "unknown",
+   "aggregatedOperStatus": "unknown",
+   "dstFabricName": "CERT43-R3-S1",
+   "dstInterfaceName": "Port-channel450",
+   "dstSwitchId": "9P2R9F06YTE",
+   "dstSwitchInfo": {
+    "interfaceAdminStatus": "unknown",
+    "interfaceOperReason": "Not discovered",
+    "interfaceOperStatus": "unknown",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "tor",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "dstSwitchName": "A-AZ1-Gold-TOR1",
+   "ipMtu": 9216,
+   "linkDiscovered": false,
+   "linkId": "LINK-UUID-823430",
+   "linkPlanned": false,
+   "linkPresent": false,
+   "linkState": "linkMissing",
+   "linkType": "ethisl",
+   "memberLink": false,
+   "portChannel": true,
+   "srcFabricName": "CERT43-R3-S1",
+   "srcInterfaceName": "Port-channel450",
+   "srcSwitchId": "9JF7XN1WNFK",
+   "srcSwitchInfo": {
+    "interfaceAdminStatus": "unknown",
+    "interfaceOperReason": "Not discovered",
+    "interfaceOperStatus": "unknown",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "tor",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "srcSwitchName": "A-AZ1-Gold-TOR2"
+  },
+  {
+   "aggregatedAdminStatus": "up",
+   "aggregatedOperStatus": "up",
+   "dstFabricName": "CERT43-R3-S1",
+   "dstInterfaceName": "Ethernet1/3",
+   "dstSwitchId": "9P2R9F06YTE",
+   "dstSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "tor",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "dstSwitchName": "A-AZ1-Gold-TOR1",
+   "ipMtu": 9216,
+   "linkDiscovered": false,
+   "linkId": "LINK-UUID-460070",
+   "linkPlanned": false,
+   "linkPresent": true,
+   "linkState": "linkPresent",
+   "linkType": "ethisl",
+   "memberLink": true,
+   "portChannel": false,
+   "srcFabricName": "CERT43-R3-S1",
+   "srcInterfaceName": "Ethernet1/3",
+   "srcSwitchId": "9JF7XN1WNFK",
+   "srcSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "tor",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "srcSwitchName": "A-AZ1-Gold-TOR2"
+  },
+  {
+   "aggregatedAdminStatus": "up",
+   "aggregatedOperStatus": "up",
+   "dstFabricName": "CERT43-R3-S1",
+   "dstInterfaceName": "Port-channel1",
+   "dstSwitchId": "9P2R9F06YTE",
+   "dstSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "tor",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "dstSwitchName": "A-AZ1-Gold-TOR1",
+   "ipMtu": 9216,
+   "linkDiscovered": false,
+   "linkId": "LINK-UUID-480860",
+   "linkPlanned": false,
+   "linkPresent": true,
+   "linkState": "linkPresent",
+   "linkType": "ethisl",
+   "memberLink": false,
+   "portChannel": true,
+   "srcFabricName": "CERT43-R3-S1",
+   "srcInterfaceName": "Port-channel1",
+   "srcSwitchId": "97QB6TAGC4D",
+   "srcSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "none",
+    "interfaceOperStatus": "up",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "leaf",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "srcSwitchName": "A-AZ1-Gold-Leaf1"
+  },
+  {
+   "aggregatedAdminStatus": "up",
+   "aggregatedOperStatus": "down",
+   "configData": {
+    "policyType": "numbered",
+    "templateInputs": {
+     "bfdEchoOnDstInterface": false,
+     "bfdEchoOnSrcInterface": false,
+     "dstInterfaceConfig": "load-interval counter 2 45\n",
+     "dstInterfaceDescription": "MAPI planned link Spine1 E1/40 -> Leaf1 E1/40",
+     "dstIp": "10.4.255.2",
+     "interfaceAdminState": false,
+     "macsec": false,
+     "mtu": 9000,
+     "srcInterfaceConfig": "load-interval counter 1 30\n",
+     "srcInterfaceDescription": "MAPI planned link Leaf1 E1/40 -> Spine1 E1/40",
+     "srcIp": "10.4.255.1"
+    }
+   },
+   "displayName": "Numbered",
+   "dstFabricName": "CERT43-R3-S1",
+   "dstInterfaceName": "Ethernet1/40",
+   "dstSwitchId": "97QB6TAGC4D",
+   "dstSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "Link not connected",
+    "interfaceOperStatus": "down",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "leaf",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "dstSwitchName": "A-AZ1-Gold-Leaf1",
+   "ipMtu": 9216,
+   "linkDiscovered": false,
+   "linkId": "LINK-UUID-825000",
+   "linkPlanned": true,
+   "linkPresent": false,
+   "linkState": "neighborMissing",
+   "linkType": "lan_planned_link",
+   "memberLink": false,
+   "portChannel": false,
+   "srcFabricName": "CERT43-R3-S1",
+   "srcInterfaceName": "Ethernet1/40",
+   "srcSwitchId": "9JBFQXYMQ5N",
+   "srcSwitchInfo": {
+    "interfaceAdminStatus": "up",
+    "interfaceOperReason": "Link not connected",
+    "interfaceOperStatus": "down",
+    "switchModelName": "N9K-C9300v",
+    "switchRole": "border gateway spine",
+    "vdc": false,
+    "vdcId": 0
+   },
+   "srcSwitchName": "A-AZ1-Gold-BGW_Spine1"
+  }
+ ],
+ "nd43_spine": [
+  {
+   "configData": {
+    "mode": "managed",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": true,
+      "description": "NC02 subif dual-stack",
+      "extraConfig": "no ip redirects",
+      "ip": "10.250.100.1",
+      "ipRedirects": false,
+      "ipv6": "2001:db8:250:100::1",
+      "ipv6Prefix": 64,
+      "mtu": 9000,
+      "netflow": false,
+      "pimDrPriority": 1,
+      "pimSparse": false,
+      "policyType": "subinterface",
+      "prefix": 30,
+      "routingTag": "3100",
+      "vlanId": 100,
+      "vrfInterface": "default"
+     }
+    }
+   },
+   "interfaceName": "Ethernet1/21.100",
+   "interfaceType": "subInterface",
+   "switchId": "9UNMNGY13IM"
+  },
+  {
+   "configData": {
+    "mode": "managed",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": false,
+      "description": "NC02 subif in VRF admin-down",
+      "ip": "10.250.200.1",
+      "ipRedirects": false,
+      "mtu": 9216,
+      "netflow": false,
+      "pimDrPriority": 1,
+      "pimSparse": false,
+      "policyType": "subinterface",
+      "prefix": 31,
+      "speed": "auto",
+      "vlanId": 200,
+      "vrfInterface": "MSD_VRF_A"
+     }
+    }
+   },
+   "interfaceName": "Ethernet1/22.200",
+   "interfaceType": "subInterface",
+   "switchId": "9UNMNGY13IM"
+  },
+  {
+   "configData": {
+    "mode": "routed",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": true,
+      "description": "NC01 routed IPv6-only",
+      "extraConfig": "ipv6 address 2001:db8:250::1/64",
+      "fec": "auto",
+      "ipRedirects": false,
+      "mtu": 9216,
+      "netflow": false,
+      "pfc": false,
+      "pimDrPriority": 1,
+      "pimSparse": false,
+      "policyType": "routedHost",
+      "ptp": "false",
+      "qos": false,
+      "speed": "auto"
+     }
+    }
+   },
+   "interfaceName": "Ethernet1/23",
+   "interfaceType": "ethernet",
+   "switchId": "9UNMNGY13IM"
+  },
+  {
+   "configData": {
+    "mode": "routed",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": true,
+      "description": "NC01 routed without IP",
+      "fec": "auto",
+      "ipRedirects": false,
+      "mtu": 9100,
+      "netflow": false,
+      "pfc": false,
+      "pimDrPriority": 1,
+      "pimSparse": false,
+      "policyType": "routedHost",
+      "ptp": "false",
+      "qos": false,
+      "speed": "auto"
+     }
+    }
+   },
+   "interfaceName": "Ethernet1/21",
+   "interfaceType": "ethernet",
+   "switchId": "9UNMNGY13IM"
+  },
+  {
+   "configData": {
+    "mode": "routed",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": true,
+      "description": "NC01 routed IPv4 not yet deployed",
+      "fec": "auto",
+      "ip": "10.250.22.1",
+      "ipRedirects": false,
+      "mtu": 9216,
+      "netflow": false,
+      "pfc": false,
+      "pimDrPriority": 1,
+      "pimSparse": false,
+      "policyType": "routedHost",
+      "prefix": 30,
+      "qos": false,
+      "routingTag": "2222",
+      "speed": "auto",
+      "vrfInterface": "default"
+     }
+    }
+   },
+   "interfaceName": "Ethernet1/22",
+   "interfaceType": "ethernet",
+   "switchId": "9UNMNGY13IM"
+  },
+  {
+   "configData": {
+    "mode": "routed",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": true,
+      "mtu": 9216,
+      "netflow": false,
+      "policyType": "routedHost",
+      "ptp": "false",
+      "speed": "auto"
+     }
+    }
+   },
+   "interfaceName": "Ethernet1/30",
+   "interfaceType": "ethernet",
+   "switchId": "9UNMNGY13IM"
+  },
+  {
+   "configData": {
+    "mode": "routed",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": true,
+      "mtu": 9216,
+      "netflow": false,
+      "policyType": "routedHost",
+      "ptp": "false",
+      "speed": "auto"
+     }
+    }
+   },
+   "interfaceName": "Ethernet1/31",
+   "interfaceType": "ethernet",
+   "switchId": "9UNMNGY13IM"
+  }
+ ],
+ "nd43_templates": {
+  "int_intra_fabric_num_link": {
+   "parameters": [
+    {
+     "metaProperties": null,
+     "name": "configData.templateInputs.srcIp"
+    },
+    {
+     "metaProperties": null,
+     "name": "configData.templateInputs.dstIp"
+    },
+    {
+     "metaProperties": null,
+     "name": "configData.templateInputs.srcIpv6"
+    },
+    {
+     "metaProperties": null,
+     "name": "configData.templateInputs.dstIpv6"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "true"
+     },
+     "name": "configData.templateInputs.interfaceAdminState"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "9216",
+      "max": "9216",
+      "min": "576"
+     },
+     "name": "configData.templateInputs.mtu"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "auto",
+      "validValues": "auto,10Mb,100Mb,1Gb,2.5Gb,5Gb,10Gb,25Gb,40Gb,50Gb,100Gb,200Gb,400Gb,800Gb"
+     },
+     "name": "configData.templateInputs.speed"
+    },
+    {
+     "metaProperties": {
+      "maxLength": "254",
+      "minLength": "1"
+     },
+     "name": "configData.templateInputs.srcInterfaceDescription"
+    },
+    {
+     "metaProperties": {
+      "maxLength": "254",
+      "minLength": "1"
+     },
+     "name": "configData.templateInputs.dstInterfaceDescription"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "configData.templateInputs.bfdEchoOnSrcInterface"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "configData.templateInputs.bfdEchoOnDstInterface"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "configData.templateInputs.macsec"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "auto",
+      "validValues": "auto,fcFec,off,rsCons16,rsFec,rsIeee"
+     },
+     "name": "configData.templateInputs.fec"
+    },
+    {
+     "metaProperties": null,
+     "name": "configData.templateInputs.srcInterfaceConfig"
+    },
+    {
+     "metaProperties": null,
+     "name": "configData.templateInputs.dstInterfaceConfig"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "configData.templateInputs.dhcpRelayOnSrcInterface"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "configData.templateInputs.dhcpRelayOnDstInterface"
+    }
+   ]
+  },
+  "int_intra_fabric_unnum_link": {
+   "parameters": [
+    {
+     "metaProperties": {
+      "defaultValue": "true"
+     },
+     "name": "configData.templateInputs.interfaceAdminState"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "9216",
+      "max": "9216",
+      "min": "576"
+     },
+     "name": "configData.templateInputs.mtu"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "auto",
+      "validValues": "auto,10Mb,100Mb,1Gb,2.5Gb,5Gb,10Gb,25Gb,40Gb,50Gb,100Gb,200Gb,400Gb,800Gb"
+     },
+     "name": "configData.templateInputs.speed"
+    },
+    {
+     "metaProperties": {
+      "maxLength": "254",
+      "minLength": "1"
+     },
+     "name": "configData.templateInputs.srcInterfaceDescription"
+    },
+    {
+     "metaProperties": {
+      "maxLength": "254",
+      "minLength": "1"
+     },
+     "name": "configData.templateInputs.dstInterfaceDescription"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "configData.templateInputs.macsec"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "auto",
+      "validValues": "auto,fcFec,off,rsCons16,rsFec,rsIeee"
+     },
+     "name": "configData.templateInputs.fec"
+    },
+    {
+     "metaProperties": null,
+     "name": "configData.templateInputs.srcInterfaceConfig"
+    },
+    {
+     "metaProperties": null,
+     "name": "configData.templateInputs.dstInterfaceConfig"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "configData.templateInputs.dhcpRelayOnSrcInterface"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "configData.templateInputs.dhcpRelayOnDstInterface"
+    }
+   ]
+  },
+  "int_routed_host": {
+   "parameters": [
+    {
+     "metaProperties": {
+      "maxLength": "32",
+      "minLength": "1"
+     },
+     "name": "vrfInterface"
+    },
+    {
+     "metaProperties": null,
+     "name": "ip"
+    },
+    {
+     "metaProperties": {
+      "max": "31",
+      "min": "1"
+     },
+     "name": "prefix"
+    },
+    {
+     "metaProperties": null,
+     "name": "routingTag"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "9216",
+      "max": "9216",
+      "min": "576"
+     },
+     "name": "mtu"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "auto",
+      "validValues": "auto,10Mb,100Mb,1Gb,2.5Gb,5Gb,10Gb,25Gb,40Gb,50Gb,100Gb,200Gb,400Gb,800Gb"
+     },
+     "name": "speed"
+    },
+    {
+     "metaProperties": {
+      "maxLength": "254",
+      "minLength": "1"
+     },
+     "name": "description"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "ipRedirects"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "pimSparse"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "1",
+      "max": "4294967295",
+      "min": "1"
+     },
+     "name": "pimDrPriority"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "auto",
+      "validValues": "auto,fcFec,off,rsCons16,rsFec,rsIEEE"
+     },
+     "name": "fec"
+    },
+    {
+     "metaProperties": null,
+     "name": "extraConfig"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "true"
+     },
+     "name": "adminState"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "netflow"
+    },
+    {
+     "metaProperties": null,
+     "name": "netflowMonitor"
+    },
+    {
+     "metaProperties": null,
+     "name": "netflowSampler"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "pfc"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "qos"
+    },
+    {
+     "metaProperties": null,
+     "name": "qosPolicy"
+    },
+    {
+     "metaProperties": null,
+     "name": "queuingPolicy"
+    }
+   ]
+  },
+  "int_trunk_host": {
+   "parameters": [
+    {
+     "metaProperties": {
+      "defaultValue": "default",
+      "validValues": "enable,disable,default"
+     },
+     "name": "bpduGuard"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "default",
+      "validValues": "enable,disable,default"
+     },
+     "name": "bpduFilter"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "auto",
+      "validValues": "auto,pointToPoint,shared"
+     },
+     "name": "linkType"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "true"
+     },
+     "name": "portTypeEdgeTrunk"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "jumbo",
+      "validValues": "default,jumbo"
+     },
+     "name": "mtu"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "auto",
+      "validValues": "auto,10Mb,100Mb,1Gb,2.5Gb,5Gb,10Gb,25Gb,40Gb,50Gb,100Gb,200Gb,400Gb,800Gb"
+     },
+     "name": "speed"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "none"
+     },
+     "name": "allowedVlans"
+    },
+    {
+     "metaProperties": {
+      "max": "4094",
+      "min": "1"
+     },
+     "name": "nativeVlan"
+    },
+    {
+     "metaProperties": {
+      "maxLength": "254",
+      "minLength": "1"
+     },
+     "name": "description"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "true"
+     },
+     "name": "negotiateAuto"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "true"
+     },
+     "name": "cdp"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "orphanPort"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "auto"
+     },
+     "name": "duplexMode"
+    },
+    {
+     "metaProperties": {
+      "max": "100000000",
+      "min": "1"
+     },
+     "name": "bandwidth"
+    },
+    {
+     "metaProperties": {
+      "max": "100000000",
+      "min": "1"
+     },
+     "name": "inheritBandwidth"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "100",
+      "max": "20000",
+      "min": "0"
+     },
+     "name": "debounceTimer"
+    },
+    {
+     "metaProperties": {
+      "max": "10000",
+      "min": "1000"
+     },
+     "name": "debounceLinkupTimer"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "true"
+     },
+     "name": "errorDetectionAcl"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "auto",
+      "validValues": "auto,fcFec,off,rsCons16,rsFec,rsIEEE"
+     },
+     "name": "fec"
+    },
+    {
+     "metaProperties": null,
+     "name": "extraConfig"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "true"
+     },
+     "name": "adminState"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "netflow"
+    },
+    {
+     "metaProperties": null,
+     "name": "netflowMonitor"
+    },
+    {
+     "metaProperties": null,
+     "name": "netflowSampler"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "pfc"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "qos"
+    },
+    {
+     "metaProperties": null,
+     "name": "qosPolicy"
+    },
+    {
+     "metaProperties": null,
+     "name": "queuingPolicy"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "monitor"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "vlanMapping"
+    },
+    {
+     "metaProperties": null,
+     "name": "vlanMappingEntries"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "false"
+     },
+     "name": "stormControl"
+    },
+    {
+     "metaProperties": {
+      "defaultValue": "default",
+      "validValues": "shutdown,trap,default"
+     },
+     "name": "stormControlAction"
+    },
+    {
+     "metaProperties": {
+      "regularExpr": "^(100|100\\.|100\\.0|100\\.00|((?:\\d{0,2})(?:\\.\\d{0,2})?))$"
+     },
+     "name": "stormControlBroadcastLevel"
+    },
+    {
+     "metaProperties": {
+      "regularExpr": "^(100|100\\.|100\\.0|100\\.00|((?:\\d{0,2})(?:\\.\\d{0,2})?))$"
+     },
+     "name": "stormControlMulticastLevel"
+    },
+    {
+     "metaProperties": {
+      "regularExpr": "^(100|100\\.|100\\.0|100\\.00|((?:\\d{0,2})(?:\\.\\d{0,2})?))$"
+     },
+     "name": "stormControlUnicastLevel"
+    },
+    {
+     "metaProperties": {
+      "max": "200000000",
+      "min": "0"
+     },
+     "name": "stormControlBroadcastLevelPps"
+    },
+    {
+     "metaProperties": {
+      "max": "200000000",
+      "min": "0"
+     },
+     "name": "stormControlMulticastLevelPps"
+    },
+    {
+     "metaProperties": {
+      "max": "200000000",
+      "min": "0"
+     },
+     "name": "stormControlUnicastLevelPps"
+    }
+   ]
+  }
+ },
+ "nd43_unshut_false": [
+  {
+   "configData": {
+    "mode": "routed",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": false,
+      "mtu": 9216,
+      "netflow": false,
+      "policyType": "routedHost",
+      "ptp": false,
+      "speed": "auto"
+     }
+    }
+   },
+   "interfaceName": "Ethernet1/29",
+   "interfaceType": "ethernet",
+   "switchId": "9UNMNGY13IM"
+  },
+  {
+   "configData": {
+    "mode": "trunk",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": false,
+      "allowedVlans": "none",
+      "bpduGuard": "default",
+      "mtu": "jumbo",
+      "netflow": false,
+      "policyType": "trunkHost",
+      "portTypeEdgeTrunk": true,
+      "speed": "auto"
+     }
+    }
+   },
+   "interfaceName": "Ethernet1/29",
+   "interfaceType": "ethernet",
+   "switchId": "9G1WD9V3YJW"
+  },
+  {
+   "configData": {
+    "mode": "access",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "accessVlan": 2503,
+      "adminState": true,
+      "bpduFilter": "default",
+      "bpduGuard": "enable",
+      "cdp": false,
+      "debounceTimer": 100,
+      "description": "CERT R2 Leaf1 access E1/15",
+      "duplexMode": "auto",
+      "errorDetectionAcl": true,
+      "fec": "auto",
+      "linkType": "auto",
+      "monitor": true,
+      "mtu": "jumbo",
+      "negotiateAuto": true,
+      "netflow": false,
+      "orphanPort": false,
+      "pfc": false,
+      "policyType": "accessHost",
+      "portTypeEdgeTrunk": true,
+      "ptp": false,
+      "qos": false,
+      "speed": "auto",
+      "stormControl": false,
+      "stormControlAction": "default"
+     }
+    }
+   },
+   "interfaceName": "Ethernet1/15",
+   "interfaceType": "ethernet",
+   "switchId": "9G1WD9V3YJW"
+  },
+  {
+   "configData": {
+    "mode": "trunk",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "adminState": false,
+      "allowedVlans": "none",
+      "bpduGuard": "default",
+      "mtu": "jumbo",
+      "netflow": false,
+      "policyType": "trunkHost",
+      "portTypeEdgeTrunk": true,
+      "speed": "auto"
+     }
+    }
+   },
+   "interfaceName": "Ethernet1/29",
+   "interfaceType": "ethernet",
+   "switchId": "9TNGTT9D6Y2"
+  },
+  {
+   "configData": {
+    "mode": "access",
+    "networkOS": {
+     "networkOSType": "nx-os",
+     "policy": {
+      "accessVlan": 2505,
+      "adminState": true,
+      "bpduFilter": "default",
+      "bpduGuard": "enable",
+      "cdp": true,
+      "debounceTimer": 100,
+      "description": "CERT R2 TOR1 access E1/10",
+      "duplexMode": "auto",
+      "errorDetectionAcl": true,
+      "fec": "auto",
+      "linkType": "auto",
+      "monitor": false,
+      "mtu": "jumbo",
+      "negotiateAuto": true,
+      "netflow": false,
+      "orphanPort": false,
+      "pfc": false,
+      "policyType": "accessHost",
+      "portTypeEdgeTrunk": false,
+      "ptp": false,
+      "qos": false,
+      "speed": "auto",
+      "stormControl": false,
+      "stormControlAction": "default"
+     }
+    }
+   },
+   "interfaceName": "Ethernet1/10",
+   "interfaceType": "ethernet",
+   "switchId": "9TNGTT9D6Y2"
+  }
+ ]
+}
