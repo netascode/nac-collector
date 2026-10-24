@@ -459,6 +459,10 @@
   - name: wireless_air_marshal_settings
     endpoint: /wireless/airMarshal/settings/byNetwork
     split_by_network: true
+  - name: wireless_devices_provisioning_deployment
+    has_own_id: true
+    id_name: deploymentId
+    endpoint: /wireless/devices/provisioning/deployments
   - name: wireless_location_scanning
     endpoint: /wireless/location/scanning/byNetwork
     split_by_network: true
