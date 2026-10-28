@@ -66,11 +66,19 @@
 - endpoint: /dna/intent/api/v1/wirelessControllers/%v/primaryManagedApLocations
   source_endpoint: /dna/intent/api/v1/network-device
   source_key: id
+  source_filter:
+    key: family
+    values:
+      - Wireless Controller
   target_endpoint: /dna/intent/api/v1/wirelessControllers/%v/primaryManagedApLocations
   target_key: deviceId
 - endpoint: /dna/intent/api/v1/wirelessControllers/%v/secondaryManagedApLocations
   source_endpoint: /dna/intent/api/v1/network-device
   source_key: id
+  source_filter:
+    key: family
+    values:
+      - Wireless Controller
   target_endpoint: /dna/intent/api/v1/wirelessControllers/%v/secondaryManagedApLocations
   target_key: deviceId
 - endpoint: /dna/intent/api/v1/featureTemplates/wireless/cleanAirConfigurations
