@@ -22,28 +22,62 @@ class CiscoClientNDFC(CiscoClientController):
     Extends the base CiscoClientController with NDFC-specific authentication and data collection methods.
     """
 
-    # Interface types that use Port-Channel processing logic with vpcEntityId
-    # These interface types must have:
-    # 1. A 'vpcEntityId' field with format "serial1~serial2~vpcX"
-    # 2. Children endpoints defined in YAML configuration
-    # 3. The same processing pattern for child endpoints like vPCInterfaceSetting
-    PORT_CHANNEL_INTERFACE_TYPES = [
-        "TrunkPort-Channel",
-        "AccessPort-Channel",
-        # Add new Port-Channel interface types here as needed
-    ]
-
-    # Interface types that use serial number + interface name processing logic
-    # These interface types must have:
-    # 1. 'serialNo' and 'ifName' fields in the interface data
-    # 2. Children endpoints defined in YAML configuration that use {{serialNumber}} and {{ifName}} placeholders
-    # 3. The same processing pattern for child endpoints like LoopbackInterfaceSetting
-    SERIAL_INTERFACE_TYPES = [
-        "LoopbackInterfaces",
-        "AccessEthernetPorts",
-        "TrunkEthernetPorts",
-        # Add new serial-based interface types here as needed
-    ]
+    # Switch interfaces are collected from the Nexus Dashboard Manage v1 API
+    MANAGE_INTERFACES_PAGE_SIZE = 100
+    MANAGE_INTERFACES_RESPONSE_KEY = "interfaces"
+    # Top-level endpoints served by ND Manage v1 list APIs: endpoint name -> response key.
+    MANAGE_LIST_ENDPOINTS = {
+        "Fabric_Resources": "resources",
+        "Fabric_Links": "links",
+    }
+    # Endpoints without data on an MSD root fabric (no switches of its own).
+    MSD_ROOT_SKIPPED_ENDPOINTS = (
+        "Discovered_Switches",
+        "TorPairing",
+        "Switch_Credentials",
+        "Fabric_Links",
+    )
+    SWITCH_CREDENTIAL_FIELDS = (
+        "groupName",
+        "switchName",
+        "switchDbID",
+        "ipAddress",
+        "credType",
+        "v3Protocol",
+    )
+    # Intra-fabric link policies (Manage v1 link policyType). Other link policies
+    # (multisite underlay/overlay, VRF-lite, MPLS, ...) and links to other fabrics are
+    # not intra-fabric links and are not collected.
+    INTRA_FABRIC_LINK_POLICY_TYPES = ("numbered", "unnumbered", "ipv6LinkLocal")
+    PREPROVISION_LINK_POLICY_TYPE = "preprovision"
+    LINK_POLICY_TEMPLATES = {
+        "numbered": "int_intra_fabric_num_link",
+        "unnumbered": "int_intra_fabric_unnum_link",
+        "ipv6LinkLocal": "int_intra_fabric_ipv6_link_local",
+    }
+    # Link template parameters that express user intent in the NAC fabric_links model.
+    LINK_INTENT_PARAMETERS = (
+        "interfaceAdminState",
+        "mtu",
+        "srcInterfaceConfig",
+        "dstInterfaceConfig",
+    )
+    LINK_TEMPLATE_PARAMETER_PREFIX = "configData.templateInputs."
+    # Fabric settings NDFC applies to the links it creates instead of the link template
+    # default: link template parameter -> fabric nvPair ("Intra Fabric Interface MTU").
+    LINK_FABRIC_DEFAULTS = {"mtu": "FABRIC_MTU"}
+    MANAGE_TEMPLATE_PARAMETERS_ENDPOINT = (
+        "/api/v1/manage/configTemplates/{template_name}/parameters"
+    )
+    # NDFC attaches a default policy to every unused switch port. These policy types
+    # are dropped when all their template parameters still hold the template defaults.
+    PLACEHOLDER_POLICY_TEMPLATES = {
+        "trunkHost": "int_trunk_host",
+        "routedHost": "int_routed_host",
+    }
+    MANAGE_BOOLEAN_POLICY_FIELDS = ("ptp",)
+    # Fabric setting "Unshut Host Interfaces by Default"
+    HOST_INTF_ADMIN_STATE_NVPAIR = "HOST_INTF_ADMIN_STATE"
 
     # VPC pair types that use peerOneId pattern
     VPC_PAIR_TYPES = [
@@ -59,6 +93,11 @@ class CiscoClientNDFC(CiscoClientController):
         "Default_VRF_Extension_Universal",
         "Default_Network_Extension_Universal",
     ]
+
+    OVERLAY_FREEFORM_TEMPLATE = "switch_freeform"
+    OVERLAY_FREEFORM_SOURCE = "OVERLAY"
+    OVERLAY_FREEFORM_ENTITY_TYPE = "Config_Profile"
+    MANAGEMENT_VRF_CONF_PREFIX = "vrf context management"
 
     def __init__(self, **kwargs: Any) -> None:
         """
@@ -85,9 +124,13 @@ class CiscoClientNDFC(CiscoClientController):
         self.fabric_id: Any | None = (
             None  # Store fabric ID for endpoint variable replacement
         )
+        # Config-template defaults (camelCase parameter -> default), cached per template.
+        self.manage_template_defaults: dict[str, dict[str, str | None] | None] = {}
         self.exclude_templates: list[str] = (
             self.EXCLUDE_TEMPLATES
         )  # Template names to exclude from policies filtering
+        # (switch serial, VRF/network name) -> per-attachment freeform CLI
+        self.overlay_attach_freeform: dict[tuple[str, str], str] = {}
 
         logger.info("Initialized NDFC Controller for fabric: %s", self.fabric_name)
 
@@ -503,12 +546,14 @@ class CiscoClientNDFC(CiscoClientController):
                 "Processing endpoint %s for MSD fabric: %s", endpoint_name, fabric_name
             )
 
-            # Skip Discovered_Switches for MSD root fabric (fabricType: "MSD")
-            if endpoint_name == "Discovered_Switches" and self._is_msd_root_fabric(
-                fabric_name
+            # Skip endpoints that only exist for member fabrics: the MSD root fabric
+            # (fabricType "MSD") has no physical switches, ToR pairings, links or
+            # switch resources of its own.
+            if endpoint_name in self.MSD_ROOT_SKIPPED_ENDPOINTS and (
+                self._is_msd_root_fabric(fabric_name)
             ):
                 logger.info(
-                    "Skipping Discovered_Switches for MSD root fabric: %s", fabric_name
+                    "Skipping %s for MSD root fabric: %s", endpoint_name, fabric_name
                 )
                 continue
 
@@ -572,6 +617,14 @@ class CiscoClientNDFC(CiscoClientController):
             self._process_policies_endpoint_with_filtering(endpoint, result)
             return
 
+        # Special handling for TorPairing: requires a leaf switch serial number
+        # resolved from already-collected Discovered_Switches data. ndfc.yaml
+        # places TorPairing directly after Discovered_Switches to guarantee
+        # ordering (endpoints are processed sequentially in YAML list order).
+        if endpoint_name == "TorPairing":
+            self._process_tor_pairing_endpoint(endpoint, result)
+            return
+
         # Replace %v placeholder with fabric name if present
         if self.fabric_name and "%v" in endpoint_url:
             endpoint_url = endpoint_url.replace("%v", self.fabric_name)
@@ -588,7 +641,25 @@ class CiscoClientNDFC(CiscoClientController):
         logger.debug("Processing endpoint: %s -> %s", endpoint_name, endpoint_url)
 
         try:
-            data = self.fetch_data(endpoint_url)
+            if endpoint_name in self.MANAGE_LIST_ENDPOINTS:
+                data: Any = self._fetch_manage_list(
+                    endpoint_url, self.MANAGE_LIST_ENDPOINTS[endpoint_name]
+                )
+                if endpoint_name == "Fabric_Links" and data is not None:
+                    data = self._filter_fabric_links(
+                        data,
+                        self.fabric_name,
+                        {
+                            parameter: self._fabric_nvpair(
+                                result, self.fabric_name, nvpair
+                            )
+                            for parameter, nvpair in self.LINK_FABRIC_DEFAULTS.items()
+                        },
+                    )
+            else:
+                data = self.fetch_data(endpoint_url)
+                if endpoint_name == "Switch_Credentials":
+                    data = self._filter_switch_credentials(data, self.fabric_name)
 
             # Fix escaped JSON strings in template config fields
             if data is not None:
@@ -625,6 +696,32 @@ class CiscoClientNDFC(CiscoClientController):
                 result_entry["fabric"] = self.fabric_name
 
             result[endpoint_name].append(result_entry)
+
+    def _filter_switch_credentials(
+        self, data: Any, fabric_name: str | None
+    ) -> list[dict[str, Any]]:
+        """
+        Keep the discovery-credential records of ``fabric_name`` (``groupName``) with
+        only the non-secret ``SWITCH_CREDENTIAL_FIELDS`` (no user names or passwords).
+
+        Args:
+            data: lanConfig/getLanSwitchCredentials response (list of records)
+            fabric_name: Fabric whose switches are kept
+
+        Returns:
+            Filtered records; empty list for an unexpected response
+        """
+        if not isinstance(data, list):
+            return []
+        return [
+            {
+                field: record.get(field)
+                for field in self.SWITCH_CREDENTIAL_FIELDS
+                if field in record
+            }
+            for record in data
+            if isinstance(record, dict) and record.get("groupName") == fabric_name
+        ]
 
     def _is_msd_root_fabric(self, fabric_name: str) -> bool:
         """
@@ -730,6 +827,126 @@ class CiscoClientNDFC(CiscoClientController):
             "Extracted %d serial numbers from discovered switches", len(serial_numbers)
         )
         return serial_numbers
+
+    def _find_leaf_serial_number(self, endpoint_dict: dict[str, Any]) -> str | None:
+        """
+        Find the serial number of a leaf-role switch for the current fabric from
+        already-collected Discovered_Switches data.
+
+        A single leaf switch's serial number is sufficient to query NDFC's
+        ToR-pairing discovery API, which returns the complete, fabric-wide
+        leaf/ToR pairing list in one call - no per-switch looping is required.
+
+        Parameters:
+            endpoint_dict (dict): The dictionary containing already-processed
+                endpoint data, expected to contain Discovered_Switches.
+
+        Returns:
+            str | None: Serial number of a leaf switch for the current fabric,
+                or None if no leaf switch was found.
+        """
+        for fabric_entry in endpoint_dict.get("Discovered_Switches", []):
+            if fabric_entry.get("fabric") != self.fabric_name:
+                continue
+
+            switches = fabric_entry.get("data", [])
+            if not isinstance(switches, list):
+                continue
+
+            for switch in switches:
+                if not isinstance(switch, dict):
+                    continue
+                if switch.get("switchRole") == "leaf":
+                    serial_number = switch.get("serialNumber")
+                    if serial_number:
+                        return str(serial_number)
+
+        return None
+
+    def _process_tor_pairing_endpoint(
+        self, endpoint: dict[str, Any], endpoint_dict: dict[str, Any]
+    ) -> None:
+        """
+        Process the TorPairing endpoint.
+
+        Parameters:
+            endpoint (dict): The endpoint configuration containing name and endpoint URL.
+            endpoint_dict (dict): The dictionary to store results in.
+        """
+        endpoint_name = endpoint["name"]
+        endpoint_url = endpoint["endpoint"]
+
+        if endpoint_name not in endpoint_dict:
+            endpoint_dict[endpoint_name] = []
+
+        if "Discovered_Switches" not in endpoint_dict:
+            logger.error(
+                "Cannot process TorPairing endpoint: Discovered_Switches data not available"
+            )
+            logger.error(
+                "Make sure Discovered_Switches endpoint is defined before TorPairing endpoint"
+            )
+            endpoint_dict[endpoint_name].append(
+                {
+                    "data": {},
+                    "endpoint": endpoint_url,
+                    "fabric": self.fabric_name,
+                    "error": "Discovered_Switches data not available",
+                }
+            )
+            return
+
+        leaf_serial_number = self._find_leaf_serial_number(endpoint_dict)
+
+        if not leaf_serial_number:
+            logger.warning(
+                "No leaf switch found for fabric %s - skipping TorPairing collection",
+                self.fabric_name,
+            )
+            endpoint_dict[endpoint_name].append(
+                {
+                    "data": {},
+                    "endpoint": endpoint_url,
+                    "fabric": self.fabric_name,
+                }
+            )
+            return
+
+        # Replace %v placeholder with fabric name if present
+        if self.fabric_name and "%v" in endpoint_url:
+            endpoint_url = endpoint_url.replace("%v", self.fabric_name)
+
+        # Replace {{leafSerialNumber}} placeholder with the resolved leaf serial
+        endpoint_url = endpoint_url.replace("{{leafSerialNumber}}", leaf_serial_number)
+
+        logger.debug(
+            "Processing TorPairing endpoint using leaf serial %s: %s",
+            leaf_serial_number,
+            endpoint_url,
+        )
+
+        try:
+            data = self.fetch_data(endpoint_url)
+            endpoint_dict[endpoint_name].append(
+                {
+                    "data": data if data is not None else {},
+                    "endpoint": endpoint_url,
+                    "fabric": self.fabric_name,
+                }
+            )
+            logger.debug("Successfully processed TorPairing endpoint")
+        except Exception as e:
+            logger.error(
+                "Error fetching TorPairing data from %s: %s", endpoint_url, str(e)
+            )
+            endpoint_dict[endpoint_name].append(
+                {
+                    "data": {},
+                    "endpoint": endpoint_url,
+                    "fabric": self.fabric_name,
+                    "error": str(e),
+                }
+            )
 
     def _process_policies_endpoint_with_filtering(
         self, endpoint: dict[str, Any], endpoint_dict: dict[str, Any]
@@ -837,6 +1054,11 @@ class CiscoClientNDFC(CiscoClientController):
                     all_policies_data, endpoint_dict
                 )
 
+                # Autogenerated policies that carry intent of other objects (attachment
+                # freeform, switch management VRF) are indexed before they are dropped.
+                self._index_overlay_attach_freeform(filtered_policies)
+                self._add_management_vrf_config(filtered_policies, endpoint_dict)
+
                 # Filter out autogenerated policies
                 filtered_policies = self._filter_autogenerated_policies(
                     filtered_policies
@@ -895,6 +1117,84 @@ class CiscoClientNDFC(CiscoClientController):
                     "error": str(e),
                 }
             )
+
+    @staticmethod
+    def _policy_list(policies_data: Any) -> list[dict[str, Any]]:
+        """Policy records of a policies payload (plain list or data/response wrapper)."""
+        if isinstance(policies_data, dict):
+            policies_data = policies_data.get("data", policies_data.get("response", []))
+        if not isinstance(policies_data, list):
+            return []
+        return [
+            p for p in policies_data if isinstance(p, dict) and not p.get("deleted")
+        ]
+
+    @staticmethod
+    def _policy_conf(policy: dict[str, Any]) -> str | None:
+        nv_pairs = policy.get("nvPairs")
+        conf = nv_pairs.get("CONF") if isinstance(nv_pairs, dict) else None
+        return conf if isinstance(conf, str) and conf.strip() else None
+
+    def _index_overlay_attach_freeform(self, policies_data: Any) -> None:
+        """Index per-attachment freeform CLI by (switch serial, VRF/network name)."""
+        self.overlay_attach_freeform = {}
+        for policy in self._policy_list(policies_data):
+            if (
+                policy.get("templateName") != self.OVERLAY_FREEFORM_TEMPLATE
+                or policy.get("source") != self.OVERLAY_FREEFORM_SOURCE
+                or policy.get("secondaryEntityType")
+                != self.OVERLAY_FREEFORM_ENTITY_TYPE
+            ):
+                continue
+            conf = self._policy_conf(policy)
+            serial_number = policy.get("serialNumber")
+            entity_name = policy.get("secondaryEntityName")
+            if conf and serial_number and entity_name:
+                self.overlay_attach_freeform[(str(serial_number), str(entity_name))] = (
+                    conf
+                )
+        logger.debug(
+            "Indexed %d overlay attachment freeform policies",
+            len(self.overlay_attach_freeform),
+        )
+
+    def _add_management_vrf_config(
+        self, policies_data: Any, endpoint_dict: dict[str, Any]
+    ) -> None:
+        """Store each switch's management VRF CLI (mgmt default route) on its
+        Discovered_Switches record as ``management_vrf_config``."""
+        conf_by_serial: dict[str, str] = {}
+        for policy in self._policy_list(policies_data):
+            conf = self._policy_conf(policy)
+            if (
+                policy.get("templateName") == self.OVERLAY_FREEFORM_TEMPLATE
+                and conf
+                and conf.lstrip().startswith(self.MANAGEMENT_VRF_CONF_PREFIX)
+                and policy.get("serialNumber")
+            ):
+                conf_by_serial.setdefault(str(policy["serialNumber"]), conf)
+        for entry in endpoint_dict.get("Discovered_Switches") or []:
+            switches = entry.get("data") if isinstance(entry, dict) else None
+            for switch in switches if isinstance(switches, list) else []:
+                serial_number = isinstance(switch, dict) and switch.get("serialNumber")
+                if serial_number and str(serial_number) in conf_by_serial:
+                    switch["management_vrf_config"] = conf_by_serial[str(serial_number)]
+
+    def _add_attach_freeform(self, attachments: list[Any], entity_name: Any) -> None:
+        """Join the indexed per-attachment freeform CLI onto VRF/network attachments."""
+        if not self.overlay_attach_freeform or not entity_name:
+            return
+        for attachment in attachments:
+            if not isinstance(attachment, dict):
+                continue
+            serial_number = attachment.get("switchSerialNo") or attachment.get(
+                "serialNumber"
+            )
+            conf = self.overlay_attach_freeform.get(
+                (str(serial_number), str(entity_name))
+            )
+            if conf:
+                attachment["freeformConfig"] = conf
 
     def _filter_by_discovered_serial_numbers(
         self,
@@ -1173,9 +1473,6 @@ class CiscoClientNDFC(CiscoClientController):
         Process children endpoints for a given parent endpoint.
 
         Routes to the appropriate handler based on the parent endpoint name.
-        Port-Channel interface types (TrunkPort-Channel, AccessPort-Channel) are
-        handled as nested children within Discovered_Switches processing, not at
-        this top-level routing layer.
 
         Parameters:
             parent_endpoint (dict): The parent endpoint configuration.
@@ -1187,8 +1484,20 @@ class CiscoClientNDFC(CiscoClientController):
         # Route to the appropriate handler based on parent type
         if parent_name == "Network_Configuration":
             self._process_network_attachments(parent_endpoint, endpoint_dict)
+            self._process_child_fabric_overlay(
+                parent_endpoint,
+                endpoint_dict,
+                child_name="Network_Child_Fabric_Configuration",
+                object_name_key="networkName",
+            )
         elif parent_name == "VRF_Configuration":
             self._process_vrf_attachments(parent_endpoint, endpoint_dict)
+            self._process_child_fabric_overlay(
+                parent_endpoint,
+                endpoint_dict,
+                child_name="VRF_Child_Fabric_Configuration",
+                object_name_key="vrfName",
+            )
         elif parent_name == "Discovered_Switches":
             self._process_switch_interfaces(parent_endpoint, endpoint_dict)
         elif parent_name in self.VPC_PAIR_TYPES:
@@ -1245,8 +1554,12 @@ class CiscoClientNDFC(CiscoClientController):
         self, parent_endpoint: dict[str, Any], endpoint_dict: dict[str, Any]
     ) -> None:
         """
-        Process interface children endpoints for Discovered_Switches.
-        Fetches interface data for each discovered switch and adds it to the switch data.
+        Collect the interfaces of every discovered switch.
+
+        Each child endpoint of Discovered_Switches is an ND Manage v1 interfaces
+        endpoint (configOnly intent records). Its records are fetched per switch
+        (paginated), filtered by _filter_manage_interfaces and stored on the switch
+        under the child endpoint name (e.g. switch["manage_interfaces"]).
 
         Parameters:
             parent_endpoint (dict): The parent Discovered_Switches endpoint.
@@ -1293,6 +1606,9 @@ class CiscoClientNDFC(CiscoClientController):
                 entry_fabric,
             )
 
+            kept_count = 0
+            drop_counts: dict[str, int] = {}
+
             # Handle both list and single object data structures
             switches_data = config_entry["data"]
             if not isinstance(switches_data, list):
@@ -1304,11 +1620,11 @@ class CiscoClientNDFC(CiscoClientController):
                 if (
                     not switch
                     or not isinstance(switch, dict)
-                    or not switch.get("hostName")
+                    or not switch.get("logicalName")
                 ):
                     continue
 
-                host_name = switch.get("hostName")
+                sys_name = switch.get("logicalName")
                 serial_number = switch.get("serialNumber")
                 switch_fabric_name = switch.get("fabricName")
 
@@ -1318,7 +1634,7 @@ class CiscoClientNDFC(CiscoClientController):
                 current_fabric = config_entry.get("fabric")
                 logger.debug(
                     "Switch fabric check: switch %s belongs to fabric %s, currently processing fabric %s",
-                    host_name,
+                    sys_name,
                     switch_fabric_name,
                     current_fabric,
                 )
@@ -1329,7 +1645,7 @@ class CiscoClientNDFC(CiscoClientController):
                 ):
                     logger.debug(
                         "Skipping switch %s (belongs to fabric %s, currently processing fabric %s)",
-                        host_name,
+                        sys_name,
                         switch_fabric_name,
                         current_fabric,
                     )
@@ -1337,150 +1653,384 @@ class CiscoClientNDFC(CiscoClientController):
 
                 logger.debug(
                     "Processing interfaces for switch: %s (serial: %s)",
-                    host_name,
+                    sys_name,
                     serial_number,
                 )
 
-                # Initialize interfaces container if not present or if it's null
-                if "interfaces" not in switch or switch["interfaces"] is None:
-                    switch["interfaces"] = {}
-
-                # Process each child endpoint for this switch
                 for child_endpoint in children_endpoints:
                     child_name = child_endpoint["name"]
                     child_url = child_endpoint["endpoint"]
-
-                    logger.debug(
-                        "Processing child endpoint %s for switch %s",
-                        child_name,
-                        host_name,
+                    url_fabric = (
+                        switch_fabric_name or current_fabric or self.fabric_name
                     )
-
-                    # Get the switch's actual fabric information
-                    switch_fabric_name = switch.get("fabricName")
-                    switch_fabric_id = switch.get("fid")
-
-                    # Replace placeholders in the URL using switch's actual fabric info
-                    if switch_fabric_name and "%v" in child_url:
-                        child_url = child_url.replace("%v", switch_fabric_name)
-
-                    if switch_fabric_id and "{{fabricID}}" in child_url:
-                        child_url = child_url.replace(
-                            "{{fabricID}}", str(switch_fabric_id)
-                        )
-                        logger.debug(
-                            "Using switch's fabric ID %s for %s in fabric %s",
-                            switch_fabric_id,
-                            host_name,
-                            switch_fabric_name,
-                        )
-
-                    if host_name and "{{hostName}}" in child_url:
-                        child_url = child_url.replace("{{hostName}}", host_name)
-
-                    if serial_number and "{{serialNumber}}" in child_url:
+                    if url_fabric:
+                        child_url = child_url.replace("%v", str(url_fabric))
+                    if serial_number:
                         child_url = child_url.replace("{{serialNumber}}", serial_number)
 
+                    records = self._fetch_manage_list(
+                        child_url, self.MANAGE_INTERFACES_RESPONSE_KEY
+                    )
+                    if records is None:
+                        logger.warning(
+                            "Failed to fetch %s for switch %s (%s)",
+                            child_name,
+                            sys_name,
+                            serial_number,
+                        )
+                        switch[child_name] = []
+                        continue
+
+                    kept = self._filter_manage_interfaces(
+                        records,
+                        drop_counts,
+                        self._host_interface_admin_state(
+                            endpoint_dict, switch_fabric_name or current_fabric
+                        ),
+                    )
+                    switch[child_name] = kept
+                    kept_count += len(kept)
                     logger.debug(
-                        "Fetching %s interfaces from: %s", child_name, child_url
+                        "Collected %d of %d %s records for switch %s",
+                        len(kept),
+                        len(records),
+                        child_name,
+                        sys_name,
                     )
 
-                    try:
-                        # Fetch the interface data
-                        interface_data = self.fetch_data(child_url)
+            if kept_count or drop_counts:
+                logger.info(
+                    "Fabric %s: collected %d interface records "
+                    "(dropped %d unused-port placeholders, %d without a policy)",
+                    entry_fabric,
+                    kept_count,
+                    drop_counts.get("placeholder", 0),
+                    drop_counts.get("no_policy", 0),
+                )
 
-                        if interface_data is not None:
-                            logger.debug(
-                                "Successfully retrieved %s for switch: %s",
-                                child_name,
-                                host_name,
-                            )
-
-                            # Process the interface data (normalize structure)
-                            processed_interfaces = self._process_interface_data(
-                                interface_data
-                            )
-
-                            # Add the interface data to the switch under the child endpoint name
-                            if processed_interfaces:
-                                switch["interfaces"][child_name] = processed_interfaces
-
-                                # Check if this child endpoint has its own children (nested children)
-                                if "children" in child_endpoint and isinstance(
-                                    child_endpoint["children"], list
-                                ):
-                                    logger.debug(
-                                        "Processing nested children for %s on switch %s",
-                                        child_name,
-                                        host_name,
-                                    )
-                                    self._process_nested_children_for_interfaces(
-                                        child_endpoint, processed_interfaces, host_name
-                                    )
-
-                            logger.debug("Processed child name: %s", child_name)
-
-                            logger.info(
-                                "Added %d %s interfaces for switch: %s",
-                                len(processed_interfaces)
-                                if isinstance(processed_interfaces, list)
-                                else 1,
-                                child_name,
-                                host_name,
-                            )
-                        else:
-                            logger.warning(
-                                "Failed to fetch %s for switch: %s",
-                                child_name,
-                                host_name,
-                            )
-                            switch["interfaces"][child_name] = []
-
-                    except Exception as e:
-                        logger.error(
-                            "Error fetching %s for switch %s: %s",
-                            child_name,
-                            host_name,
-                            str(e),
-                        )
-                        switch["interfaces"][child_name] = []
-
-    def _process_interface_data(self, interface_data: Any) -> list[Any]:
+    def _fabric_nvpair(
+        self, endpoint_dict: dict[str, Any], fabric_name: str | None, name: str
+    ) -> str | None:
         """
-        Process the raw interface data from the API response.
+        Return a fabric setting (nvPair, normalised) from the collected
+        Fabric_Configuration of ``fabric_name``, or None if it is not available.
 
         Parameters:
-            interface_data (dict or list): Raw interface data from NDFC API.
+            endpoint_dict (dict): The collected data (with Fabric_Configuration entries).
+            fabric_name (str | None): The fabric.
+            name (str): The nvPair name.
 
         Returns:
-            list: Processed list of interfaces.
+            str | None: The normalised setting value.
         """
-        logger.debug("Processing interface data: %s", type(interface_data))
+        for entry in endpoint_dict.get("Fabric_Configuration") or []:
+            data = entry.get("data") if isinstance(entry, dict) else None
+            if isinstance(data, dict) and data.get("fabricName") == fabric_name:
+                value = (data.get("nvPairs") or {}).get(name)
+                if value not in (None, ""):
+                    return self._normalize_policy_value(value)
+        return None
 
-        # Handle different response structures
-        if isinstance(interface_data, list):
-            return interface_data
-        elif isinstance(interface_data, dict):
-            # Check for common NDFC response patterns
-            if "data" in interface_data:
-                data = interface_data["data"]
-                return data if isinstance(data, list) else [data] if data else []
-            elif "response" in interface_data:
-                data = interface_data["response"]
-                return data if isinstance(data, list) else [data] if data else []
-            else:
-                # Direct object response - wrap in list
-                return [interface_data]
+    def _host_interface_admin_state(
+        self, endpoint_dict: dict[str, Any], fabric_name: str | None
+    ) -> str | None:
+        """
+        Return the fabric's "Unshut Host Interfaces by Default" setting ("true"/"false")
+        from the collected Fabric_Configuration, or None if it is not available.
+
+        Parameters:
+            endpoint_dict (dict): The collected data (with Fabric_Configuration entries).
+            fabric_name (str | None): The fabric of the switch.
+
+        Returns:
+            str | None: The host-interface admin state default.
+        """
+        return self._fabric_nvpair(
+            endpoint_dict, fabric_name, self.HOST_INTF_ADMIN_STATE_NVPAIR
+        )
+
+    def _fetch_manage_list(
+        self, endpoint: str, response_key: str
+    ) -> list[dict[str, Any]] | None:
+        """
+        Fetch all records of an ND Manage v1 list endpoint.
+
+        Manage v1 lists page with max/offset (offset = records to skip) and report the
+        number of records left in meta.counts.remaining, so the generic
+        fetch_data_pagination (offset from 1, fixed limit, list-length termination)
+        does not apply. Pages are read with fetch_data until nothing remains.
+
+        Parameters:
+            endpoint (str): Endpoint with all placeholders substituted.
+            response_key (str): Key of the record list in the response (e.g. "interfaces").
+
+        Returns:
+            list | None: All records, or None if a page could not be read.
+        """
+        page_size = self.MANAGE_INTERFACES_PAGE_SIZE
+        connector = "&" if "?" in endpoint else "?"
+        records: list[dict[str, Any]] = []
+        offset = 0
+        while True:
+            page = self.fetch_data(
+                f"{endpoint}{connector}max={page_size}&offset={offset}"
+            )
+            if not isinstance(page, dict):
+                return None
+            page_records = page.get(response_key)
+            if not isinstance(page_records, list):
+                logger.warning(
+                    "Unexpected response from %s: no '%s' list", endpoint, response_key
+                )
+                return None
+            records.extend(r for r in page_records if isinstance(r, dict))
+            remaining = (page.get("meta") or {}).get("counts", {}).get("remaining")
+            if not remaining or not page_records:
+                return records
+            offset += len(page_records)
+
+    def _filter_fabric_links(
+        self,
+        links: list[dict[str, Any]],
+        fabric_name: str | None,
+        fabric_defaults: dict[str, str | None] | None = None,
+    ) -> list[dict[str, Any]]:
+        """
+        Keep the user-defined intra-fabric links of a fabric.
+
+        Pre-provision links (PREPROVISION_LINK_POLICY_TYPE, both ends in the fabric)
+        are always kept.
+
+        A link is intra-fabric when both ends are in the fabric, its policy is in
+        INTRA_FABRIC_LINK_POLICY_TYPES and it is not a port-channel (member) link.
+        Of those, planned links (defined in NDFC, not discovered) are always kept;
+        links NDFC created for discovered cables are kept only when a parameter in
+        LINK_INTENT_PARAMETERS differs from the link template default
+        (_is_user_defined_link). Discovered adjacencies without a link policy, links
+        to other fabrics (multisite underlay, VRF-lite, ...) and other link policies
+        are dropped.
+
+        Parameters:
+            links (list): Manage v1 link records of the fabric.
+            fabric_name (str | None): The fabric being collected.
+            fabric_defaults (dict | None): Fabric settings that replace link template
+                defaults (LINK_FABRIC_DEFAULTS, e.g. {"mtu": "9100"}); None if unknown.
+
+        Returns:
+            list: The intra-fabric link records.
+        """
+        kept = []
+        intra_fabric = 0
+        for link in links:
+            policy_type = (link.get("configData") or {}).get("policyType")
+            if (
+                link.get("srcFabricName") == fabric_name
+                and link.get("dstFabricName") == fabric_name
+                and policy_type == self.PREPROVISION_LINK_POLICY_TYPE
+            ):
+                kept.append(link)
+                continue
+            if (
+                link.get("srcFabricName") == fabric_name
+                and link.get("dstFabricName") == fabric_name
+                and policy_type in self.INTRA_FABRIC_LINK_POLICY_TYPES
+                and not link.get("portChannel")
+                and not link.get("memberLink")
+            ):
+                intra_fabric += 1
+                if self._is_user_defined_link(link, fabric_defaults):
+                    kept.append(link)
+        logger.info(
+            "Fabric %s: collected %d intra-fabric links (%d with template defaults "
+            "skipped, %d links in total)",
+            fabric_name,
+            len(kept),
+            intra_fabric - len(kept),
+            len(links),
+        )
+        return kept
+
+    def _is_user_defined_link(
+        self, link: dict[str, Any], fabric_defaults: dict[str, str | None] | None = None
+    ) -> bool:
+        """
+        Return True if an intra-fabric link carries user intent: it is a planned link,
+        or one of LINK_INTENT_PARAMETERS differs from the documented default of its
+        link template. If the template cannot be read, the link is kept.
+
+        Parameters:
+            link (dict): Manage v1 link record (configData.policyType/templateInputs).
+            fabric_defaults (dict | None): Fabric settings NDFC applies to the links it
+                creates instead of the template default (e.g. the fabric MTU).
+
+        Returns:
+            bool: True if the link must be collected.
+        """
+        if link.get("linkPlanned"):
+            return True
+        config_data = link.get("configData") or {}
+        template_name = self.LINK_POLICY_TEMPLATES.get(
+            str(config_data.get("policyType"))
+        )
+        defaults = (
+            self._get_manage_template_defaults(template_name) if template_name else None
+        )
+        if defaults is None:
+            return True
+        inputs = config_data.get("templateInputs") or {}
+        prefix = self.LINK_TEMPLATE_PARAMETER_PREFIX
+        for name in self.LINK_INTENT_PARAMETERS:
+            if name not in inputs:
+                continue
+            default = defaults.get(prefix + name, defaults.get(name))
+            if (fabric_defaults or {}).get(name) is not None:
+                default = (fabric_defaults or {})[name]
+            if self._normalize_policy_value(
+                inputs[name]
+            ) != self._normalize_policy_value(default):
+                return True
+        return False
+
+    def _get_manage_template_defaults(
+        self, template_name: str
+    ) -> dict[str, str | None] | None:
+        """
+        Return {parameter: default} for a config template, read once per run from
+        GET /api/v1/manage/configTemplates/{template}/parameters
+        (metaProperties.defaultValue; None when a parameter has no default).
+
+        Parameters:
+            template_name (str): Config template name, e.g. int_trunk_host.
+
+        Returns:
+            dict | None: Parameter defaults, or None if the template could not be read.
+        """
+        if template_name in self.manage_template_defaults:
+            return self.manage_template_defaults[template_name]
+        response = self.fetch_data(
+            self.MANAGE_TEMPLATE_PARAMETERS_ENDPOINT.format(template_name=template_name)
+        )
+        parameters = response.get("parameters") if isinstance(response, dict) else None
+        defaults: dict[str, str | None] | None = None
+        if isinstance(parameters, list) and parameters:
+            defaults = {}
+            for parameter in parameters:
+                if isinstance(parameter, dict) and parameter.get("name"):
+                    meta_properties = parameter.get("metaProperties") or {}
+                    defaults[parameter["name"]] = meta_properties.get("defaultValue")
         else:
-            logger.warning("Unexpected interface data type: %s", type(interface_data))
-            return []
+            logger.warning(
+                "Could not read config template %s; unused ports with this policy "
+                "will be kept in the collection",
+                template_name,
+            )
+        self.manage_template_defaults[template_name] = defaults
+        return defaults
+
+    @staticmethod
+    def _normalize_policy_value(value: Any) -> str:
+        """Normalise a policy field / template default for comparison."""
+        if value is None:
+            return ""
+        if isinstance(value, bool):
+            return "true" if value else "false"
+        return str(value).strip().lower()
+
+    def _is_placeholder_interface(
+        self, policy: dict[str, Any], admin_state_default: str | None = None
+    ) -> bool:
+        """
+        Return True if the policy is NDFC's default policy of an unused port: a
+        placeholder policy type whose template parameters all hold the template
+        defaults (parameters without a default must be empty). Fields that are not
+        parameters of the template are not part of the port's intent and are ignored.
+
+        Parameters:
+            policy (dict): configData.networkOS.policy of an interface record.
+            admin_state_default (str | None): The fabric's host-interface admin state
+                ("true"/"false"), which NDFC applies to unused ports instead of the
+                template default; None if unknown.
+
+        Returns:
+            bool: True if the record carries no configuration and can be dropped.
+        """
+        template_name = self.PLACEHOLDER_POLICY_TEMPLATES.get(
+            str(policy.get("policyType"))
+        )
+        if not template_name:
+            return False
+        defaults = self._get_manage_template_defaults(template_name)
+        if defaults is None:
+            return False
+        for name, value in policy.items():
+            if name == "policyType" or name not in defaults:
+                continue
+            default = defaults[name]
+            if name == "adminState" and admin_state_default is not None:
+                default = admin_state_default
+            if self._normalize_policy_value(value) != self._normalize_policy_value(
+                default
+            ):
+                return False
+        return True
+
+    def _normalize_manage_policy(self, policy: dict[str, Any]) -> None:
+        """
+        Normalise policy fields whose JSON type differs between ND releases
+        (string "true"/"false" vs boolean) to boolean, in place.
+
+        Parameters:
+            policy (dict): configData.networkOS.policy of an interface record.
+        """
+        for name in self.MANAGE_BOOLEAN_POLICY_FIELDS:
+            value = policy.get(name)
+            if isinstance(value, str) and value.strip().lower() in ("true", "false"):
+                policy[name] = value.strip().lower() == "true"
+
+    def _filter_manage_interfaces(
+        self,
+        records: list[dict[str, Any]],
+        drop_counts: dict[str, int],
+        admin_state_default: str | None = None,
+    ) -> list[dict[str, Any]]:
+        """
+        Keep the interface records that carry NDFC-managed intent.
+
+        Dropped: records without a policy (interfaces discovered on the switch but not
+        managed by NDFC) and placeholder policies of unused ports. Every other record
+        is kept unchanged (apart from release-specific type normalisation), including
+        fabric-managed and user-defined policies.
+
+        Parameters:
+            records (list): Interface records of one switch.
+            drop_counts (dict): Counters updated per drop reason ("no_policy", "placeholder").
+            admin_state_default (str | None): Fabric host-interface admin state (see
+                _is_placeholder_interface).
+
+        Returns:
+            list: The kept interface records.
+        """
+        kept: list[dict[str, Any]] = []
+        for record in records:
+            config_data = record.get("configData") or {}
+            policy = (config_data.get("networkOS") or {}).get("policy")
+            if not isinstance(policy, dict) or not policy.get("policyType"):
+                drop_counts["no_policy"] = drop_counts.get("no_policy", 0) + 1
+                continue
+            if self._is_placeholder_interface(policy, admin_state_default):
+                drop_counts["placeholder"] = drop_counts.get("placeholder", 0) + 1
+                continue
+            self._normalize_manage_policy(policy)
+            kept.append(record)
+        return kept
 
     def _process_vrf_attachments(
         self, parent_endpoint: dict[str, Any], endpoint_dict: dict[str, Any]
     ) -> None:
         """
         Process VRF_Attachments children endpoints for VRF_Configuration.
-        Only processes vrfs with vrfStatus = "DEPLOYED".
+        Processes vrfs regardless of vrfStatus so that attachments are still
+        collected when a vrf is OUT-OF-SYNC / PENDING (only vrfName is required).
 
         Parameters:
             parent_endpoint (dict): The parent Network_Configuration endpoint.
@@ -1516,9 +2066,11 @@ class CiscoClientNDFC(CiscoClientController):
                 vrf_status = vrf.get("vrfStatus")
                 vrf_name = vrf.get("vrfName")
 
-                if vrf_status == "DEPLOYED" and vrf_name:
+                if vrf_name:
                     logger.info(
-                        "Processing VRF_Attachments for deployed vrf: %s", vrf_name
+                        "Processing VRF_Attachments for vrf: %s (status: %s)",
+                        vrf_name,
+                        vrf_status,
                     )
 
                     # Build the attachment endpoint URL
@@ -1551,6 +2103,7 @@ class CiscoClientNDFC(CiscoClientController):
                             )
 
                             # Add the vrf_attach_group to the vrf
+                            self._add_attach_freeform(processed_attachments, vrf_name)
                             vrf["vrf_attach_group"] = processed_attachments
 
                             logger.info(
@@ -1574,21 +2127,16 @@ class CiscoClientNDFC(CiscoClientController):
                         )
                         vrf["vrf_attach_group"] = []
                 else:
-                    if vrf_status != "DEPLOYED":
-                        logger.debug(
-                            "Skipping vrf %s with status: %s",
-                            vrf_name or "unnamed",
-                            vrf_status,
-                        )
-                    else:
-                        logger.debug("Skipping vrf with missing vrfName")
+                    logger.debug("Skipping vrf with missing vrfName")
 
     def _process_network_attachments(
         self, parent_endpoint: dict[str, Any], endpoint_dict: dict[str, Any]
     ) -> None:
         """
         Process Network_Attachments children endpoints for Network_Configuration.
-        Only processes networks with networkStatus = "DEPLOYED".
+        Processes networks regardless of networkStatus so that attachments are
+        still collected when a network is OUT-OF-SYNC / PENDING (only
+        networkName is required).
 
         Parameters:
             parent_endpoint (dict): The parent Network_Configuration endpoint.
@@ -1624,10 +2172,11 @@ class CiscoClientNDFC(CiscoClientController):
                 network_status = network.get("networkStatus")
                 network_name = network.get("networkName")
 
-                if network_status == "DEPLOYED" and network_name:
+                if network_name:
                     logger.info(
-                        "Processing Network_Attachments for deployed network: %s",
+                        "Processing Network_Attachments for network: %s (status: %s)",
                         network_name,
+                        network_status,
                     )
 
                     # Build the attachment endpoint URL
@@ -1662,6 +2211,9 @@ class CiscoClientNDFC(CiscoClientController):
                             )
 
                             # Add the network_attach_group to the network
+                            self._add_attach_freeform(
+                                processed_attachments, network_name
+                            )
                             network["network_attach_group"] = processed_attachments
 
                             logger.info(
@@ -1686,14 +2238,111 @@ class CiscoClientNDFC(CiscoClientController):
                         )
                         network["network_attach_group"] = []
                 else:
-                    if network_status != "DEPLOYED":
-                        logger.debug(
-                            "Skipping network %s with status: %s",
-                            network_name or "unnamed",
-                            network_status,
-                        )
-                    else:
-                        logger.debug("Skipping network with missing networkName")
+                    logger.debug("Skipping network with missing networkName")
+
+    # Fabric templates of MSD members that carry no VRFs / networks (ISN, External).
+    NON_OVERLAY_FABRIC_TEMPLATES = ("External_Fabric",)
+
+    def _msd_overlay_member_fabrics(self, endpoint_dict: dict[str, Any]) -> list[str]:
+        """MSD member fabrics that hold their own copy of the MSD overlay (VXLAN members;
+        ISN / External members have none)."""
+        templates: dict[str, Any] = {}
+        for entry in endpoint_dict.get("Fabric_Configuration") or []:
+            data = entry.get("data") if isinstance(entry, dict) else None
+            if isinstance(data, dict) and data.get("fabricName"):
+                templates[data["fabricName"]] = data.get("templateName")
+        return [
+            fabric_name
+            for fabric_name in self.msd_topology.get("member_fabrics", [])
+            if templates.get(fabric_name) not in self.NON_OVERLAY_FABRIC_TEMPLATES
+        ]
+
+    def _process_child_fabric_overlay(
+        self,
+        parent_endpoint: dict[str, Any],
+        endpoint_dict: dict[str, Any],
+        child_name: str,
+        object_name_key: str,
+    ) -> None:
+        """
+        MSD root only: fetch each VXLAN member fabric's copy of the MSD VRFs / networks
+        (one list call per member) and nest it into the matching root object as
+        ``child_fabrics: [<member record>, ...]``.
+
+        A member's copy holds the per-site settings NAC models under
+        ``vxlan.multisite.overlay.{vrfs,networks}[].child_fabrics`` (e.g. advertise
+        host routes, TRM, DHCP relay, multicast group); the MSD root copy does not.
+        The member records are nested rather than added as member-fabric
+        VRF_Configuration / Network_Configuration entries, so a member fabric is
+        never rendered with an overlay of its own.
+
+        Parameters:
+            parent_endpoint (dict): The VRF_Configuration / Network_Configuration endpoint.
+            endpoint_dict (dict): The dictionary containing the processed data.
+            child_name (str): Name of the member-fabric child endpoint in ndfc.yaml.
+            object_name_key (str): Object name field ("vrfName" / "networkName").
+        """
+        if not self.is_msd_fabric or self.fabric_name != self.msd_topology.get(
+            "msd_root"
+        ):
+            return
+        child_endpoint = next(
+            (
+                child
+                for child in parent_endpoint.get("children", [])
+                if child.get("name") == child_name
+            ),
+            None,
+        )
+        if not child_endpoint:
+            logger.debug("%s child endpoint not configured", child_name)
+            return
+
+        member_objects: dict[str, dict[str, Any]] = {}
+        for member_fabric in self._msd_overlay_member_fabrics(endpoint_dict):
+            url = child_endpoint["endpoint"].replace("{{child_fabric}}", member_fabric)
+            try:
+                member_data = self.fetch_data(url)
+            except Exception as e:  # one unreachable member must not drop the others
+                logger.error(
+                    "Error fetching %s for member fabric %s: %s",
+                    child_name,
+                    member_fabric,
+                    str(e),
+                )
+                continue
+            if member_data is None:
+                logger.warning(
+                    "No %s data for member fabric %s", child_name, member_fabric
+                )
+                continue
+            self._fix_escaped_json_in_data(member_data)
+            records = member_data if isinstance(member_data, list) else [member_data]
+            for record in records:
+                if isinstance(record, dict) and record.get(object_name_key):
+                    member_objects.setdefault(str(record[object_name_key]), {})[
+                        member_fabric
+                    ] = record
+
+        for config_entry in endpoint_dict.get(parent_endpoint["name"]) or []:
+            if config_entry.get("fabric") != self.fabric_name:
+                continue
+            objects = config_entry.get("data")
+            for root_object in objects if isinstance(objects, list) else []:
+                if not isinstance(root_object, dict):
+                    continue
+                per_member = member_objects.get(
+                    str(root_object.get(object_name_key)), {}
+                )
+                root_object["child_fabrics"] = [
+                    dict(record, fabric=member_fabric)
+                    for member_fabric, record in sorted(per_member.items())
+                ]
+        logger.info(
+            "Added member-fabric copies of %d %s objects",
+            len(member_objects),
+            parent_endpoint["name"],
+        )
 
     def _process_vpc_pairs_children(
         self, parent_endpoint: dict[str, Any], endpoint_dict: dict[str, Any]
@@ -1812,222 +2461,6 @@ class CiscoClientNDFC(CiscoClientController):
             parent_name,
             processed_count,
         )
-
-    def _process_nested_children_for_interfaces(
-        self, parent_endpoint: dict[str, Any], interface_data: Any, host_name: str
-    ) -> None:
-        """
-        Process nested children endpoints for interface data (like Port-Channel interfaces -> vPCInterfaceSetting).
-
-        Parameters:
-            parent_endpoint (dict): The parent endpoint configuration with children
-            interface_data (list): The interface data from the parent endpoint
-            host_name (str): The hostname of the switch being processed
-        """
-        parent_name = parent_endpoint["name"]
-        children_endpoints = parent_endpoint.get("children", [])
-
-        if not children_endpoints:
-            return
-
-        logger.info(
-            "Processing %d nested children for %s interfaces on switch %s",
-            len(children_endpoints),
-            parent_name,
-            host_name,
-        )
-
-        if self.client is None:
-            logger.error("Client not initialized")
-            return
-
-        # Process each interface entry in the interface_data
-        for interface_entry in (
-            interface_data if isinstance(interface_data, list) else [interface_data]
-        ):
-            if not isinstance(interface_entry, dict):
-                continue
-
-            # For Port-Channel interfaces (TrunkPort-Channel, AccessPort-Channel, etc.), look for vpcEntityId
-            if parent_name in self.PORT_CHANNEL_INTERFACE_TYPES:
-                vpc_entity_id = interface_entry.get("vpcEntityId")
-
-                if not vpc_entity_id:
-                    logger.debug(
-                        "No vpcEntityId found in %s interface, skipping nested children",
-                        parent_name,
-                    )
-                    continue
-
-                # Parse the vpcEntityId to extract vpcPair and vPC_name
-                vpc_pair, vpc_name = self._parse_vpc_entity_id(vpc_entity_id)
-
-                if not vpc_pair or not vpc_name:
-                    logger.warning("Failed to parse vpcEntityId: %s", vpc_entity_id)
-                    continue
-
-                logger.debug(
-                    "Processing nested children for vpcPair=%s, vPC_name=%s on switch %s",
-                    vpc_pair,
-                    vpc_name,
-                    host_name,
-                )
-
-                # Process each nested child endpoint
-                for child_endpoint in children_endpoints:
-                    child_name = child_endpoint["name"]
-                    child_url = child_endpoint["endpoint"]
-
-                    # Replace variables in the child endpoint URL
-                    child_url = child_url.replace("{{vpcPair}}", vpc_pair)
-                    child_url = child_url.replace("{{vPC_name}}", vpc_name)
-
-                    # Replace fabric ID if present
-                    if self.fabric_id and "{{fabricID}}" in child_url:
-                        child_url = child_url.replace(
-                            "{{fabricID}}", str(self.fabric_id)
-                        )
-
-                    logger.debug(
-                        "Fetching nested child endpoint: %s -> %s",
-                        child_name,
-                        child_url,
-                    )
-
-                    try:
-                        child_data = self.fetch_data(child_url)
-
-                        # Save child data directly to the interface entry using the child endpoint name as key
-                        interface_entry[child_name] = child_data
-
-                        logger.debug(
-                            "Successfully processed and saved nested child endpoint %s to interface entry for %s on switch %s",
-                            child_name,
-                            vpc_name,
-                            host_name,
-                        )
-
-                    except Exception as e:
-                        logger.error(
-                            "Error processing nested child endpoint %s for %s on switch %s: %s",
-                            child_name,
-                            vpc_name,
-                            host_name,
-                            str(e),
-                        )
-                        # Set empty data on error to maintain consistent structure
-                        interface_entry[child_name] = {}
-
-            # For serial-based interfaces (LoopbackInterfaces, etc.), look for serialNo and ifName
-            elif parent_name in self.SERIAL_INTERFACE_TYPES:
-                serial_number = interface_entry.get("serialNo")
-                if_name = interface_entry.get("ifName")
-
-                if not serial_number or not if_name:
-                    logger.debug(
-                        "No serialNo or ifName found in %s interface, skipping nested children",
-                        parent_name,
-                    )
-                    continue
-
-                logger.debug(
-                    "Processing nested children for serialNumber=%s, ifName=%s on switch %s",
-                    serial_number,
-                    if_name,
-                    host_name,
-                )
-
-                # Process each nested child endpoint
-                for child_endpoint in children_endpoints:
-                    child_name = child_endpoint["name"]
-                    child_url = child_endpoint["endpoint"]
-
-                    # Replace variables in the child endpoint URL
-                    child_url = child_url.replace("{{serialNumber}}", serial_number)
-                    child_url = child_url.replace("{{ifName}}", if_name)
-
-                    # Replace fabric ID if present
-                    if self.fabric_id and "{{fabricID}}" in child_url:
-                        child_url = child_url.replace(
-                            "{{fabricID}}", str(self.fabric_id)
-                        )
-
-                    logger.debug(
-                        "Fetching nested child endpoint: %s -> %s",
-                        child_name,
-                        child_url,
-                    )
-
-                    try:
-                        child_data = self.fetch_data(child_url)
-
-                        # Save child data directly to the interface entry using the child endpoint name as key
-                        interface_entry[child_name] = child_data
-
-                        logger.debug(
-                            "Successfully processed and saved nested child endpoint %s to interface entry for %s on switch %s",
-                            child_name,
-                            if_name,
-                            host_name,
-                        )
-
-                    except Exception as e:
-                        logger.error(
-                            "Error processing nested child endpoint %s for %s on switch %s: %s",
-                            child_name,
-                            if_name,
-                            host_name,
-                            str(e),
-                        )
-                        # Set empty data on error to maintain consistent structure
-                        interface_entry[child_name] = {}
-
-    def _parse_vpc_entity_id(self, vpc_entity_id: str) -> tuple[str | None, str | None]:
-        """
-        Parse vpcEntityId string to extract vpcPair and vPC_name.
-
-        Expected format: "serial1~serial2~vpcX"
-        Example: "FDO26260888~FDO26260897~vpc10"
-
-        Parameters:
-            vpc_entity_id (str): The vpcEntityId string to parse
-
-        Returns:
-            tuple: (vpcPair, vPC_name) where vpcPair is "serial1~serial2" and vPC_name is "vpcX"
-        """
-        if not vpc_entity_id or not isinstance(vpc_entity_id, str):
-            logger.warning("Invalid vpcEntityId provided: %s", vpc_entity_id)
-            return None, None
-
-        # Split by '~' to get components
-        parts = vpc_entity_id.split("~")
-
-        if len(parts) != 3:
-            logger.warning(
-                "vpcEntityId does not have expected format 'serial1~serial2~vpcX': %s",
-                vpc_entity_id,
-            )
-            return None, None
-
-        # Extract components
-        serial1, serial2, vpc_name = parts
-
-        # Validate that vpc_name starts with "vpc"
-        if not vpc_name.startswith("vpc"):
-            logger.warning("vPC name does not start with 'vpc': %s", vpc_name)
-            return None, None
-
-        # Construct vpcPair as "serial1~serial2"
-        vpc_pair = f"{serial1}~{serial2}"
-
-        logger.debug(
-            "Parsed vpcEntityId '%s' -> vpcPair='%s', vPC_name='%s'",
-            vpc_entity_id,
-            vpc_pair,
-            vpc_name,
-        )
-
-        return vpc_pair, vpc_name
 
     def load_endpoints_from_file(self, endpoints_file: str) -> list[dict[str, Any]]:
         """
