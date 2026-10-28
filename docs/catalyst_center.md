@@ -63,6 +63,22 @@ and
 
 **target_key**: This tells us what the "fabric ID" is called in the address of the "target endpoint". In this case, it's called `fabricId`.
 
+**source_filter** (optional): Restricts which source items are used. Some target endpoints are valid only for a subset of their source collection, and querying the rest returns an API error for every item that does not apply. The managed AP location endpoints are sourced from the full device inventory but exist only on a wireless controller, so they filter the inventory down first:
+
+```yaml
+- endpoint: /dna/intent/api/v1/wirelessControllers/%v/primaryManagedApLocations
+  source_endpoint: /dna/intent/api/v1/network-device
+  source_key: id
+  source_filter:
+    key: family
+    values:
+      - Wireless Controller
+  target_endpoint: /dna/intent/api/v1/wirelessControllers/%v/primaryManagedApLocations
+  target_key: deviceId
+```
+
+A source item is kept when its `key` holds one of `values`. Items missing the key are dropped. Without `source_filter`, every source item is used.
+
 
 ### Where is this used?
 

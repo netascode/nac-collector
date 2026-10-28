@@ -291,6 +291,7 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
                 for instance in group.get(nested_key, [])
                 if isinstance(instance, dict)
             ]
+        look_data = self._apply_source_filter(look_data, lookup_config)
         if endpoint_key in self.id_lookup:
             source_key = self.id_lookup[endpoint_key]["source_key"]
             id_list = [
@@ -390,6 +391,39 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
         Strip whitespace and non-printable characters from an ID value.
         """
         return re.sub(r"[\x00-\x1f\x7f-\x9f\s]", "", value)
+
+    @staticmethod
+    def _apply_source_filter(look_data: Any, lookup_config: dict[str, Any]) -> Any:
+        """
+        Narrow source items to those a lookup's target endpoint accepts.
+
+        Some target endpoints are valid only for a subset of their source
+        collection, such as the managed AP location endpoints, which exist
+        only on a Wireless Controller yet are sourced from every device in
+        the inventory. Querying the rest returns an API error per device.
+        """
+        source_filter = lookup_config.get("source_filter")
+        if not source_filter or not isinstance(look_data, list):
+            return look_data
+
+        filter_key = source_filter.get("key")
+        allowed_values = source_filter.get("values")
+        if not filter_key or not allowed_values:
+            return look_data
+
+        filtered = [
+            item
+            for item in look_data
+            if isinstance(item, dict) and item.get(filter_key) in allowed_values
+        ]
+        logger.info(
+            "Filtered source items on %s in %s: %d of %d retained",
+            filter_key,
+            allowed_values,
+            len(filtered),
+            len(look_data),
+        )
+        return filtered
 
     def process_endpoint(self, endpoint: dict[str, Any]) -> dict[str, Any] | None:
         with self.lock:
