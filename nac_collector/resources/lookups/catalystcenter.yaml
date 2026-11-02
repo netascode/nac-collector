@@ -1,5 +1,7 @@
 - endpoint: /dna/intent/api/v1/sda/fabricDevices
   source_endpoint: /dna/intent/api/v1/sda/fabricSites?limit=500
+  additional_source_endpoints:
+    - /dna/intent/api/v1/sda/fabricZones?limit=500
   source_key: id
   target_endpoint: /dna/intent/api/v1/sda/fabricDevices?fabricId=%v
   target_key: siteId
