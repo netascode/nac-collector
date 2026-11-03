@@ -5,36 +5,21 @@
 - name: Discovered_Switches
   endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/control/fabrics/%v/inventory
   children:
-  - name: AccessEthernetPorts
-    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface?filter=underlayPolicies%3D%3Dint_access_host%26%26mode%3D%3Daccess%26%26sysName%3D%3D{{hostName}}&navId={{fabricID}}
-    children:
-    - name: AccessInterfaceSetting
-      endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface/pti/nvpairs?serialNumber={{serialNumber}}&interfaceName={{ifName}}&policyName=int_access_host
-  - name: TrunkEthernetPorts
-    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface?filter=mode%3D%3Dtrunk%26%26sysName%3D%3D{{hostName}}%26%26underlayPolicies%3D%3Dint_trunk_host%26%26allowedVLANs%21%3Dnone&navId={{fabricID}}
-    children:
-    - name: TrunkInterfaceSetting
-      endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface/pti/nvpairs?serialNumber={{serialNumber}}&interfaceName={{ifName}}&policyName=int_trunk_host
-  - name: TrunkPort-Channel
-    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface?filter=vpcId%21%3D0%26%26sysName%3D%3D{{hostName}}%26%26underlayPolicies%3D%3Dint_vpc_trunk_po_11_1&navId={{fabricID}}
-    children:
-    - name: vPCInterfaceSetting
-      endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface/pti/nvpairs?serialNumber={{vpcPair}}&interfaceName={{vPC_name}}&policyName=int_vpc_trunk_host
-  - name: AccessPort-Channel
-    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface?filter=vpcId%21%3D0%26%26sysName%3D%3D{{hostName}}%26%26underlayPolicies%3D%3Dint_vpc_access_po_11_1&navId={{fabricID}}
-    children:
-    - name: vPCInterfaceSetting
-      endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface/pti/nvpairs?serialNumber={{vpcPair}}&interfaceName={{vPC_name}}&policyName=int_vpc_access_host
-  - name: LoopbackInterfaces
-    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface?filter=underlayPolicies%3D%3Dint_loopback%26%26sysName%3D%3D{{hostName}}&navId={{fabricID}}
-    children:
-    - name: LoopbackInterfaceSetting
-      endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/globalInterface/pti/nvpairs?serialNumber={{serialNumber}}&interfaceName={{ifName}}&policyName=int_loopback
+  - name: manage_interfaces
+    endpoint: /api/v1/manage/fabrics/%v/switches/{{serialNumber}}/interfaces?configOnly=true
+- name: TorPairing
+  endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/control/tor/fabrics/%v/switches/{{leafSerialNumber}}
+- name: Switch_Credentials
+  endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/lanConfig/getLanSwitchCredentials
 - name: VPC_Pairs
   endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/vpcpair?navId={{fabricID}}
   children:
   - name: VPC_PeerLinkSettings
     endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/vpcpair/recommendation?serialNumber={{peerOneId}}
+- name: Fabric_Resources
+  endpoint: /api/v1/manage/fabrics/%v/resources
+- name: Fabric_Links
+  endpoint: /api/v1/manage/links?fabricName=%v
 - name: Policies
   endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/control/policies/pagination?fabricName=%v
 - name: VRF_Configuration
@@ -42,8 +27,16 @@
   children:
   - name: VRF_Attachments
     endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/top-down/fabrics/%v/vrfs/attachments?vrf-names={{vrf_name}}
+  # MSD root only: each VXLAN member fabric's copy of the VRFs (per-site settings,
+  # NAC vxlan.multisite.overlay.vrfs[].child_fabrics); nested into the root VRFs.
+  - name: VRF_Child_Fabric_Configuration
+    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/top-down/fabrics/{{child_fabric}}/vrfs
 - name: Network_Configuration
   endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/top-down/fabrics/%v/networks
   children:
   - name: Network_Attachments
     endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/top-down/fabrics/%v/networks/{{network_name}}/attachments
+  # MSD root only: each VXLAN member fabric's copy of the networks (per-site settings,
+  # NAC vxlan.multisite.overlay.networks[].child_fabrics); nested into the root networks.
+  - name: Network_Child_Fabric_Configuration
+    endpoint: /appcenter/cisco/ndfc/api/v1/lan-fabric/rest/top-down/fabrics/{{child_fabric}}/networks
