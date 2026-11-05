@@ -48,6 +48,9 @@ Options:
                         upstream sources
   -e, --endpoints-file TEXT
                         Path to the endpoints YAML file
+  --exclude-endpoint TEXT
+                        Name of an endpoint definition to skip (repeatable,
+                        controller-based solutions only)
   -t, --timeout INTEGER
                         Request timeout in seconds [default: 30]
   -o, --output TEXT     Path to the output ZIP file [default: nac-collector.zip]
@@ -113,7 +116,14 @@ nac-collector -s ISE -v DEBUG --fetch-latest
 
 # Without environment variables
 nac-collector -s ISE --username USERNAME --password PASSWORD --url URL -v DEBUG --fetch-latest
+
+# Skip large resources that are not managed as code (repeatable)
+nac-collector -s ISE --exclude-endpoint endpoint
 ```
+
+`--exclude-endpoint` matches the `name` of an entry in the endpoints definition and also skips
+its children. It is applied after the endpoint definitions are resolved, so it works with the
+packaged definitions, `--endpoints-file` and `--fetch-latest`. Unknown names log a warning.
 
 ### Catalyst Center
 

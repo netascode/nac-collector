@@ -167,6 +167,17 @@ def main(
         str | None,
         typer.Option("-e", "--endpoints-file", help="Path to the endpoints YAML file"),
     ] = None,
+    exclude_endpoint: Annotated[
+        list[str] | None,
+        typer.Option(
+            "--exclude-endpoint",
+            help=(
+                "Name of an endpoint definition to skip during collection "
+                "(repeatable, e.g. --exclude-endpoint endpoint). "
+                "Only applies to controller-based solutions."
+            ),
+        ),
+    ] = None,
     timeout: Annotated[
         int,
         typer.Option("-t", "--timeout", help="Request timeout in seconds"),
@@ -227,6 +238,11 @@ def main(
             raise typer.Exit(1)
 
         # Device-based solutions don't need endpoints file
+        if exclude_endpoint:
+            console.print(
+                f"[yellow]Warning: --exclude-endpoint is ignored for {solution.value} "
+                f"(device-based solutions use built-in endpoints)[/yellow]"
+            )
         if endpoints_file:
             console.print(
                 f"[yellow]Warning: --endpoints-file is ignored for {solution.value} "
@@ -289,6 +305,11 @@ def main(
             console.print("2. Use --fetch-latest to fetch from upstream sources")
             console.print("3. Ensure packaged resources are available")
             raise typer.Exit(1)
+
+        if exclude_endpoint:
+            endpoints_data = EndpointResolver.exclude_endpoints(
+                endpoints_data, exclude_endpoint
+            )
 
         cisco_client_class: type[CiscoClientController] | None = None
         if solution == Solution.SDWAN:
