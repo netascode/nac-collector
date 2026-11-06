@@ -60,6 +60,38 @@ class EndpointResolver:
         return None
 
     @staticmethod
+    def exclude_endpoints(
+        endpoints_data: list[dict[str, Any]], names: list[str]
+    ) -> list[dict[str, Any]]:
+        """
+        Remove top-level endpoint definitions whose ``name`` is in ``names``.
+
+        Children of an excluded entry are removed with it. Names that do not
+        match any entry are logged as a warning.
+
+        Args:
+            endpoints_data: Resolved endpoint definitions
+            names: Endpoint names to exclude
+
+        Returns:
+            Endpoint definitions without the excluded entries
+        """
+        if not names:
+            return endpoints_data
+
+        available = {e.get("name") for e in endpoints_data}
+        for name in names:
+            if name not in available:
+                logger.warning("Excluded endpoint name not found: %s", name)
+
+        excluded = set(names)
+        kept = [e for e in endpoints_data if e.get("name") not in excluded]
+        skipped = sorted(excluded & available)
+        if skipped:
+            logger.info("Excluding endpoints from collection: %s", ", ".join(skipped))
+        return kept
+
+    @staticmethod
     def _load_from_file(file_path: str) -> list[dict[str, Any]] | None:
         """Load endpoint data from a YAML file."""
         try:
