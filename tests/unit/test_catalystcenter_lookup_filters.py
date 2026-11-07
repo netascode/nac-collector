@@ -78,7 +78,7 @@ FABRIC_DEVICES_URL = (
 def _fake_fetch(responses):
     """Return a fetch_data_pagination stand-in that answers by exact URL."""
 
-    def fetch(url):
+    def fetch(url, expected_status_codes=()):
         return responses.get(url)
 
     return fetch

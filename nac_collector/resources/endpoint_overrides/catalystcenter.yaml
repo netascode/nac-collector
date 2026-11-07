@@ -51,11 +51,19 @@ extra_endpoints:
 - name: network_devices
   endpoint: /dna/intent/api/v1/network-device
 
+# "expected_status_codes" lists non-success responses that are benign for an
+# endpoint. They are logged at WARNING and treated as no data, instead of being
+# logged at ERROR (which fails the whole collection run).
+
+# Queried per wireless controller; a controller with no managed AP locations
+# of that kind returns 400.
 - name: wireless_controller_primary_managed_ap_locations
   endpoint: /dna/intent/api/v1/wirelessControllers/%v/primaryManagedApLocations
+  expected_status_codes: [400]
 
 - name: wireless_controller_secondary_managed_ap_locations
   endpoint: /dna/intent/api/v1/wirelessControllers/%v/secondaryManagedApLocations
+  expected_status_codes: [400]
 
 - name: device_detail
   endpoint: /dna/intent/api/v1/device-detail
