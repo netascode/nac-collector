@@ -151,8 +151,7 @@ class CiscoClientController(ABC):
                     )
                 return None
             elif response.status_code in expected_status_codes:
-                # The endpoint definition declares this status as benign (e.g. a
-                # contextual parameter the collector does not supply). Surface it
+                # The endpoint definition lists this status as benign, so log it
                 # without marking the collection as failed.
                 self.logger.warning(
                     "GET %s returned expected status code %s — treating as no data.",
