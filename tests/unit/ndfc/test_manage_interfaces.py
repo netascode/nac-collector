@@ -218,6 +218,20 @@ class TestFiltering:
         warnings = [r for r in caplog.records if r.levelname == "WARNING"]
         assert len(warnings) == 2  # one per template, not per port
 
+    def test_transient_template_failure_is_retried(self, ndfc_client):
+        good = FIXTURES["nd43_templates"]["int_trunk_host"]
+        ndfc_client.fetch_data = MagicMock(side_effect=[None, good])
+        defaults = ndfc_client._get_manage_template_defaults("int_trunk_host")
+        assert defaults
+        assert ndfc_client.fetch_data.call_count == 2
+        assert ndfc_client.manage_template_defaults["int_trunk_host"] == defaults
+
+    def test_repeated_template_failure_is_cached_after_retry(self, ndfc_client):
+        ndfc_client.fetch_data = MagicMock(return_value=None)
+        assert ndfc_client._get_manage_template_defaults("int_trunk_host") is None
+        assert ndfc_client._get_manage_template_defaults("int_trunk_host") is None
+        assert ndfc_client.fetch_data.call_count == 2
+
     def test_string_booleans_are_normalised(self, ndfc_client):
         ndfc_client.fetch_data = _fake_controller(FIXTURES["nd43_templates"], {})
         kept = ndfc_client._filter_manage_interfaces(
@@ -276,6 +290,41 @@ class TestProcessSwitchInterfaces:
         endpoint_dict = {"Discovered_Switches": [{"fabric": "FAB1", "data": [switch]}]}
         ndfc_client._process_switch_interfaces(self._endpoint(), endpoint_dict)
         assert switch["manage_interfaces"] == []
+
+    def test_exception_on_one_switch_does_not_stop_others(self, ndfc_client):
+        fake = _fake_controller(
+            FIXTURES["nd43_templates"], {"SN-SPINE": FIXTURES["nd43_spine"]}
+        )
+
+        def fetch_data(url: str) -> Any:
+            if "/switches/SN-BAD/" in url:
+                raise RuntimeError("boom")
+            return fake(url)
+
+        ndfc_client.fetch_data = MagicMock(side_effect=fetch_data)
+        bad = {"logicalName": "bad", "serialNumber": "SN-BAD", "fabricName": "FAB1"}
+        spine = {"logicalName": "s1", "serialNumber": "SN-SPINE", "fabricName": "FAB1"}
+        endpoint_dict = {
+            "Discovered_Switches": [{"fabric": "FAB1", "data": [bad, spine]}]
+        }
+        ndfc_client._process_switch_interfaces(self._endpoint(), endpoint_dict)
+        assert bad["manage_interfaces"] == []
+        assert len(spine["manage_interfaces"]) == 5
+
+    def test_host_name_fallback_and_nameless_switch_skipped(self, ndfc_client, caplog):
+        caplog.set_level("DEBUG")
+        ndfc_client.fetch_data = _fake_controller(
+            FIXTURES["nd43_templates"], {"SN-SPINE": FIXTURES["nd43_spine"]}
+        )
+        by_host = {"hostName": "s1", "serialNumber": "SN-SPINE", "fabricName": "FAB1"}
+        nameless = {"serialNumber": "SN-X", "fabricName": "FAB1"}
+        endpoint_dict = {
+            "Discovered_Switches": [{"fabric": "FAB1", "data": [by_host, nameless]}]
+        }
+        ndfc_client._process_switch_interfaces(self._endpoint(), endpoint_dict)
+        assert len(by_host["manage_interfaces"]) == 5
+        assert "manage_interfaces" not in nameless
+        assert any("SN-X" in r.getMessage() for r in caplog.records)
 
 
 class TestHostInterfaceAdminState:
@@ -379,6 +428,17 @@ class TestFabricLinks:
             "linkPlanned": False,
             "configData": {"policyType": "numbered", "templateInputs": template_inputs},
         }
+
+    def test_skipped_count_excludes_preprovisioned_links(self, ndfc_client, caplog):
+        caplog.set_level("INFO")
+        client = self._client(ndfc_client)
+        link = dict(self.PREPROVISION_LINK, srcFabricName="F", dstFabricName="F")
+        client._filter_fabric_links([link, self._auto_link()], "F")
+        message = next(
+            r.getMessage() for r in caplog.records if "intra-fabric" in r.getMessage()
+        )
+        assert "collected 0 intra-fabric links and 1 pre-provisioned links" in message
+        assert "(1 with template defaults skipped, 2 links in total)" in message
 
     def test_planned_link_kept_and_default_discovered_links_skipped(self, ndfc_client):
         kept = self._client(ndfc_client)._filter_fabric_links(

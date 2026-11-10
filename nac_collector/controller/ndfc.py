@@ -45,6 +45,8 @@ class CiscoClientNDFC(CiscoClientController):
         "credType",
         "v3Protocol",
     )
+    # Fabric templates of MSD members that carry no VRFs / networks (ISN, External).
+    NON_OVERLAY_FABRIC_TEMPLATES = ("External_Fabric",)
     # Intra-fabric link policies (Manage v1 link policyType). Other link policies
     # (multisite underlay/overlay, VRF-lite, MPLS, ...) and links to other fabrics are
     # not intra-fabric links and are not collected.
@@ -1617,14 +1619,16 @@ class CiscoClientNDFC(CiscoClientController):
             # Process each switch in the data
             for _switch_index, switch in enumerate(switches_data):
                 # Skip switches without valid data (like the empty objects in the JSON)
-                if (
-                    not switch
-                    or not isinstance(switch, dict)
-                    or not switch.get("logicalName")
-                ):
+                if not switch or not isinstance(switch, dict):
                     continue
 
-                sys_name = switch.get("logicalName")
+                sys_name = switch.get("logicalName") or switch.get("hostName")
+                if not sys_name:
+                    logger.debug(
+                        "Skipping switch without logicalName/hostName (serial: %s)",
+                        switch.get("serialNumber"),
+                    )
+                    continue
                 serial_number = switch.get("serialNumber")
                 switch_fabric_name = switch.get("fabricName")
 
@@ -1668,9 +1672,19 @@ class CiscoClientNDFC(CiscoClientController):
                     if serial_number:
                         child_url = child_url.replace("{{serialNumber}}", serial_number)
 
-                    records = self._fetch_manage_list(
-                        child_url, self.MANAGE_INTERFACES_RESPONSE_KEY
-                    )
+                    try:
+                        records = self._fetch_manage_list(
+                            child_url, self.MANAGE_INTERFACES_RESPONSE_KEY
+                        )
+                    except Exception as e:  # isolate one switch from the others
+                        logger.warning(
+                            "Error fetching %s for switch %s (%s): %s",
+                            child_name,
+                            sys_name,
+                            serial_number,
+                            e,
+                        )
+                        records = None
                     if records is None:
                         logger.warning(
                             "Failed to fetch %s for switch %s (%s)",
@@ -1784,7 +1798,8 @@ class CiscoClientNDFC(CiscoClientController):
                 )
                 return None
             records.extend(r for r in page_records if isinstance(r, dict))
-            remaining = (page.get("meta") or {}).get("counts", {}).get("remaining")
+            counts = (page.get("meta") or {}).get("counts") or {}
+            remaining = counts.get("remaining") if isinstance(counts, dict) else None
             if not remaining or not page_records:
                 return records
             offset += len(page_records)
@@ -1821,6 +1836,8 @@ class CiscoClientNDFC(CiscoClientController):
         """
         kept = []
         intra_fabric = 0
+        intra_fabric_kept = 0
+        preprovisioned = 0
         for link in links:
             policy_type = (link.get("configData") or {}).get("policyType")
             if (
@@ -1829,6 +1846,7 @@ class CiscoClientNDFC(CiscoClientController):
                 and policy_type == self.PREPROVISION_LINK_POLICY_TYPE
             ):
                 kept.append(link)
+                preprovisioned += 1
                 continue
             if (
                 link.get("srcFabricName") == fabric_name
@@ -1840,12 +1858,14 @@ class CiscoClientNDFC(CiscoClientController):
                 intra_fabric += 1
                 if self._is_user_defined_link(link, fabric_defaults):
                     kept.append(link)
+                    intra_fabric_kept += 1
         logger.info(
-            "Fabric %s: collected %d intra-fabric links (%d with template defaults "
-            "skipped, %d links in total)",
+            "Fabric %s: collected %d intra-fabric links and %d pre-provisioned links "
+            "(%d with template defaults skipped, %d links in total)",
             fabric_name,
-            len(kept),
-            intra_fabric - len(kept),
+            intra_fabric_kept,
+            preprovisioned,
+            intra_fabric - intra_fabric_kept,
             len(links),
         )
         return kept
@@ -1907,25 +1927,34 @@ class CiscoClientNDFC(CiscoClientController):
         """
         if template_name in self.manage_template_defaults:
             return self.manage_template_defaults[template_name]
-        response = self.fetch_data(
-            self.MANAGE_TEMPLATE_PARAMETERS_ENDPOINT.format(template_name=template_name)
+        endpoint = self.MANAGE_TEMPLATE_PARAMETERS_ENDPOINT.format(
+            template_name=template_name
         )
-        parameters = response.get("parameters") if isinstance(response, dict) else None
-        defaults: dict[str, str | None] | None = None
-        if isinstance(parameters, list) and parameters:
-            defaults = {}
-            for parameter in parameters:
-                if isinstance(parameter, dict) and parameter.get("name"):
-                    meta_properties = parameter.get("metaProperties") or {}
-                    defaults[parameter["name"]] = meta_properties.get("defaultValue")
-        else:
-            logger.warning(
-                "Could not read config template %s; unused ports with this policy "
-                "will be kept in the collection",
-                template_name,
+        # Retry once so a single transient failure does not disable default-based
+        # filtering for the rest of the run; only a repeated failure is cached
+        # (avoids re-requesting a broken template for every record).
+        for _attempt in range(2):
+            response = self.fetch_data(endpoint)
+            parameters = (
+                response.get("parameters") if isinstance(response, dict) else None
             )
-        self.manage_template_defaults[template_name] = defaults
-        return defaults
+            if isinstance(parameters, list) and parameters:
+                defaults: dict[str, str | None] = {}
+                for parameter in parameters:
+                    if isinstance(parameter, dict) and parameter.get("name"):
+                        meta_properties = parameter.get("metaProperties") or {}
+                        defaults[parameter["name"]] = meta_properties.get(
+                            "defaultValue"
+                        )
+                self.manage_template_defaults[template_name] = defaults
+                return defaults
+        logger.warning(
+            "Could not read config template %s; records with this policy "
+            "will be kept in the collection",
+            template_name,
+        )
+        self.manage_template_defaults[template_name] = None
+        return None
 
     @staticmethod
     def _normalize_policy_value(value: Any) -> str:
@@ -2239,9 +2268,6 @@ class CiscoClientNDFC(CiscoClientController):
                         network["network_attach_group"] = []
                 else:
                     logger.debug("Skipping network with missing networkName")
-
-    # Fabric templates of MSD members that carry no VRFs / networks (ISN, External).
-    NON_OVERLAY_FABRIC_TEMPLATES = ("External_Fabric",)
 
     def _msd_overlay_member_fabrics(self, endpoint_dict: dict[str, Any]) -> list[str]:
         """MSD member fabrics that hold their own copy of the MSD overlay (VXLAN members;
