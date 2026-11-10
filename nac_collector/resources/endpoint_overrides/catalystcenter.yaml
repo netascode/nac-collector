@@ -21,7 +21,6 @@ remove_endpoints:
 - fabric_multicast_virtual_network
 - global_credential_netconf
 - integrate_ise
-- wireless_profile_site_tag
 - assign_templates_to_tag
 
 # Extra endpoints not present in the Terraform provider definitions
@@ -52,11 +51,19 @@ extra_endpoints:
 - name: network_devices
   endpoint: /dna/intent/api/v1/network-device
 
+# "expected_status_codes" lists non-success responses that are benign for an
+# endpoint. They are logged at WARNING and treated as no data, instead of being
+# logged at ERROR (which fails the whole collection run).
+
+# Queried per wireless controller; a controller with no managed AP locations
+# of that kind returns 400.
 - name: wireless_controller_primary_managed_ap_locations
   endpoint: /dna/intent/api/v1/wirelessControllers/%v/primaryManagedApLocations
+  expected_status_codes: [400]
 
 - name: wireless_controller_secondary_managed_ap_locations
   endpoint: /dna/intent/api/v1/wirelessControllers/%v/secondaryManagedApLocations
+  expected_status_codes: [400]
 
 - name: device_detail
   endpoint: /dna/intent/api/v1/device-detail
@@ -75,9 +82,6 @@ extra_endpoints:
 
 - name: ip_pools
   endpoint: /dna/intent/api/v1/ipam/globalIpAddressPools
-
-- name: virtual_network_ip_pool
-  endpoint: /dna/intent/api/v1/business/sda/virtualnetwork/ippool
 
 - name: wireless_enterprise_ssid
   endpoint: /dna/intent/api/v1/enterprise-ssid
@@ -117,7 +121,7 @@ overrides:
   endpoint: /dna/intent/api/v1/image/importation
 
 - name: ip_pool
-  endpoint: /api/v2/ippool
+  endpoint: /api/v2/ippool?limit=500
   import_id_attributes:
     - name: id
 
@@ -143,9 +147,6 @@ overrides:
 - name: template_version
   import_id_attributes:
     - name: templateId
-
-- name: wireless_profile
-  endpoint: /intent/api/v1/wirelessProfiles
 
 - name: assign_devices_to_tag
   endpoint: /member?memberType=networkdevice

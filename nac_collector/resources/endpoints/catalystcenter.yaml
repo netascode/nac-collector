@@ -4,6 +4,10 @@
   endpoint: /dna/intent/api/v1/sda/anycastGateways
 - name: ap_profile
   endpoint: /dna/intent/api/v1/wirelessSettings/apProfiles
+- name: application
+  endpoint: /dna/intent/api/v2/applications
+- name: application_set
+  endpoint: /dna/intent/api/v2/application-policy-application-set
 - name: area
   endpoint: /dna/intent/api/v2/site
 - name: assign_credentials
@@ -82,7 +86,7 @@
 - name: image
   endpoint: /dna/intent/api/v1/image/importation
 - name: ip_pool
-  endpoint: /api/v2/ippool
+  endpoint: /api/v2/ippool?limit=500
   import_id_attributes:
   - name: id
 - name: ip_pool_reservation
@@ -108,6 +112,8 @@
   endpoint: /dna/intent/api/v2/template-programmer/project
   import_id_attributes:
   - name: id
+- name: qos_policy_setting
+  endpoint: /dna/intent/api/v1/qosPolicySetting
 - name: role
   endpoint: /dna/system/api/v1/roles
 - name: site
@@ -156,8 +162,6 @@
   endpoint: /dna/intent/api/v1/network-device
 - name: user
   endpoint: /dna/system/api/v1/user
-- name: virtual_network_ip_pool
-  endpoint: /dna/intent/api/v1/business/sda/virtualnetwork/ippool
 - name: virtual_network_to_fabric_site
   endpoint: /dna/intent/api/v1/sda/layer3VirtualNetworks
 - name: vlanToSsids
@@ -166,9 +170,13 @@
   endpoint: /dna/intent/api/v1/featureTemplates/wireless/cleanAirConfigurations
 - name: wireless_controller_primary_managed_ap_locations
   endpoint: /dna/intent/api/v1/wirelessControllers/%v/primaryManagedApLocations
+  expected_status_codes:
+  - 400
 - name: wireless_controller_secondary_managed_ap_locations
   endpoint: 
     /dna/intent/api/v1/wirelessControllers/%v/secondaryManagedApLocations
+  expected_status_codes:
+  - 400
 - name: wireless_enterprise_ssid
   endpoint: /dna/intent/api/v1/enterprise-ssid
 - name: wireless_interface
@@ -176,10 +184,12 @@
 - name: wireless_preauth_acl
   endpoint: /dna/intent/api/v1/wirelessSettings/preAuthAcls
 - name: wireless_profile
-  endpoint: /intent/api/v1/wirelessProfiles
+  endpoint: /dna/intent/api/v1/wirelessProfiles
   children:
   - name: wireless_profile_policy_tag
     endpoint: /policyTags
+  - name: wireless_profile_site_tag
+    endpoint: /siteTags
 - name: wireless_rf_profile
   endpoint: /dna/intent/api/v1/wirelessSettings/rfProfiles
 - name: wireless_rrm_fra_configuration

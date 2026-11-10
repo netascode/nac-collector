@@ -161,6 +161,8 @@
     endpoint: /preferred-color-group
   - name: policy_object_security_data_ipv4_prefix_list
     endpoint: /security-data-ip-prefix
+  - name: policy_object_security_data_ipv6_prefix_list
+    endpoint: /security-data-ipv6-prefix
   - name: policy_object_security_fqdn_list
     endpoint: /security-fqdn
   - name: policy_object_security_geolocation_list
@@ -173,10 +175,14 @@
     endpoint: /security-localapp
   - name: policy_object_security_local_domain_list
     endpoint: /security-localdomain
+  - name: policy_object_security_object_group
+    endpoint: /security-object-group
   - name: policy_object_security_port_list
     endpoint: /security-port
   - name: policy_object_security_protocol_list
     endpoint: /security-protocolname
+  - name: policy_object_security_rule_set
+    endpoint: /security-rule-set
   - name: policy_object_security_scalable_group_tag_list
     endpoint: /security-scalablegrouptag
   - name: policy_object_security_url_allow_list
@@ -221,11 +227,15 @@
   endpoint: /template/policy/definition/vedgeroute/
 - name: rule_set_policy_definition
   endpoint: /template/policy/definition/ruleset/
+- name: scope
+  endpoint: /v1/resource-domain/
 - name: security_policy
   endpoint: /template/policy/security/
 - name: service_feature_profile
   endpoint: /v1/feature-profile/sdwan/service
   children:
+  - name: service_appqoe
+    endpoint: /appqoe
   - name: service_dhcp_server
     endpoint: /dhcp-server
   - name: service_dual_router_ha
@@ -372,6 +382,11 @@
   children:
   - name: transport_cellular_controller
     endpoint: /cellular-controller
+    children:
+    - name: transport_cellular_controller_feature_associate_cellular_profile
+      endpoint: /cellular-profile
+    - name: transport_cellular_controller_feature_associate_gps
+      endpoint: /gps
   - name: transport_cellular_profile
     endpoint: /cellular-profile
   - name: transport_gps

@@ -19,6 +19,8 @@
     split_by_network: true
   - name: appliance_organization_security_intrusion
     endpoint: /appliance/security/intrusion
+  - name: appliance_routing_vrfs_settings
+    endpoint: /appliance/routing/vrfs/settings
   - name: appliance_sdwan_internet_policies
     endpoint: /appliance/sdwan/internetPolicies
     split_by_network: true
@@ -45,6 +47,8 @@
       - MX
     - name: appliance_uplinks_settings
       endpoint: /appliance/uplinks/settings
+    - name: blink_device_leds
+      endpoint: /liveTools/leds/blink
     - name: camera_custom_analytics
       endpoint: /camera/customAnalytics
       allowed_device_models:
@@ -77,6 +81,10 @@
       endpoint: /cellular/sims
     - name: device_management_interface
       endpoint: /managementInterface
+    - name: generate_appliance_vmx_authentication_token
+      endpoint: /appliance/vmx/authenticationToken
+    - name: reboot_device
+      endpoint: /reboot
     - name: sensor_relationships
       endpoint: /sensor/relationships
     - name: switch_port
@@ -250,6 +258,8 @@
       has_own_id: true
       id_name: payloadTemplateId
       endpoint: /webhooks/payloadTemplates
+    - name: network_wireless_radio_rrm
+      endpoint: /wireless/radio/rrm
     - name: sensor_alerts_profile
       has_own_id: true
       id_name: profileId
@@ -432,6 +442,10 @@
     endpoint: /samlRoles
   - name: organization_snmp
     endpoint: /snmp
+  - name: routing_vrf
+    has_own_id: true
+    id_name: vrfId
+    endpoint: /routing/vrfs
   - name: sm_admin_role
     has_own_id: true
     id_name: roleId
@@ -451,6 +465,10 @@
   - name: wireless_air_marshal_settings
     endpoint: /wireless/airMarshal/settings/byNetwork
     split_by_network: true
+  - name: wireless_devices_provisioning_deployment
+    has_own_id: true
+    id_name: deploymentId
+    endpoint: /wireless/devices/provisioning/deployments
   - name: wireless_location_scanning
     endpoint: /wireless/location/scanning/byNetwork
     split_by_network: true

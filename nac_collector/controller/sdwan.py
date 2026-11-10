@@ -3,6 +3,7 @@ import binascii
 import json
 import logging
 from typing import Any
+from urllib.parse import quote
 
 import httpx
 from rich.progress import (
@@ -16,6 +17,13 @@ from rich.progress import (
 from nac_collector.controller.base import CiscoClientController
 
 logger = logging.getLogger("main")
+
+# Some parcel types from manager are different from the endpoints type and this break the logic to properly extract the childrens data
+# because get requests never get built. This dict helps introduce the logic to build the GET requests properly for this and future
+# similar scenarios
+PARCEL_TYPE_TO_ENDPOINT_TYPE = {
+    "cisco-sse": "cisco",
+}
 
 
 class CiscoClientSDWAN(CiscoClientController):
@@ -190,7 +198,7 @@ class CiscoClientSDWAN(CiscoClientController):
         endpoints_data = self._merge_url_list_endpoints(endpoints_data)
 
         # Initialize an empty dictionary
-        final_dict = {}
+        final_dict: dict[str, Any] = {}
 
         # Iterate over all endpoints
         with Progress(
@@ -204,6 +212,7 @@ class CiscoClientSDWAN(CiscoClientController):
             for endpoint in endpoints_data:
                 progress.advance(task)
                 endpoint_dict = CiscoClientController.create_endpoint_dict(endpoint)
+                is_network_hierarchy = endpoint.get("name") == "network_hierarchy_node"
 
                 if all(
                     x not in endpoint["endpoint"]
@@ -228,6 +237,10 @@ class CiscoClientSDWAN(CiscoClientController):
 
                         if isinstance(data, list):
                             for i in data:
+                                if is_network_hierarchy:
+                                    self._collect_network_hierarchy_children(
+                                        endpoint, i, final_dict
+                                    )
                                 endpoint_dict[endpoint["name"]].append(
                                     {
                                         "data": i,
@@ -239,6 +252,10 @@ class CiscoClientSDWAN(CiscoClientController):
                         elif data.get("data"):
                             if isinstance(data["data"], list):
                                 for i in data["data"]:
+                                    if is_network_hierarchy:
+                                        self._collect_network_hierarchy_children(
+                                            endpoint, i, final_dict
+                                        )
                                     try:
                                         endpoint_dict[endpoint["name"]].append(
                                             {
@@ -329,6 +346,37 @@ class CiscoClientSDWAN(CiscoClientController):
                 else:
                     pass
         return final_dict
+
+    def _collect_network_hierarchy_children(
+        self,
+        endpoint: dict[str, Any],
+        node: dict[str, Any],
+        final_dict: dict[str, Any],
+    ) -> None:
+        node_name = node.get("name")
+        if not node_name or str(node_name).lower() != "global":
+            return
+        node_name = str(node_name).lower()
+
+        for child_endpoint in endpoint.get("children", []):
+            child_url = (
+                endpoint["endpoint"]
+                + "/name/"
+                + quote(str(node_name), safe="")
+                + child_endpoint["endpoint"]
+            )
+            child_response = self.get_request(self.base_url + child_url)
+            if child_response is None:
+                continue
+
+            child_data = child_response.json()
+            final_dict.setdefault(child_endpoint["name"], []).append(
+                {
+                    "data": child_data,
+                    "endpoint": child_url,
+                }
+            )
+            self.log_response(child_url, child_response)
 
     def get_device_templates(
         self, endpoint: dict[str, Any], endpoint_dict: dict[str, Any]
@@ -679,6 +727,18 @@ class CiscoClientSDWAN(CiscoClientController):
                                 parcel,
                             )
                         )
+                    elif (
+                        self._endpoint_segment(parcel["parcelType"])
+                        == children_endpoint_type
+                    ):
+                        children_entries.append(
+                            self.extract_feature_parcel(
+                                profile_endpoint,
+                                "",
+                                children_endpoint.get("children", []),
+                                parcel,
+                            )
+                        )
             if children_entries:
                 main_entry["children"] = children_entries
             endpoint_dict[endpoint["name"]].append(main_entry)
@@ -696,7 +756,8 @@ class CiscoClientSDWAN(CiscoClientController):
         if parcel_type.startswith(upstream_parcel_type):
             parcel_type = parcel_type[len(upstream_parcel_type) :].lstrip("/")
         parcel_id = parcel["parcelId"]
-        new_endpoint = upstream_endpoint + "/" + parcel_type + "/" + parcel_id
+        endpoint_type = self._endpoint_segment(parcel_type)
+        new_endpoint = upstream_endpoint + "/" + endpoint_type + "/" + parcel_id
         response = self.get_request(self.base_url + new_endpoint)
         if response is None:
             return {"data": {}, "endpoint": new_endpoint}
@@ -731,6 +792,11 @@ class CiscoClientSDWAN(CiscoClientController):
         if children_entries:
             entry["children"] = children_entries
         return entry
+
+    @staticmethod
+    def _endpoint_segment(parcel_type: str) -> str:
+        """Translate a Manager parcelType to its URL segment (they usually match; a few, like cisco-sse, don't)."""
+        return PARCEL_TYPE_TO_ENDPOINT_TYPE.get(parcel_type, parcel_type)
 
     @staticmethod
     def _merge_url_list_endpoints(
