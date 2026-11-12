@@ -610,7 +610,7 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
                 return None
 
             value = obj.get(field)
-            if value is None or isinstance(value, (dict, list)):
+            if value is None or isinstance(value, dict | list):
                 logger.warning(
                     "Failed to generate terraform_import_ids for endpoint %s: "
                     "missing field '%s' in the response",
