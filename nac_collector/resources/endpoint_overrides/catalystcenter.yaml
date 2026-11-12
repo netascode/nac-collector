@@ -65,9 +65,12 @@ extra_endpoints:
 # of that kind returns 400.
 - name: wireless_controller_primary_managed_ap_locations
   endpoint: /dna/intent/api/v1/wirelessControllers/%v/primaryManagedApLocations
+  expected_status_codes: [400]
+
 - name: wireless_controller_secondary_managed_ap_locations
-  endpoint:
-    /dna/intent/api/v1/wirelessControllers/%v/secondaryManagedApLocations
+  endpoint: /dna/intent/api/v1/wirelessControllers/%v/secondaryManagedApLocations
+  expected_status_codes: [400]
+
 - name: device_detail
   endpoint: /dna/intent/api/v1/device-detail
 

@@ -334,7 +334,9 @@ def test_zone_device_import_collection_fetches_parent_and_zone_sources():
         "/fabricDevices?fabricId=parent": {"response": [{"networkDeviceId": "border"}]},
         "/fabricDevices?fabricId=zone": {"response": [{"networkDeviceId": "edge"}]},
     }
-    client.fetch_data_pagination = Mock(side_effect=lambda path: responses[path])
+    client.fetch_data_pagination = Mock(
+        side_effect=lambda path, expected_status_codes=(): responses[path]
+    )
     result = client.fetch_data_alternate(
         {"name": "fabric_device", "endpoint": endpoint}
     )
