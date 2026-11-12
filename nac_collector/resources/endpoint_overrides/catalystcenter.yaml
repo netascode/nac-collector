@@ -21,10 +21,10 @@ remove_endpoints:
 - fabric_multicast_virtual_network
 - global_credential_netconf
 - integrate_ise
-- wireless_profile_site_tag
 - assign_templates_to_tag
 
 # Extra endpoints not present in the Terraform provider definitions
+- wireless_fabric_multicast
 extra_endpoints:
 - name: site
   endpoint: /dna/intent/api/v1/sites
@@ -57,12 +57,17 @@ extra_endpoints:
 - name: network_devices
   endpoint: /dna/intent/api/v1/network-device
 
+# "expected_status_codes" lists non-success responses that are benign for an
+# endpoint. They are logged at WARNING and treated as no data, instead of being
+# logged at ERROR (which fails the whole collection run).
+
+# Queried per wireless controller; a controller with no managed AP locations
+# of that kind returns 400.
 - name: wireless_controller_primary_managed_ap_locations
   endpoint: /dna/intent/api/v1/wirelessControllers/%v/primaryManagedApLocations
-
 - name: wireless_controller_secondary_managed_ap_locations
-  endpoint: /dna/intent/api/v1/wirelessControllers/%v/secondaryManagedApLocations
-
+  endpoint:
+    /dna/intent/api/v1/wirelessControllers/%v/secondaryManagedApLocations
 - name: device_detail
   endpoint: /dna/intent/api/v1/device-detail
 
@@ -82,9 +87,6 @@ extra_endpoints:
 
 - name: ip_pools
   endpoint: /dna/intent/api/v1/ipam/globalIpAddressPools
-
-- name: virtual_network_ip_pool
-  endpoint: /dna/intent/api/v1/business/sda/virtualnetwork/ippool
 
 - name: wireless_enterprise_ssid
   endpoint: /dna/intent/api/v1/enterprise-ssid
@@ -112,6 +114,13 @@ extra_endpoints:
 #   "parent_endpoint" (a path: list of URLs of parent endpoints)
 #     moves the endpoint to a different parent.
 #   Any other keys replace the corresponding keys in the endpoint.
+- name: wireless_fabric_multicast
+  endpoint: /dna/intent/api/v1/sda/fabrics/%v/wirelessMulticast
+- name: network_profile_for_sites
+  endpoint: /dna/intent/api/v1/networkProfilesForSites
+  children:
+  - name: network_profile_site_assignment
+    endpoint: /siteAssignments
 overrides:
 - name: area
   endpoint: /dna/intent/api/v2/site
@@ -120,7 +129,7 @@ overrides:
   endpoint: /dna/intent/api/v2/site
 
 - name: floor
-  endpoint: /api/v1/dna-maps-service/domains
+  endpoint: /dna/intent/api/v2/floors
 
 - name: image
   endpoint: /dna/intent/api/v1/image/importation
@@ -128,40 +137,38 @@ overrides:
 - name: ip_pool
   endpoint: /api/v2/ippool?limit=500
   import_id_attributes:
-    - field: id
+  - field: id
 
 - name: ip_pool_reservation
-  endpoint: /dna/intent/api/v1/reserve-ip-subpool?ignoreInheritedGroups=true&limit=500
+  endpoint:
+    /dna/intent/api/v1/reserve-ip-subpool?ignoreInheritedGroups=true&limit=500
   import_id_attributes:
-    - field: id
+  - field: id
 
 - name: project
   endpoint: /dna/intent/api/v2/template-programmer/project
   import_id_attributes:
-    - field: id
+  - field: id
 
 - name: template
   endpoint: /dna/intent/api/v2/template-programmer/template
   # provider import.sh format: <project_id>,<id>
   import_id_attributes:
-    - field: projectId
-    - field: id
+  - field: projectId
+  - field: id
 
 - name: transit_network
   import_id_attributes:
-    - field: name
+  - field: name
 
 - name: fabric_port_assignments
   import_id_attributes:
-    - field: fabricId
-    - field: networkDeviceId
+  - field: fabricId
+  - field: networkDeviceId
 
 - name: template_version
   import_id_attributes:
-    - field: templateId
-
-- name: wireless_profile
-  endpoint: /intent/api/v1/wirelessProfiles
+  - field: templateId
 
 - name: assign_devices_to_tag
   endpoint: /member?memberType=networkdevice
@@ -174,7 +181,20 @@ overrides:
 import_ids:
 - name: anycast_gateway
   import_id_key:
-    field: ipPoolName
+    join:
+    - site_hierarchy: fabricId
+    - field: ipPoolName
+    sep: '#_#'
+  import_id_variants:
+  - import_id_key:
+      field: ipPoolName
+    import_id_fabric_scope: fabric_site
+  - import_id_key:
+      join:
+      - site_hierarchy: fabricId
+      sep: ','
+    import_id_attributes:
+    - field: fabricId
 - name: area
   import_id_key:
     field: groupNameHierarchy
@@ -182,6 +202,10 @@ import_ids:
   import_id_key:
     join:
     - site_hierarchy: siteId
+  import_id_no_descend: true
+  import_id_attributes:
+  - field: siteId
+  - field: siteId
 - name: assign_device_to_site
   import_id_key:
     join:
@@ -223,23 +247,35 @@ import_ids:
   import_id_key:
     join:
     - device_hostname: networkDeviceId
+  import_id_variants:
+  - import_id_key:
+      join:
+      - site_hierarchy: siteId
+      sep: ','
+    import_id_attributes:
+    - field: siteId
+    import_id_no_descend: true
 - name: fabric_l2_handoff
   import_id_key:
     join:
     - field: externalVlanId
+      prefix: vlan
     - device_hostname: networkDeviceId
     - field: interfaceName
     sep: /
 - name: fabric_l2_virtual_network
   import_id_key:
     join:
-    - field: associatedLayer3VirtualNetworkName
+    - field: vlanName
     - site_hierarchy: fabricId
     sep: '#_#'
 - name: fabric_l3_handoff_ip_transit
   import_id_key:
     join:
     - device_hostname: networkDeviceId
+  import_id_attributes:
+  - field: networkDeviceId
+  - field: fabricId
 - name: fabric_l3_handoff_sda_transit
   import_id_key:
     join:
@@ -249,7 +285,11 @@ import_ids:
     field: virtualNetworkName
 - name: virtual_network_to_fabric_site
   import_id_key:
-    field: virtualNetworkName
+    join:
+    - field: virtualNetworkName
+    - site_hierarchy: fabricIds
+    sep: '#_#'
+  import_id_expand: fabricIds
 - name: fabric_port_assignments
   import_id_key:
     join:
@@ -258,6 +298,14 @@ import_ids:
   import_id_key:
     join:
     - site_hierarchy: siteId
+  import_id_variants:
+  - import_id_key:
+      join:
+      - device_hostname: networkDeviceId
+      sep: ','
+    import_id_attributes:
+    - field: siteId
+    - field: networkDeviceId
 - name: fabric_site
   import_id_key:
     join:
@@ -290,26 +338,38 @@ import_ids:
   import_id_key:
     join:
     - site_hierarchy: id
+  import_id_attributes:
+  - source: parent
 - name: dhcp_settings
   import_id_key:
     join:
     - site_hierarchy: id
+  import_id_attributes:
+  - source: parent
 - name: dns_settings
   import_id_key:
     join:
     - site_hierarchy: id
+  import_id_attributes:
+  - source: parent
 - name: ntp_settings
   import_id_key:
     join:
     - site_hierarchy: id
+  import_id_attributes:
+  - source: parent
 - name: telemetry_settings
   import_id_key:
     join:
     - site_hierarchy: id
+  import_id_attributes:
+  - source: parent
 - name: timezone_settings
   import_id_key:
     join:
     - site_hierarchy: id
+  import_id_attributes:
+  - source: parent
 - name: sp_profile
   import_id_key:
     field: spProfileName
@@ -336,6 +396,9 @@ import_ids:
   import_id_key:
     join:
     - site_hierarchy: siteId
+  import_id_no_descend: true
+  import_id_attributes:
+  - field: siteId
 - name: wireless_cleanair_configuration
   import_id_key:
     field: designName
@@ -354,3 +417,86 @@ import_ids:
 - name: wireless_rrm_fra_configuration
   import_id_key:
     field: designName
+- name: fabric_port_channel
+  import_id_key:
+    join:
+    - device_hostname: networkDeviceId
+    - field: portChannelName
+      remove_prefix: Port-channel
+    sep: /
+- name: fabric_multicast_replication_mode
+  import_id_key:
+    join:
+    - site_hierarchy: fabricId
+    sep: ','
+  import_id_attributes:
+  - field: fabricId
+  - field: fabricId
+- name: fabric_multicast_virtual_network
+  import_id_key:
+    join:
+    - site_hierarchy: fabricId
+    sep: ','
+  import_id_attributes:
+  - field: fabricId
+- name: wireless_fabric_multicast
+  import_id_key:
+    join:
+    - site_hierarchy: fabricId
+    sep: ','
+  import_id_attributes:
+  - field: fabricId
+  import_id_no_descend: true
+- name: floor
+  import_id_key:
+    join:
+    - site_hierarchy: id
+    sep: ','
+- name: planned_access_point_position
+  import_id_key:
+    join:
+    - site_hierarchy: floorId
+    - field: name
+    sep: /
+- name: wireless_ssid
+  import_id_key:
+    field: ssid
+- name: ap_profile
+  import_id_key:
+    field: apProfileName
+- name: dot11be_profile
+  import_id_key:
+    field: profileName
+- name: power_profile
+  import_id_key:
+    field: profileName
+- name: anchor_group
+  import_id_key:
+    field: anchorGroupName
+  import_id_attributes:
+  - field: id
+- name: wireless_preauth_acl
+  import_id_key:
+    field: aclName
+  import_id_attributes:
+  - field: id
+- name: wireless_profile_policy_tag
+  import_id_key:
+    join:
+    - parent_name: wireless_profile
+    - field: policyTagName
+    sep: /
+  import_id_attributes:
+  - source: parent
+  - field: policyTagId
+  - field: policyTagId
+- name: wireless_profile_site_tag
+  import_id_key:
+    join:
+    - parent_name: wireless_profile
+    - field: siteTagName
+    sep: /
+  import_id_attributes:
+  - source: parent
+  - field: siteTagId
+  - field: siteTagId

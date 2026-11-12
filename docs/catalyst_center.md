@@ -75,3 +75,37 @@ if endpoint.get("endpoint") in self.id_lookup:
             new_endpoint = self.id_lookup[endpoint.get("endpoint")]["target_endpoint"]
 ```
 And then if so, we use `fetch_data_alternate` to query the source_endpoint for data and attach it to our target endpoint.
+
+## Terraform import metadata
+
+Each collected entry can carry `terraform_import_ids`, a flat mapping from the
+Terraform resource's natural key to its comma-joined provider import ID. The
+postprocessing pass resolves site hierarchies, fabric sites and zones, device
+hostnames, and wireless-profile parent names from data already collected. It
+does not make extra API requests.
+
+Maintain custom recipes in `endpoint_overrides/catalystcenter.yaml` under
+`import_ids`, then regenerate the packaged endpoints. Current provider definitions
+alone do not describe every lookup wrapper or module key.
+
+- `import_id_attributes` selects ordered ID components from response fields or
+  `source: parent`. List/object values cannot become scalar ID components.
+- `import_id_key` selects a field or joins parts. `site_hierarchy` resolves site,
+  fabric-site and zone IDs; `device_hostname` resolves inventory IDs;
+  `parent_name: wireless_profile` resolves a child entry's profile name.
+  Field parts may specify `prefix` or `remove_prefix` for module key conventions.
+- `import_id_no_descend: true` keeps a lookup wrapper as the identity-bearing
+  object when a provider imports the whole group.
+- `import_id_variants` adds recipes for other resource keys backed by the same
+  API response, such as singular and bulk resources. The output remains one flat
+  map. Each variant overrides the main recipe's fields.
+- `import_id_fabric_scope: fabric_site` or `fabric_zone` restricts a recipe to
+  that kind of fabric identity, avoiding ambiguity between parent and zone pools.
+- `import_id_expand` expands a list-valued relationship into individual leaves;
+  VN membership therefore gets one scalar import ID per fabric site or zone.
+
+Conflicting IDs for the same key raise an error instead of silently choosing an
+object. Import IDs do not make a resource importable if its provider lacks an
+import implementation, and do not guarantee a clean post-import plan. Review
+write-only credentials, local template/image inputs, and provider read behavior
+separately.

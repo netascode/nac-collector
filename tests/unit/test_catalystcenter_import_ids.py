@@ -218,5 +218,6 @@ def test_shipped_endpoint_file_keeps_upstream_entries_and_import_metadata() -> N
     assert "ap_profile" in by_name
     assert by_name["tag"]["import_id_key"] == {"field": "name"}
     assert by_name["virtual_network_to_fabric_site"]["import_id_key"] == {
-        "field": "virtualNetworkName"
+        "join": [{"field": "virtualNetworkName"}, {"site_hierarchy": "fabricIds"}],
+        "sep": "#_#",
     }

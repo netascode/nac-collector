@@ -256,14 +256,21 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
         if not endpoint_key or endpoint_key not in self.id_lookup:
             return None
 
-        id_lookup_data = self.fetch_data_pagination(
-            self.id_lookup[endpoint_key]["source_endpoint"]
+        source_endpoints = [self.id_lookup[endpoint_key]["source_endpoint"]]
+        source_endpoints.extend(
+            self.id_lookup[endpoint_key].get("additional_source_endpoints", [])
         )
-        if id_lookup_data is None:
-            return None
-        if isinstance(id_lookup_data, dict) and "response" in id_lookup_data:
-            look_data = id_lookup_data["response"]
-        else:
+        look_data: Any = None
+        for source_endpoint in source_endpoints:
+            id_lookup_data = self.fetch_data_pagination(source_endpoint)
+            if not (isinstance(id_lookup_data, dict) and "response" in id_lookup_data):
+                continue
+            response = id_lookup_data["response"]
+            if look_data is None:
+                look_data = response
+            elif isinstance(look_data, list) and isinstance(response, list):
+                look_data.extend(response)
+        if look_data is None:
             return None
         if "/template-programmer/template/version" in endpoint.get(
             "endpoint", ""
@@ -447,7 +454,7 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
                 return None
 
             value = obj.get(field)
-            if value is None:
+            if value is None or isinstance(value, (dict, list)):
                 logger.warning(
                     "Failed to generate terraform_import_ids for endpoint %s: "
                     "missing field '%s' in the response",
@@ -491,13 +498,18 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
     @classmethod
     def _build_fabric_to_site_index(cls, final_dict: dict[str, Any]) -> dict[str, str]:
         """
-        Map every fabric UUID -> the site UUID it belongs to, from the collected
-        ``fabric_site`` leaves (``id`` = fabric uuid, ``siteId`` = site uuid).
+        Map every fabric-site or zone UUID to its site UUID, from the collected
+        ``fabric_site`` and ``fabric_zone`` leaves.
         Lets ``site_hierarchy`` resolve a ``fabricId`` by hopping fabric -> site
         -> hierarchy.
         """
         index: dict[str, str] = {}
-        for entry in final_dict.get("fabric_site", []):
+        entries = [
+            entry
+            for name in ("fabric_site", "fabric_zone")
+            for entry in final_dict.get(name, [])
+        ]
+        for entry in entries:
             leaves = entry.get("data")
             if not isinstance(leaves, list):
                 continue
@@ -589,7 +601,12 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
         """
         if "field" in part:
             value = leaf.get(part["field"])
-            return None if value is None else str(value)
+            if value is None:
+                return None
+            text_value = str(value).removeprefix(part.get("remove_prefix", ""))
+            return str(part.get("prefix", "")) + text_value
+        if "parent_name" in part:
+            return indices.get(part["parent_name"], {}).get(str(parent_id))
         if part.get("source") == "parent":
             return None if parent_id is None else str(parent_id)
         if "site_hierarchy" in part:
@@ -740,9 +757,39 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
             "fabric_to_site": self._build_fabric_to_site_index(final_dict),
             "device_hostname": self._build_device_hostname_index(final_dict),
         }
+        for name in ("fabric_site", "fabric_zone"):
+            indices[name] = {
+                str(leaf["id"]): str(leaf["siteId"])
+                for entry in final_dict.get(name, [])
+                for leaf in entry.get("data", [])
+                if isinstance(leaf, dict) and "id" in leaf and "siteId" in leaf
+            }
+        indices["wireless_profile"] = {
+            str(leaf["id"]): str(leaf["wirelessProfileName"])
+            for entry in final_dict.get("wireless_profile", [])
+            for leaf in entry.get("data", [])
+            if isinstance(leaf, dict) and "id" in leaf and "wirelessProfileName" in leaf
+        }
 
         def _key_entry(endpoint: dict[str, Any], entry: dict[str, Any]) -> None:
             """Attach the keyed ``terraform_import_ids`` dict to one entry."""
+            variants = endpoint.get("import_id_variants", [])
+            if variants and isinstance(entry, dict):
+                base = {k: v for k, v in endpoint.items() if k != "import_id_variants"}
+                combined: dict[str, str] = {}
+                for recipe in [base, *({**base, **variant} for variant in variants)]:
+                    scratch = {
+                        k: v for k, v in entry.items() if k != "terraform_import_ids"
+                    }
+                    _key_entry(recipe, scratch)
+                    for key, value in scratch.get("terraform_import_ids", {}).items():
+                        if key in combined and combined[key] != value:
+                            raise ValueError(
+                                f"Conflicting import IDs for {endpoint['name']} key {key!r}"
+                            )
+                        combined[key] = value
+                entry["terraform_import_ids"] = combined
+                return
             key_spec = endpoint.get("import_id_key")
             if key_spec is None or not isinstance(entry, dict):
                 return
@@ -785,14 +832,36 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
                     )
                 else:
                     leaves = self._flatten_key_leaves(obj)
+                expand = endpoint.get("import_id_expand")
+                if expand:
+                    leaves = [
+                        {**leaf, expand: value}
+                        for leaf in leaves
+                        for value in (
+                            leaf.get(expand, [])
+                            if isinstance(leaf.get(expand), list)
+                            else [leaf[expand]]
+                            if leaf.get(expand) is not None
+                            else []
+                        )
+                    ]
                 for leaf in leaves:
+                    fabric_scope = endpoint.get("import_id_fabric_scope")
+                    fabric_id = leaf.get("fabricId", leaf.get("siteId"))
+                    if fabric_scope and str(fabric_id) not in indices[fabric_scope]:
+                        continue
                     key = self._build_natural_key(key_spec, leaf, parent_id, indices)
                     if key is None:
                         continue
                     parts = self.build_terraform_import_ids(endpoint, leaf, parent_id)
                     if parts is None:
                         continue
-                    keyed[key] = ",".join(parts)
+                    value = ",".join(parts)
+                    if key in keyed and keyed[key] != value:
+                        raise ValueError(
+                            f"Conflicting import IDs for {endpoint['name']} key {key!r}"
+                        )
+                    keyed[key] = value
             entry["terraform_import_ids"] = keyed
 
         def _collect_child_entries(
