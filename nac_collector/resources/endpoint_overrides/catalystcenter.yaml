@@ -1,11 +1,18 @@
 # Extra manually-defined endpoints and overrides
+
 # for endpoints generated from provider definitions.
+
 #
+
 # To apply modifications in this file,
+
 # regenerate the endpoints YAML with "uv run ./scripts/update_endpoints.py".
 
+
 # Endpoints to remove from the generated file
+
 # (duplicates, endpoints replaced by unified versions, or not needed)
+
 remove_endpoints:
 - areas
 - buildings
@@ -24,6 +31,7 @@ remove_endpoints:
 - assign_templates_to_tag
 
 # Extra endpoints not present in the Terraform provider definitions
+
 - wireless_fabric_multicast
 extra_endpoints:
 - name: site
@@ -58,19 +66,22 @@ extra_endpoints:
   endpoint: /dna/intent/api/v1/network-device
 
 # "expected_status_codes" lists non-success responses that are benign for an
+
 # endpoint. They are logged at WARNING and treated as no data, instead of being
+
 # logged at ERROR (which fails the whole collection run).
 
+
 # Queried per wireless controller; a controller with no managed AP locations
+
 # of that kind returns 400.
+
 - name: wireless_controller_primary_managed_ap_locations
   endpoint: /dna/intent/api/v1/wirelessControllers/%v/primaryManagedApLocations
   expected_status_codes: [400]
-
 - name: wireless_controller_secondary_managed_ap_locations
   endpoint: /dna/intent/api/v1/wirelessControllers/%v/secondaryManagedApLocations
   expected_status_codes: [400]
-
 - name: device_detail
   endpoint: /dna/intent/api/v1/device-detail
 
@@ -112,11 +123,17 @@ extra_endpoints:
   endpoint: /dna/intent/api/v1/sda/multicast/virtualNetworks
 
 # Endpoint overrides format:
+
 # A flat list of endpoints (no tree with "children").
+
 #   "name" refers to an endpoint anywhere in the main endpoint tree.
+
 #   "parent_endpoint" (a path: list of URLs of parent endpoints)
+
 #     moves the endpoint to a different parent.
+
 #   Any other keys replace the corresponding keys in the endpoint.
+
 - name: wireless_fabric_multicast
   endpoint: /dna/intent/api/v1/sda/fabrics/%v/wirelessMulticast
 - name: network_profile_for_sites
@@ -143,8 +160,7 @@ overrides:
   - field: id
 
 - name: ip_pool_reservation
-  endpoint:
-    /dna/intent/api/v1/reserve-ip-subpool?ignoreInheritedGroups=true&limit=500
+  endpoint: /dna/intent/api/v1/reserve-ip-subpool?ignoreInheritedGroups=true&limit=500
   import_id_attributes:
   - field: id
 
@@ -155,11 +171,12 @@ overrides:
 
 - name: template
   endpoint: /dna/intent/api/v2/template-programmer/template
-  # provider import.sh format: <project_id>,<id>
   import_id_attributes:
   - field: projectId
   - field: id
 
+- name: assign_devices_to_tag
+  endpoint: /member?memberType=networkdevice
 - name: transit_network
   import_id_attributes:
   - field: name
@@ -172,334 +189,3 @@ overrides:
 - name: template_version
   import_id_attributes:
   - field: templateId
-
-- name: assign_devices_to_tag
-  endpoint: /member?memberType=networkdevice
-
-# Import-ID key recipes (issue #509 keyed-import layer).
-# Authored here — NOT in the generated endpoints file — so a full endpoint
-# regeneration re-injects them (applied by apply_import_ids, matched by name,
-# recurses into children). The value builder derives the composite import id
-# from import_id_attributes; this key selects the natural key the plan indexes on.
-import_ids:
-- name: anycast_gateway
-  import_id_key:
-    join:
-    - site_hierarchy: fabricId
-    - field: ipPoolName
-    sep: '#_#'
-  import_id_variants:
-  - import_id_key:
-      field: ipPoolName
-    import_id_fabric_scope: fabric_site
-  - import_id_key:
-      join:
-      - site_hierarchy: fabricId
-      sep: ','
-    import_id_attributes:
-    - field: fabricId
-- name: area
-  import_id_key:
-    field: groupNameHierarchy
-- name: assign_credentials
-  import_id_key:
-    join:
-    - site_hierarchy: siteId
-  import_id_no_descend: true
-  import_id_attributes:
-  - field: siteId
-  - field: siteId
-- name: assign_device_to_site
-  import_id_key:
-    join:
-    - site_hierarchy: siteId
-- name: tag
-  import_id_key:
-    field: name
-- name: building
-  import_id_key:
-    field: groupNameHierarchy
-- name: credentials_cli
-  import_id_key:
-    group: cliCredential
-    key_field: description
-- name: credentials_https_read
-  import_id_key:
-    group: httpsRead
-    key_field: description
-- name: credentials_https_write
-  import_id_key:
-    group: httpsWrite
-    key_field: description
-- name: credentials_snmpv2_read
-  import_id_key:
-    group: snmpV2cRead
-    key_field: description
-- name: credentials_snmpv2_write
-  import_id_key:
-    group: snmpV2cWrite
-    key_field: description
-- name: credentials_snmpv3
-  import_id_key:
-    group: snmpV3
-    key_field: description
-- name: external_authentication_aaa_attribute
-  import_id_key:
-    field: attributeName
-- name: fabric_device
-  import_id_key:
-    join:
-    - device_hostname: networkDeviceId
-  import_id_variants:
-  - import_id_key:
-      join:
-      - site_hierarchy: siteId
-      sep: ','
-    import_id_attributes:
-    - field: siteId
-    import_id_no_descend: true
-- name: fabric_l2_handoff
-  import_id_key:
-    join:
-    - field: externalVlanId
-      prefix: vlan
-    - device_hostname: networkDeviceId
-    - field: interfaceName
-    sep: /
-- name: fabric_l2_virtual_network
-  import_id_key:
-    join:
-    - field: vlanName
-    - site_hierarchy: fabricId
-    sep: '#_#'
-- name: fabric_l3_handoff_ip_transit
-  import_id_key:
-    join:
-    - device_hostname: networkDeviceId
-  import_id_attributes:
-  - field: networkDeviceId
-  - field: fabricId
-- name: fabric_l3_handoff_sda_transit
-  import_id_key:
-    join:
-    - device_hostname: networkDeviceId
-- name: fabric_l3_virtual_network
-  import_id_key:
-    field: virtualNetworkName
-- name: virtual_network_to_fabric_site
-  import_id_key:
-    join:
-    - field: virtualNetworkName
-    - site_hierarchy: fabricIds
-    sep: '#_#'
-  import_id_expand: fabricIds
-- name: fabric_port_assignments
-  import_id_key:
-    join:
-    - device_hostname: networkDeviceId
-- name: fabric_provision_device
-  import_id_key:
-    join:
-    - site_hierarchy: siteId
-  import_id_variants:
-  - import_id_key:
-      join:
-      - device_hostname: networkDeviceId
-      sep: ','
-    import_id_attributes:
-    - field: siteId
-    - field: networkDeviceId
-- name: fabric_site
-  import_id_key:
-    join:
-    - site_hierarchy: siteId
-- name: fabric_zone
-  import_id_key:
-    join:
-    - site_hierarchy: siteId
-- name: ip_pool_reservation
-  import_id_key:
-    field: groupName
-# network_profile has match_id on `name`, but its definition is no_read: true, so a
-# regeneration filters it out as an endpoint node and auto-derivation has nothing to
-# attach to. Kept here so the key survives regen (the node is re-added downstream).
-- name: network_profile
-  import_id_key:
-    field: name
-- name: project
-  import_id_key:
-    field: name
-- name: role
-  import_id_key:
-    group: roles
-    key_field: role
-- name: aaa_settings
-  import_id_key:
-    join:
-    - site_hierarchy: id
-- name: banner_settings
-  import_id_key:
-    join:
-    - site_hierarchy: id
-  import_id_attributes:
-  - source: parent
-- name: dhcp_settings
-  import_id_key:
-    join:
-    - site_hierarchy: id
-  import_id_attributes:
-  - source: parent
-- name: dns_settings
-  import_id_key:
-    join:
-    - site_hierarchy: id
-  import_id_attributes:
-  - source: parent
-- name: ntp_settings
-  import_id_key:
-    join:
-    - site_hierarchy: id
-  import_id_attributes:
-  - source: parent
-- name: telemetry_settings
-  import_id_key:
-    join:
-    - site_hierarchy: id
-  import_id_attributes:
-  - source: parent
-- name: timezone_settings
-  import_id_key:
-    join:
-    - site_hierarchy: id
-  import_id_attributes:
-  - source: parent
-- name: sp_profile
-  import_id_key:
-    field: spProfileName
-- name: template
-  import_id_key:
-    field: name
-- name: template_version
-  import_id_key:
-    field: name
-- name: transit_network
-  import_id_key:
-    field: name
-- name: update_authentication_profile
-  import_id_key:
-    join:
-    - site_hierarchy: fabricId
-    - field: authenticationProfileName
-    sep: '#_#'
-- name: user
-  import_id_key:
-    group: users
-    key_field: username
-- name: vlanToSsids
-  import_id_key:
-    join:
-    - site_hierarchy: siteId
-  import_id_no_descend: true
-  import_id_attributes:
-  - field: siteId
-- name: wireless_cleanair_configuration
-  import_id_key:
-    field: designName
-- name: wireless_enterprise_ssid
-  import_id_key:
-    field: ssidName
-- name: wireless_interface
-  import_id_key:
-    field: interfaceName
-- name: wireless_profile
-  import_id_key:
-    field: wirelessProfileName
-- name: wireless_rf_profile
-  import_id_key:
-    field: rfProfileName
-- name: wireless_rrm_fra_configuration
-  import_id_key:
-    field: designName
-- name: fabric_port_channel
-  import_id_key:
-    join:
-    - device_hostname: networkDeviceId
-    - field: portChannelName
-      remove_prefix: Port-channel
-    sep: /
-- name: fabric_multicast_replication_mode
-  import_id_key:
-    join:
-    - site_hierarchy: fabricId
-    sep: ','
-  import_id_attributes:
-  - field: fabricId
-  - field: fabricId
-- name: fabric_multicast_virtual_network
-  import_id_key:
-    join:
-    - site_hierarchy: fabricId
-    sep: ','
-  import_id_attributes:
-  - field: fabricId
-- name: wireless_fabric_multicast
-  import_id_key:
-    join:
-    - site_hierarchy: fabricId
-    sep: ','
-  import_id_attributes:
-  - field: fabricId
-  import_id_no_descend: true
-- name: floor
-  import_id_key:
-    join:
-    - site_hierarchy: id
-    sep: ','
-- name: planned_access_point_position
-  import_id_key:
-    join:
-    - site_hierarchy: floorId
-    - field: name
-    sep: /
-- name: wireless_ssid
-  import_id_key:
-    field: ssid
-- name: ap_profile
-  import_id_key:
-    field: apProfileName
-- name: dot11be_profile
-  import_id_key:
-    field: profileName
-- name: power_profile
-  import_id_key:
-    field: profileName
-- name: anchor_group
-  import_id_key:
-    field: anchorGroupName
-  import_id_attributes:
-  - field: id
-- name: wireless_preauth_acl
-  import_id_key:
-    field: aclName
-  import_id_attributes:
-  - field: id
-- name: wireless_profile_policy_tag
-  import_id_key:
-    join:
-    - parent_name: wireless_profile
-    - field: policyTagName
-    sep: /
-  import_id_attributes:
-  - source: parent
-  - field: policyTagId
-  - field: policyTagId
-- name: wireless_profile_site_tag
-  import_id_key:
-    join:
-    - parent_name: wireless_profile
-    - field: siteTagName
-    sep: /
-  import_id_attributes:
-  - source: parent
-  - field: siteTagId
-  - field: siteTagId

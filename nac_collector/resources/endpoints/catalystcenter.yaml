@@ -1,330 +1,188 @@
 - name: anchor_group
-  import_id_key:
-    field: anchorGroupName
   endpoint: /dna/intent/api/v1/wirelessSettings/anchorGroups
-  import_id_attributes:
-  - field: id
 - name: anycast_gateway
+  endpoint: /dna/intent/api/v1/sda/anycastGateways
   import_id_attributes:
   - field: fabricId
   - field: virtualNetworkName
   - field: ipPoolName
-  endpoint: /dna/intent/api/v1/sda/anycastGateways
-  import_id_key:
-    join:
-    - site_hierarchy: fabricId
-    - field: ipPoolName
-    sep: '#_#'
-  import_id_variants:
-  - import_id_key:
-      field: ipPoolName
-    import_id_fabric_scope: fabric_site
-  - import_id_key:
-      join:
-      - site_hierarchy: fabricId
-      sep: ','
-    import_id_attributes:
-    - field: fabricId
 - name: ap_profile
+  endpoint: /dna/intent/api/v1/wirelessSettings/apProfiles
   import_id_attributes:
   - field: apProfileName
-  endpoint: /dna/intent/api/v1/wirelessSettings/apProfiles
-  import_id_key:
-    field: apProfileName
 - name: application
+  endpoint: /dna/intent/api/v2/applications
   import_id_attributes:
   - field: name
-  import_id_key:
-    field: name
-  endpoint: /dna/intent/api/v2/applications
 - name: application_set
-  import_id_attributes:
-  - field: id
-  import_id_key:
-    field: name
   endpoint: /dna/intent/api/v2/application-policy-application-set
-- name: area
   import_id_attributes:
   - field: id
+- name: area
   endpoint: /dna/intent/api/v2/site
-  import_id_key:
-    field: groupNameHierarchy
+  import_id_attributes:
+  - field: id
 - name: assign_credentials
-  import_id_attributes:
-  - field: siteId
-  - field: siteId
   endpoint: /api/v1/commonsetting/global
-  import_id_key:
-    join:
-    - site_hierarchy: siteId
-  import_id_no_descend: true
+  import_id_attributes:
+  - source: parent
+  - field: id
 - name: assign_device_to_site
+  endpoint: /dna/intent/api/v1/networkDevices/assignedToSite
   import_id_attributes:
   - field: siteId
-  endpoint: /dna/intent/api/v1/networkDevices/assignedToSite
-  import_id_key:
-    join:
-    - site_hierarchy: siteId
 - name: authentication_policy_server
+  endpoint: /dna/intent/api/v1/authentication-policy-servers
   import_id_attributes:
   - field: instanceUuid
-  import_id_key:
-    field: ipAddress
-  endpoint: /dna/intent/api/v1/authentication-policy-servers
 - name: building
-  import_id_attributes:
-  - field: id
   endpoint: /dna/intent/api/v2/site
-  import_id_key:
-    field: groupNameHierarchy
+  import_id_attributes:
+  - field: id
 - name: credentials_cli
+  endpoint: /dna/intent/api/v2/global-credential
   import_id_attributes:
   - field: id
-  import_id_key:
-    group: cliCredential
-    key_field: description
-  endpoint: /dna/intent/api/v2/global-credential
 - name: credentials_https_read
+  endpoint: /dna/intent/api/v2/global-credential
   import_id_attributes:
   - field: id
-  import_id_key:
-    group: httpsRead
-    key_field: description
-  endpoint: /dna/intent/api/v2/global-credential
 - name: credentials_https_write
+  endpoint: /dna/intent/api/v2/global-credential
   import_id_attributes:
   - field: id
-  import_id_key:
-    group: httpsWrite
-    key_field: description
-  endpoint: /dna/intent/api/v2/global-credential
 - name: credentials_snmpv2_read
+  endpoint: /dna/intent/api/v2/global-credential
   import_id_attributes:
   - field: id
-  import_id_key:
-    group: snmpV2cRead
-    key_field: description
-  endpoint: /dna/intent/api/v2/global-credential
 - name: credentials_snmpv2_write
+  endpoint: /dna/intent/api/v2/global-credential
   import_id_attributes:
   - field: id
-  import_id_key:
-    group: snmpV2cWrite
-    key_field: description
-  endpoint: /dna/intent/api/v2/global-credential
 - name: credentials_snmpv3
+  endpoint: /dna/intent/api/v2/global-credential
   import_id_attributes:
   - field: id
-  import_id_key:
-    group: snmpV3
-    key_field: description
-  endpoint: /dna/intent/api/v2/global-credential
 - name: device_detail
   endpoint: /dna/intent/api/v1/device-detail
 - name: device_replacement
+  endpoint: /dna/intent/api/v1/device-replacement
   import_id_attributes:
   - field: id
-  import_id_key:
-    field: faultyDeviceId
-  endpoint: /dna/intent/api/v1/device-replacement
 - name: dot11be_profile
+  endpoint: /dna/intent/api/v1/wirelessSettings/dot11beProfiles
   import_id_attributes:
   - field: profileName
-  endpoint: /dna/intent/api/v1/wirelessSettings/dot11beProfiles
-  import_id_key:
-    field: profileName
 - name: extended_templates
   endpoint: /api/v1/template-programmer/extendedTemplates
 - name: external_authentication
+  endpoint: /dna/system/api/v1/users/external-authentication
   import_id_attributes:
   - field: name
-  endpoint: /dna/system/api/v1/users/external-authentication
 - name: external_authentication_aaa_attribute
+  endpoint: /dna/system/api/v1/users/external-servers/aaa-attribute
   import_id_attributes:
   - field: attributeName
-  endpoint: /dna/system/api/v1/users/external-servers/aaa-attribute
-  import_id_key:
-    field: attributeName
 - name: extranet_policy
+  endpoint: /dna/intent/api/v1/sda/extranetPolicies
   import_id_attributes:
   - field: extranetPolicyName
-  endpoint: /dna/intent/api/v1/sda/extranetPolicies
 - name: fabric_authentication_profile
   endpoint: /dna/intent/api/v1/business/sda/authentication-profile
 - name: fabric_device
+  endpoint: /dna/intent/api/v1/sda/fabricDevices
   import_id_attributes:
   - field: networkDeviceId
   - field: fabricId
-  endpoint: /dna/intent/api/v1/sda/fabricDevices
-  import_id_key:
-    join:
-    - device_hostname: networkDeviceId
-  import_id_variants:
-  - import_id_key:
-      join:
-      - site_hierarchy: siteId
-      sep: ','
-    import_id_attributes:
-    - field: siteId
-    import_id_no_descend: true
 - name: fabric_l2_handoff
+  endpoint: /dna/intent/api/v1/sda/fabricDevices/layer2Handoffs
   import_id_attributes:
   - field: networkDeviceId
   - field: fabricId
   - field: id
-  endpoint: /dna/intent/api/v1/sda/fabricDevices/layer2Handoffs
-  import_id_key:
-    join:
-    - field: externalVlanId
-      prefix: vlan
-    - device_hostname: networkDeviceId
-    - field: interfaceName
-    sep: /
 - name: fabric_l2_virtual_network
+  endpoint: /dna/intent/api/v1/sda/layer2VirtualNetworks
   import_id_attributes:
   - field: fabricId
   - field: vlanName
-  endpoint: /dna/intent/api/v1/sda/layer2VirtualNetworks
-  import_id_key:
-    join:
-    - field: vlanName
-    - site_hierarchy: fabricId
-    sep: '#_#'
 - name: fabric_l3_handoff_ip_transit
+  endpoint: /dna/intent/api/v1/sda/fabricDevices/layer3Handoffs/ipTransits
   import_id_attributes:
   - field: networkDeviceId
   - field: fabricId
-  import_id_key:
-    join:
-    - device_hostname: networkDeviceId
-  endpoint: /dna/intent/api/v1/sda/fabricDevices/layer3Handoffs/ipTransits
+  - field: id
 - name: fabric_l3_handoff_ip_transits
   endpoint: /dna/intent/api/v1/sda/fabricDevices/layer3Handoffs/ipTransits
 - name: fabric_l3_handoff_sda_transit
+  endpoint: /dna/intent/api/v1/sda/fabricDevices/layer3Handoffs/sdaTransits
   import_id_attributes:
   - field: networkDeviceId
   - field: fabricId
-  endpoint: /dna/intent/api/v1/sda/fabricDevices/layer3Handoffs/sdaTransits
-  import_id_key:
-    join:
-    - device_hostname: networkDeviceId
 - name: fabric_l3_virtual_network
+  endpoint: /dna/intent/api/v1/sda/layer3VirtualNetworks
   import_id_attributes:
   - field: virtualNetworkName
-  endpoint: /dna/intent/api/v1/sda/layer3VirtualNetworks
-  import_id_key:
-    field: virtualNetworkName
 - name: fabric_multicast_replication_mode
+  endpoint: /dna/intent/api/v1/sda/multicast
   import_id_attributes:
   - field: fabricId
-  - field: fabricId
-  endpoint: /dna/intent/api/v1/sda/multicast
-  import_id_key:
-    join:
-    - site_hierarchy: fabricId
-    sep: ','
+  - field: id
 - name: fabric_multicast_virtual_network
   endpoint: /dna/intent/api/v1/sda/multicast/virtualNetworks
-  import_id_key:
-    join:
-    - site_hierarchy: fabricId
-    sep: ','
-  import_id_attributes:
-  - field: fabricId
 - name: fabric_port_assignments
   endpoint: /dna/intent/api/v1/sda/portAssignments
   import_id_attributes:
   - field: fabricId
   - field: networkDeviceId
-  import_id_key:
-    join:
-    - device_hostname: networkDeviceId
 - name: fabric_port_channel
+  endpoint: /dna/intent/api/v1/sda/portChannels
   import_id_attributes:
   - field: networkDeviceId
   - field: fabricId
   - field: id
-  endpoint: /dna/intent/api/v1/sda/portChannels
-  import_id_key:
-    join:
-    - device_hostname: networkDeviceId
-    - field: portChannelName
-      remove_prefix: Port-channel
-    sep: /
 - name: fabric_provision_device
   endpoint: /dna/intent/api/v1/sda/provisionDevices
   import_id_attributes:
   - field: siteId
-  import_id_key:
-    join:
-    - site_hierarchy: siteId
-  import_id_variants:
-  - import_id_key:
-      join:
-      - device_hostname: networkDeviceId
-      sep: ','
-    import_id_attributes:
-    - field: siteId
-    - field: networkDeviceId
 - name: fabric_site
+  endpoint: /dna/intent/api/v1/sda/fabricSites?limit=500
   import_id_attributes:
   - field: id
-  import_id_key:
-    join:
-    - site_hierarchy: siteId
-  endpoint: /dna/intent/api/v1/sda/fabricSites?limit=500
 - name: fabric_sites
   endpoint: /dna/intent/api/v1/sda/fabricSites
 - name: fabric_virtual_network
   endpoint: /dna/intent/api/v1/virtual-network
 - name: fabric_zone
+  endpoint: /dna/intent/api/v1/sda/fabricZones
   import_id_attributes:
   - field: siteId
-  endpoint: /dna/intent/api/v1/sda/fabricZones
-  import_id_key:
-    join:
-    - site_hierarchy: siteId
 - name: floor
-  import_id_attributes:
-  - field: unitsOfMeasure
-  - field: id
   endpoint: /dna/intent/api/v2/floors
   children:
   - name: planned_access_point_position
+    endpoint: /plannedAccessPointPositions
     import_id_attributes:
     - source: parent
     - field: name
-    endpoint: /plannedAccessPointPositions
-    import_id_key:
-      join:
-      - site_hierarchy: floorId
-      - field: name
-      sep: /
-  import_id_key:
-    join:
-    - site_hierarchy: id
-    sep: ','
+  import_id_attributes:
+  - field: unitsOfMeasure
+  - field: id
 - name: image
   endpoint: /dna/intent/api/v1/image/importation
 - name: ip_pool
-  import_id_key:
-    field: ipPoolName
   endpoint: /api/v2/ippool?limit=500
   import_id_attributes:
   - field: id
 - name: ip_pool_reservation
-  import_id_key:
-    field: groupName
-  endpoint:
-    /dna/intent/api/v1/reserve-ip-subpool?ignoreInheritedGroups=true&limit=500
+  endpoint: /dna/intent/api/v1/reserve-ip-subpool?ignoreInheritedGroups=true&limit=500
   import_id_attributes:
   - field: id
 - name: ip_pools
   endpoint: /dna/intent/api/v1/ipam/globalIpAddressPools
 - name: lan_automation
+  endpoint: /dna/intent/api/v1/lan-automation/status
   import_id_attributes:
   - field: id
-  endpoint: /dna/intent/api/v1/lan-automation/status
 - name: network
   endpoint: /api/v1/commonsetting/global
 - name: network_devices
@@ -333,40 +191,31 @@
   endpoint: /api/v1/siteprofile?populated=true
   import_id_attributes:
   - field: siteProfileUuid
-  import_id_key:
-    field: name
 - name: network_profile_for_sites
   endpoint: /dna/intent/api/v1/networkProfilesForSites
   children:
   - name: network_profile_site_assignment
     endpoint: /siteAssignments
 - name: pnp_device
+  endpoint: /dna/intent/api/v1/onboarding/pnp-device
   import_id_attributes:
   - field: serialNumber
-  endpoint: /dna/intent/api/v1/onboarding/pnp-device
 - name: power_profile
+  endpoint: /dna/intent/api/v1/wirelessSettings/powerProfiles
   import_id_attributes:
   - field: profileName
-  endpoint: /dna/intent/api/v1/wirelessSettings/powerProfiles
-  import_id_key:
-    field: profileName
 - name: project
+  endpoint: /dna/intent/api/v2/template-programmer/project
   import_id_attributes:
   - field: id
-  endpoint: /dna/intent/api/v2/template-programmer/project
-  import_id_key:
-    field: name
 - name: qos_policy_setting
+  endpoint: /dna/intent/api/v1/qosPolicySetting
   import_id_attributes:
   - field: name
-  endpoint: /dna/intent/api/v1/qosPolicySetting
 - name: role
+  endpoint: /dna/system/api/v1/roles
   import_id_attributes:
   - field: roleId
-  endpoint: /dna/system/api/v1/roles
-  import_id_key:
-    group: roles
-    key_field: role
 - name: site
   endpoint: /dna/intent/api/v1/sites
   children:
@@ -374,212 +223,113 @@
     endpoint: /aaaSettings?_inherited=true
     import_id_attributes:
     - source: parent
-    import_id_key:
-      join:
-      - site_hierarchy: id
   - name: banner_settings
     endpoint: /bannerSettings
-    import_id_key:
-      join:
-      - site_hierarchy: id
-    import_id_attributes:
-    - source: parent
   - name: dhcp_settings
     endpoint: /dhcpSettings
-    import_id_key:
-      join:
-      - site_hierarchy: id
-    import_id_attributes:
-    - source: parent
   - name: dns_settings
     endpoint: /dnsSettings
-    import_id_key:
-      join:
-      - site_hierarchy: id
-    import_id_attributes:
-    - source: parent
   - name: ntp_settings
     endpoint: /ntpSettings
-    import_id_key:
-      join:
-      - site_hierarchy: id
-    import_id_attributes:
-    - source: parent
   - name: telemetry_settings
     endpoint: /telemetrySettings?_inherited=true
-    import_id_key:
-      join:
-      - site_hierarchy: id
-    import_id_attributes:
-    - source: parent
   - name: timezone_settings
     endpoint: /timeZoneSettings
-    import_id_key:
-      join:
-      - site_hierarchy: id
-    import_id_attributes:
-    - source: parent
   - name: wireless_ssid
     endpoint: /wirelessSettings/ssids
     import_id_attributes:
     - source: parent
     - field: id
-    import_id_key:
-      field: ssid
 - name: site_settings
   endpoint: /api/v1/commonsetting/global
 - name: sp_profile
+  endpoint: /dna/intent/api/v2/service-provider
   import_id_attributes:
   - field: spProfileName
-  endpoint: /dna/intent/api/v2/service-provider
-  import_id_key:
-    field: spProfileName
 - name: tag
-  import_id_attributes:
-  - field: name
   endpoint: /dna/intent/api/v1/tag
   children:
   - name: assign_devices_to_tag
+    endpoint: /member?memberType=networkdevice
     import_id_attributes:
     - source: parent
-    endpoint: /member?memberType=networkdevice
-  import_id_key:
-    field: name
+  import_id_attributes:
+  - field: name
 - name: template
+  endpoint: /dna/intent/api/v2/template-programmer/template
   import_id_attributes:
   - field: projectId
   - field: id
-  endpoint: /dna/intent/api/v2/template-programmer/template
-  import_id_key:
-    field: name
 - name: template_version
+  endpoint: /dna/intent/api/v1/template-programmer/template/version
   import_id_attributes:
   - field: templateId
-  endpoint: /dna/intent/api/v1/template-programmer/template/version
-  import_id_key:
-    field: name
 - name: transit_network
+  endpoint: /dna/intent/api/v1/sda/transitNetworks
   import_id_attributes:
   - field: name
-  endpoint: /dna/intent/api/v1/sda/transitNetworks
-  import_id_key:
-    field: name
 - name: update_authentication_profile
+  endpoint: /dna/intent/api/v1/sda/authenticationProfiles
   import_id_attributes:
   - field: fabricId
   - field: authenticationProfileName
-  endpoint: /dna/intent/api/v1/sda/authenticationProfiles
-  import_id_key:
-    join:
-    - site_hierarchy: fabricId
-    - field: authenticationProfileName
-    sep: '#_#'
 - name: update_device_management_address
   endpoint: /dna/intent/api/v1/network-device
 - name: user
+  endpoint: /dna/system/api/v1/user
   import_id_attributes:
   - field: userId
-  endpoint: /dna/system/api/v1/user
-  import_id_key:
-    group: users
-    key_field: username
 - name: virtual_network_to_fabric_site
+  endpoint: /dna/intent/api/v1/sda/layer3VirtualNetworks
   import_id_attributes:
   - field: virtualNetworkName
   - field: fabricIds
-  endpoint: /dna/intent/api/v1/sda/layer3VirtualNetworks
-  import_id_key:
-    join:
-    - field: virtualNetworkName
-    - site_hierarchy: fabricIds
-    sep: '#_#'
-  import_id_expand: fabricIds
 - name: vlanToSsids
   endpoint: /dna/intent/api/v1/sda/fabrics/%v/vlanToSsids
-  import_id_key:
-    join:
-    - site_hierarchy: siteId
-  import_id_no_descend: true
-  import_id_attributes:
-  - field: siteId
 - name: wireless_cleanair_configuration
+  endpoint: /dna/intent/api/v1/featureTemplates/wireless/cleanAirConfigurations
   import_id_attributes:
   - field: id
-  endpoint: /dna/intent/api/v1/featureTemplates/wireless/cleanAirConfigurations
-  import_id_key:
-    field: designName
 - name: wireless_controller_primary_managed_ap_locations
   endpoint: /dna/intent/api/v1/wirelessControllers/%v/primaryManagedApLocations
   expected_status_codes:
   - 400
 - name: wireless_controller_secondary_managed_ap_locations
-  endpoint:
-    /dna/intent/api/v1/wirelessControllers/%v/secondaryManagedApLocations
+  endpoint: /dna/intent/api/v1/wirelessControllers/%v/secondaryManagedApLocations
   expected_status_codes:
   - 400
 - name: wireless_enterprise_ssid
   endpoint: /dna/intent/api/v1/enterprise-ssid
-  import_id_key:
-    field: ssidName
 - name: wireless_fabric_multicast
   endpoint: /dna/intent/api/v1/sda/fabrics/%v/wirelessMulticast
-  import_id_key:
-    join:
-    - site_hierarchy: fabricId
-    sep: ','
-  import_id_attributes:
-  - field: fabricId
-  import_id_no_descend: true
 - name: wireless_interface
+  endpoint: /dna/intent/api/v1/wirelessSettings/interfaces
   import_id_attributes:
   - field: interfaceName
-  endpoint: /dna/intent/api/v1/wirelessSettings/interfaces
-  import_id_key:
-    field: interfaceName
 - name: wireless_preauth_acl
-  import_id_key:
-    field: aclName
   endpoint: /dna/intent/api/v1/wirelessSettings/preAuthAcls
-  import_id_attributes:
-  - field: id
 - name: wireless_profile
-  import_id_attributes:
-  - field: wirelessProfileName
   endpoint: /dna/intent/api/v1/wirelessProfiles
   children:
   - name: wireless_profile_policy_tag
-    import_id_attributes:
-    - source: parent
-    - field: policyTagId
-    - field: policyTagId
-    import_id_key:
-      join:
-      - parent_name: wireless_profile
-      - field: policyTagName
-      sep: /
     endpoint: /policyTags
-  - name: wireless_profile_site_tag
     import_id_attributes:
     - source: parent
-    - field: siteTagId
-    - field: siteTagId
-    import_id_key:
-      join:
-      - parent_name: wireless_profile
-      - field: siteTagName
-      sep: /
+    - source: parent
+    - field: policyTagId
+  - name: wireless_profile_site_tag
     endpoint: /siteTags
-  import_id_key:
-    field: wirelessProfileName
+    import_id_attributes:
+    - source: parent
+    - source: parent
+    - field: siteTagId
+  import_id_attributes:
+  - field: wirelessProfileName
 - name: wireless_rf_profile
+  endpoint: /dna/intent/api/v1/wirelessSettings/rfProfiles
   import_id_attributes:
   - field: rfProfileName
-  endpoint: /dna/intent/api/v1/wirelessSettings/rfProfiles
-  import_id_key:
-    field: rfProfileName
 - name: wireless_rrm_fra_configuration
+  endpoint: /dna/intent/api/v1/featureTemplates/wireless/rrmFraConfigurations
   import_id_attributes:
   - field: id
-  endpoint: /dna/intent/api/v1/featureTemplates/wireless/rrmFraConfigurations
-  import_id_key:
-    field: designName
