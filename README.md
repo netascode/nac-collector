@@ -49,8 +49,10 @@ Options:
   -e, --endpoints-file TEXT
                         Path to the endpoints YAML file
   --exclude-endpoint TEXT
-                        Name of an endpoint definition to skip (repeatable,
-                        controller-based solutions only)
+                        Name of an endpoint definition (top-level or child) to
+                        skip (repeatable, controller-based solutions only)
+  --exclude-file TEXT   Path to a YAML file listing endpoint names to skip
+                        (controller-based solutions only)
   -t, --timeout INTEGER
                         Request timeout in seconds [default: 30]
   -o, --output TEXT     Path to the output ZIP file [default: nac-collector.zip]
@@ -121,9 +123,39 @@ nac-collector -s ISE --username USERNAME --password PASSWORD --url URL -v DEBUG 
 nac-collector -s ISE --exclude-endpoint endpoint
 ```
 
-`--exclude-endpoint` matches the `name` of an entry in the endpoints definition and also skips
-its children. It is applied after the endpoint definitions are resolved, so it works with the
-packaged definitions, `--endpoints-file` and `--fetch-latest`. Unknown names log a warning.
+`--exclude-endpoint` matches the `name` of an entry in the endpoints definition at any level:
+top-level entries (which also removes their children) or child entries on their own. A name
+that appears under several parents is removed from all of them. It is
+applied after the endpoint definitions are resolved, so it works with the packaged definitions,
+`--endpoints-file` and `--fetch-latest`.
+
+A name that matches nothing aborts the run with exit code 1, so a typo cannot silently collect
+the expensive endpoint.
+
+For a longer or reusable list, put the names in a YAML file and pass `--exclude-file`. It is
+combined with any `--exclude-endpoint` options. For example, to collect from a Network Access
+node without the TACACS / device administration objects:
+
+```yaml
+# exclude-tacacs.yaml
+- allowed_protocols_tacacs
+- device_admin_authorization_global_exception_rule
+- device_admin_authorization_global_exception_rule_update_ranks
+- device_admin_condition
+- device_admin_policy_set
+- device_admin_policy_set_update_ranks
+- device_admin_time_and_date_condition
+- tacacs_command_set
+- tacacs_profile
+```
+
+```sh
+nac-collector -s ISE --exclude-file exclude-tacacs.yaml
+```
+
+> **Note:** Downstream imports read specific collected endpoints. Excluding an endpoint that an
+> import depends on (for example `network_devices` or `fabric_site` for Catalyst Center)
+> leaves that part of the import empty, without an error.
 
 ### Catalyst Center
 
