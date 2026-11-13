@@ -19,6 +19,8 @@
     split_by_network: true
   - name: appliance_organization_security_intrusion
     endpoint: /appliance/security/intrusion
+  - name: appliance_routing_vrfs_settings
+    endpoint: /appliance/routing/vrfs/settings
   - name: appliance_sdwan_internet_policies
     endpoint: /appliance/sdwan/internetPolicies
     split_by_network: true
@@ -440,6 +442,10 @@
     endpoint: /samlRoles
   - name: organization_snmp
     endpoint: /snmp
+  - name: routing_vrf
+    has_own_id: true
+    id_name: vrfId
+    endpoint: /routing/vrfs
   - name: sm_admin_role
     has_own_id: true
     id_name: roleId

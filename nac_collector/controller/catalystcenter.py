@@ -4,7 +4,10 @@ import logging
 import os
 import re
 import threading
+from collections.abc import Callable
+from functools import partial
 from typing import Any
+from urllib.parse import quote
 
 import httpx
 from rich.progress import (
@@ -173,6 +176,7 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
         Returns:
             dict: The updated endpoint dictionary with processed data.
         """
+        first_new_entry = len(endpoint_dict[endpoint["name"]])
         endpoint_key = endpoint.get("endpoint")
         if endpoint_key and endpoint_key in self.id_lookup:
             new_endpoint = self.id_lookup[endpoint_key]["target_endpoint"]
@@ -186,9 +190,8 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
 
         # License API returns a list of dictionaries
         elif isinstance(data, list):
-            endpoint_dict[endpoint["name"]].append(
-                {"data": data, "endpoint": new_endpoint}
-            )
+            entry = {"data": data, "endpoint": new_endpoint}
+            endpoint_dict[endpoint["name"]].append(entry)
         elif data and isinstance(data.get("response"), dict):
             response_data = data.get("response")
             if response_data:
@@ -198,14 +201,11 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
                         and self.mappings[endpoint["name"]] == k
                     ):
                         for i in v:
-                            endpoint_dict[endpoint["name"]].append(
-                                {
-                                    "data": i,
-                                    "endpoint": new_endpoint
-                                    + "/"
-                                    + self.get_id_value(i),
-                                }
-                            )
+                            child_entry = {
+                                "data": i,
+                                "endpoint": new_endpoint + "/" + self.get_id_value(i),
+                            }
+                            endpoint_dict[endpoint["name"]].append(child_entry)
                     else:
                         elem = {"data": v, "endpoint": new_endpoint, "name": k}
                         if id_ is not None:
@@ -239,14 +239,69 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
             response_items = data.get("response")
             if response_items:
                 for i in response_items:
-                    endpoint_dict[endpoint["name"]].append(
-                        {
-                            "data": i,
-                            "endpoint": new_endpoint + "/" + self.get_id_value(i),
-                        }
-                    )
+                    item_entry = {
+                        "data": i,
+                        "endpoint": new_endpoint + "/" + self.get_id_value(i),
+                    }
+                    endpoint_dict[endpoint["name"]].append(item_entry)
 
-        return endpoint_dict  # Return the processed endpoint dictionary
+        for entry in endpoint_dict[endpoint["name"]][first_new_entry:]:
+            self.attach_import_id_parts(endpoint, entry, id_)
+        return endpoint_dict
+
+    @staticmethod
+    def build_terraform_import_ids(
+        endpoint: dict[str, Any],
+        obj: dict[str, Any],
+        parent_id: str | None,
+    ) -> list[str] | None:
+        """Read ordered provider ID parts from one object and its request context.
+
+        Group expansion and Terraform module keys belong to the import middleware.
+        Missing or non-scalar components leave the identity for that middleware.
+        """
+        recipe = endpoint.get("import_id_attributes")
+        if not recipe:
+            return None
+        parts = []
+        for part in recipe:
+            value = (
+                parent_id
+                if part.get("source") == "parent"
+                else obj.get(part.get("field"))
+            )
+            if not isinstance(value, str | int) or isinstance(value, bool):
+                return None
+            parts.append(CiscoClientCATALYSTCENTER._sanitize_lookup_value(str(value)))
+        return parts
+
+    @staticmethod
+    def attach_import_id_parts(
+        endpoint: dict[str, Any],
+        entry: dict[str, Any],
+        parent_id: str | None,
+    ) -> None:
+        """Attach provider IDs beside data without changing its shape.
+
+        Object keys are JSON pointers relative to entry['data']: '' is a single
+        object and '/0', '/1', ... identify list members. The recipe identifies
+        the provider ID format so middleware can distinguish bulk variants.
+        """
+        recipe = endpoint.get("import_id_attributes")
+        if not recipe:
+            return
+        data = entry.get("data")
+        objects = enumerate(data) if isinstance(data, list) else [(None, data)]
+        values = {}
+        for index, obj in objects:
+            if not isinstance(obj, dict):
+                continue
+            parts = CiscoClientCATALYSTCENTER.build_terraform_import_ids(
+                endpoint, obj, parent_id
+            )
+            if parts is not None:
+                values["" if index is None else f"/{index}"] = parts
+        entry["terraform_import_id_parts"] = {"attributes": recipe, "objects": values}
 
     def fetch_data_alternate(self, endpoint: dict[str, Any]) -> dict[str, Any] | None:
         """
@@ -298,6 +353,32 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
                 for instance in group.get(nested_key, [])
                 if isinstance(instance, dict)
             ]
+        source_filter = lookup_config.get("source_filter")
+        if source_filter and isinstance(look_data, list):
+            look_data = [
+                i
+                for i in look_data
+                if isinstance(i, dict) and self._matches_filter(i, source_filter)
+            ]
+        membership_filter = lookup_config.get("source_membership_filter")
+        if membership_filter and isinstance(look_data, list):
+            allowed_values = self._fetch_membership_values(membership_filter)
+            if allowed_values is None:
+                return None
+            source_field = membership_filter["source_field"]
+            look_data = [
+                i
+                for i in look_data
+                if isinstance(i, dict) and i.get(source_field) in allowed_values
+            ]
+        any_filters = lookup_config.get("source_filter_any")
+        if any_filters and isinstance(look_data, list):
+            matchers = self._build_any_matchers(any_filters)
+            look_data = [
+                i
+                for i in look_data
+                if isinstance(i, dict) and any(match(i) for match in matchers)
+            ]
         if endpoint_key in self.id_lookup:
             source_key = self.id_lookup[endpoint_key]["source_key"]
             id_list = [
@@ -309,11 +390,15 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
             id_list = []
         data_list = []
         for id_ in id_list:
-            id_ = self._sanitize_id(str(id_))
+            # Lookup values may be names (e.g. siteNameHierarchy) whose spaces are
+            # significant, so keep them and URL-encode instead of stripping them.
+            id_ = self._sanitize_lookup_value(str(id_))
             lookup_endpoint = self.id_lookup[endpoint_key]["target_endpoint"].replace(
-                "%v", id_
+                "%v", quote(id_, safe="/")
             )
-            data = self.fetch_data_pagination(lookup_endpoint)
+            data = self.fetch_data_pagination(
+                lookup_endpoint, endpoint.get("expected_status_codes", ())
+            )
             if isinstance(data, dict) and data.get("response"):
                 data = data["response"]
             if (
@@ -333,6 +418,129 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
             data_list.append(data)
         data = {"response": data_list}
         return data
+
+    @staticmethod
+    def _matches_filter(item: dict[str, Any], source_filter: dict[str, Any]) -> bool:
+        """
+        Check whether a source item matches every field in a lookup's source_filter.
+
+        Parameters:
+            item (dict): A single item from the source endpoint response.
+            source_filter (dict): Mapping of field name to an allowed value, or a
+                list of allowed values.
+
+        Returns:
+            bool: True if every filtered field holds an allowed value.
+        """
+        for field, allowed in source_filter.items():
+            allowed_values = allowed if isinstance(allowed, list) else [allowed]
+            if item.get(field) not in allowed_values:
+                return False
+        return True
+
+    def _build_any_matchers(
+        self, any_filters: list[dict[str, Any]]
+    ) -> list[Callable[[dict[str, Any]], bool]]:
+        """
+        Build one predicate per condition in a lookup's source_filter_any.
+
+        Each condition holds either a 'source_filter' or a 'source_membership_filter'.
+        A membership condition whose endpoint cannot be fetched matches nothing, so
+        the remaining conditions still apply.
+
+        Parameters:
+            any_filters (list): The source_filter_any conditions.
+
+        Returns:
+            list: Predicates that each take a source item and return a bool.
+        """
+        matchers: list[Callable[[dict[str, Any]], bool]] = []
+        for condition in any_filters:
+            if "source_filter" in condition:
+                matchers.append(
+                    partial(
+                        self._matches_filter, source_filter=condition["source_filter"]
+                    )
+                )
+            elif "source_membership_filter" in condition:
+                membership = condition["source_membership_filter"]
+                allowed = self._fetch_membership_values(membership) or set()
+                matchers.append(
+                    partial(
+                        self._matches_membership,
+                        field=membership["source_field"],
+                        allowed=allowed,
+                    )
+                )
+        return matchers
+
+    @staticmethod
+    def _matches_membership(
+        item: dict[str, Any], field: str, allowed: set[Any]
+    ) -> bool:
+        """
+        Check whether a source item's field value is in an allowed set.
+        """
+        return item.get(field) in allowed
+
+    def _fetch_membership_values(
+        self, membership_filter: dict[str, Any]
+    ) -> set[Any] | None:
+        """
+        Collect the values a source item must match to pass a source_membership_filter.
+
+        Parameters:
+            membership_filter (dict): The filter config with 'membership_endpoint'
+                (queried for the allowed items) and 'membership_key' (the field
+                read from them). If 'membership_source_endpoint' and
+                'membership_source_key' are set, membership_endpoint contains a
+                '%v' placeholder and is queried once per value of
+                membership_source_key in the membership_source_endpoint response.
+
+        Returns:
+            set or None: The allowed values, or None if the endpoint could not be fetched.
+        """
+        membership_endpoint = membership_filter["membership_endpoint"]
+        membership_source = membership_filter.get("membership_source_endpoint")
+        if membership_source:
+            source_data = self.fetch_data_pagination(membership_source)
+            if not isinstance(source_data, dict) or "response" not in source_data:
+                logger.warning(
+                    "Could not fetch membership source endpoint: %s",
+                    membership_source,
+                )
+                return None
+            source_key = membership_filter["membership_source_key"]
+            endpoints = [
+                membership_endpoint.replace(
+                    "%v", quote(self._sanitize_lookup_value(str(i[source_key])))
+                )
+                for i in source_data["response"]
+                if isinstance(i, dict) and source_key in i
+            ]
+        else:
+            endpoints = [membership_endpoint]
+
+        membership_key = membership_filter["membership_key"]
+        values: set[Any] = set()
+        fetched_any = False
+        for url in endpoints:
+            membership_data = self.fetch_data_pagination(url)
+            if (
+                not isinstance(membership_data, dict)
+                or "response" not in membership_data
+            ):
+                logger.warning("Could not fetch membership filter endpoint: %s", url)
+                continue
+            fetched_any = True
+            values.update(
+                i[membership_key]
+                for i in membership_data["response"]
+                if isinstance(i, dict) and membership_key in i
+            )
+        if endpoints and not fetched_any:
+            return None
+        return values
 
     def get_from_endpoints_data(
         self, endpoints_data: list[dict[str, Any]]
@@ -398,6 +606,14 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
         """
         return re.sub(r"[\x00-\x1f\x7f-\x9f\s]", "", value)
 
+    @staticmethod
+    def _sanitize_lookup_value(value: str) -> str:
+        """
+        Strip non-printable characters and surrounding whitespace from a lookup
+        value, preserving internal spaces.
+        """
+        return re.sub(r"[\x00-\x1f\x7f-\x9f]", "", value).strip()
+
     def process_endpoint(self, endpoint: dict[str, Any]) -> dict[str, Any] | None:
         with self.lock:
             existing = self.db.get(
@@ -424,7 +640,9 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
             if data is None:
                 return None
         else:
-            fetched_data = self.fetch_data_pagination(endpoint["endpoint"])
+            fetched_data = self.fetch_data_pagination(
+                endpoint["endpoint"], endpoint.get("expected_status_codes", ())
+            )
             if isinstance(fetched_data, dict):
                 data = fetched_data
             else:
@@ -481,7 +699,10 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
                     )
 
                     joined_endpoint = f"{endpoint['endpoint']}/{sanitized_parent_id}{children_endpoint['endpoint']}"
-                    data = self.fetch_data_pagination(joined_endpoint)
+                    data = self.fetch_data_pagination(
+                        joined_endpoint,
+                        children_endpoint.get("expected_status_codes", ()),
+                    )
                     child_dict = self.process_endpoint_data(
                         children_endpoint, child_dict, data, parent_id
                     )
