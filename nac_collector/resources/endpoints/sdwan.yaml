@@ -308,6 +308,9 @@
     endpoint: /wirelesslan
 - name: sig_security_feature_profile
   endpoint: /v1/feature-profile/sdwan/sig-security
+  children:
+  - name: sig
+    endpoint: /sig
 - name: site_list_policy_object
   endpoint: /template/policy/list/site/
 - name: sla_class_policy_object
