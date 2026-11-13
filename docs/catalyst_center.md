@@ -125,3 +125,37 @@ if endpoint_key and endpoint_key in self.id_lookup:
     new_endpoint = self.id_lookup[endpoint_key]["target_endpoint"]
 ```
 And then if so, we use `fetch_data_alternate` to query the source_endpoint for data and attach it to our target endpoint.
+
+## Terraform import metadata
+
+The collector records ordered provider ID components, following Meraki's division
+of responsibilities. `import_id_attributes` on an endpoint selects response fields
+or `source: parent` values; the provider definition generator supplies these
+recipes and collection overrides can adjust response-field names.
+
+Each collected envelope can carry `terraform_import_id_parts` alongside its
+unchanged `data` and `children`. For example:
+
+```json
+{
+  "data": [{"projectId": "project-1", "id": "template-1", "name": "Campus"}],
+  "terraform_import_id_parts": {
+    "attributes": [{"field": "projectId"}, {"field": "id"}],
+    "objects": {"/0": ["project-1", "template-1"]}
+  }
+}
+```
+
+`objects` uses JSON pointers relative to `data`: `""` identifies a single object;
+`"/0"`, `"/1"`, etc. identify list members. Each ID stays associated with its
+object without reshaping API responses. The attached recipe identifies the ID
+format so downstream code can distinguish individual and bulk resources. Only
+immediate objects are processed. Missing/non-scalar ID components and nested
+groups are left for middleware; the collector does not flatten them for import.
+
+The middleware beside `.ci/import.py` in `nac-catalystcenter-terraform` resolves
+site hierarchies, hostnames, grouped resources and module instance keys. It
+consumes these provider parts when the recipe matches, then emits the existing
+`terraform_import_ids` map for the import script. It also supports older captures
+without the new field. Collector endpoint generation does not emit module-key
+recipes, and collection no longer builds the final keyed import map.

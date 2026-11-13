@@ -166,6 +166,10 @@ class GithubRepoWrapper:
                                     id_name = self.get_id_attr_name(data)
                                     if has_own_id and id_name is not None:
                                         entry["id_name"] = id_name
+                                if self.solution == "catalystcenter":
+                                    recipe = self.catc_import_id_attributes(data)
+                                    if recipe:
+                                        entry["import_id_attributes"] = recipe
                                 endpoints_list.append(entry)
 
                     # for SDWAN feature_templates
@@ -235,6 +239,46 @@ class GithubRepoWrapper:
             return None
 
         return id_name if isinstance(id_name, str) else None
+
+    @staticmethod
+    def catc_import_id_attributes(
+        provider_definition: dict[str, Any],
+    ) -> list[dict[str, str]] | None:
+        """Derive provider import ID components, in provider attribute order.
+
+        References without response fields use the request's parent ID. Query
+        parameters and explicit IDs use response fields. The provider appends a
+        synthetic ID unless id_from_attribute or import_no_id suppresses it.
+        Module instance keys are deliberately not inferred from match_id.
+        """
+        if provider_definition.get("no_import"):
+            return None
+        recipe: list[dict[str, str]] = []
+        for attr in provider_definition.get("attributes", []):
+            is_query = attr.get("query_param") or attr.get("get_query_param")
+            if not (is_query or attr.get("reference") or attr.get("id")):
+                continue
+            if (
+                attr.get("reference")
+                and not is_query
+                and not attr.get("response_model_name")
+            ):
+                recipe.append({"source": "parent"})
+            else:
+                field = attr.get("response_model_name") or attr.get("model_name")
+                if isinstance(field, str):
+                    recipe.append({"field": field})
+        if not (
+            provider_definition.get("id_from_attribute")
+            or provider_definition.get("import_no_id")
+        ):
+            recipe.append(
+                {
+                    "field": provider_definition.get("id_from_query_path_attribute")
+                    or "id"
+                }
+            )
+        return recipe or None
 
     def parent_children(
         self, endpoints_list: list[dict[str, str]]

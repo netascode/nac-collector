@@ -1,7 +1,17 @@
+- endpoint: /dna/intent/api/v2/floors
+  source_endpoint: /dna/intent/api/v1/sites?type=floor
+  source_key: id
+  target_endpoint: /dna/intent/api/v2/floors/%v
+  target_key: id
+- endpoint: /dna/intent/api/v1/sda/fabrics/%v/wirelessMulticast
+  source_endpoint: /dna/intent/api/v1/sda/fabricSites?limit=500
+  source_key: id
+  target_endpoint: /dna/intent/api/v1/sda/fabrics/%v/wirelessMulticast
+  target_key: fabricId
 - endpoint: /dna/intent/api/v1/sda/fabricDevices
   source_endpoint: /dna/intent/api/v1/sda/fabricSites?limit=500
   additional_source_endpoints:
-    - /dna/intent/api/v1/sda/fabricZones?limit=500
+  - /dna/intent/api/v1/sda/fabricZones?limit=500
   source_key: id
   target_endpoint: /dna/intent/api/v1/sda/fabricDevices?fabricId=%v
   target_key: siteId

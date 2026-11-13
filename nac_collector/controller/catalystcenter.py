@@ -176,6 +176,7 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
         Returns:
             dict: The updated endpoint dictionary with processed data.
         """
+        first_new_entry = len(endpoint_dict[endpoint["name"]])
         endpoint_key = endpoint.get("endpoint")
         if endpoint_key and endpoint_key in self.id_lookup:
             new_endpoint = self.id_lookup[endpoint_key]["target_endpoint"]
@@ -189,9 +190,8 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
 
         # License API returns a list of dictionaries
         elif isinstance(data, list):
-            endpoint_dict[endpoint["name"]].append(
-                {"data": data, "endpoint": new_endpoint}
-            )
+            entry = {"data": data, "endpoint": new_endpoint}
+            endpoint_dict[endpoint["name"]].append(entry)
         elif data and isinstance(data.get("response"), dict):
             response_data = data.get("response")
             if response_data:
@@ -201,14 +201,11 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
                         and self.mappings[endpoint["name"]] == k
                     ):
                         for i in v:
-                            endpoint_dict[endpoint["name"]].append(
-                                {
-                                    "data": i,
-                                    "endpoint": new_endpoint
-                                    + "/"
-                                    + self.get_id_value(i),
-                                }
-                            )
+                            child_entry = {
+                                "data": i,
+                                "endpoint": new_endpoint + "/" + self.get_id_value(i),
+                            }
+                            endpoint_dict[endpoint["name"]].append(child_entry)
                     else:
                         elem = {"data": v, "endpoint": new_endpoint, "name": k}
                         if id_ is not None:
@@ -242,14 +239,69 @@ class CiscoClientCATALYSTCENTER(CiscoClientController):
             response_items = data.get("response")
             if response_items:
                 for i in response_items:
-                    endpoint_dict[endpoint["name"]].append(
-                        {
-                            "data": i,
-                            "endpoint": new_endpoint + "/" + self.get_id_value(i),
-                        }
-                    )
+                    item_entry = {
+                        "data": i,
+                        "endpoint": new_endpoint + "/" + self.get_id_value(i),
+                    }
+                    endpoint_dict[endpoint["name"]].append(item_entry)
 
-        return endpoint_dict  # Return the processed endpoint dictionary
+        for entry in endpoint_dict[endpoint["name"]][first_new_entry:]:
+            self.attach_import_id_parts(endpoint, entry, id_)
+        return endpoint_dict
+
+    @staticmethod
+    def build_terraform_import_ids(
+        endpoint: dict[str, Any],
+        obj: dict[str, Any],
+        parent_id: str | None,
+    ) -> list[str] | None:
+        """Read ordered provider ID parts from one object and its request context.
+
+        Group expansion and Terraform module keys belong to the import middleware.
+        Missing or non-scalar components leave the identity for that middleware.
+        """
+        recipe = endpoint.get("import_id_attributes")
+        if not recipe:
+            return None
+        parts = []
+        for part in recipe:
+            value = (
+                parent_id
+                if part.get("source") == "parent"
+                else obj.get(part.get("field"))
+            )
+            if not isinstance(value, str | int) or isinstance(value, bool):
+                return None
+            parts.append(CiscoClientCATALYSTCENTER._sanitize_lookup_value(str(value)))
+        return parts
+
+    @staticmethod
+    def attach_import_id_parts(
+        endpoint: dict[str, Any],
+        entry: dict[str, Any],
+        parent_id: str | None,
+    ) -> None:
+        """Attach provider IDs beside data without changing its shape.
+
+        Object keys are JSON pointers relative to entry['data']: '' is a single
+        object and '/0', '/1', ... identify list members. The recipe identifies
+        the provider ID format so middleware can distinguish bulk variants.
+        """
+        recipe = endpoint.get("import_id_attributes")
+        if not recipe:
+            return
+        data = entry.get("data")
+        objects = enumerate(data) if isinstance(data, list) else [(None, data)]
+        values = {}
+        for index, obj in objects:
+            if not isinstance(obj, dict):
+                continue
+            parts = CiscoClientCATALYSTCENTER.build_terraform_import_ids(
+                endpoint, obj, parent_id
+            )
+            if parts is not None:
+                values["" if index is None else f"/{index}"] = parts
+        entry["terraform_import_id_parts"] = {"attributes": recipe, "objects": values}
 
     def fetch_data_alternate(self, endpoint: dict[str, Any]) -> dict[str, Any] | None:
         """
