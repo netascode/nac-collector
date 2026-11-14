@@ -489,3 +489,113 @@ class TestSolutionEnum:
 
         for expected in expected_solutions:
             assert expected in actual_solutions
+
+
+def _ise_kwargs(**overrides):
+    kwargs = {
+        "solution": Solution.ISE,
+        "username": "ise_user",
+        "password": "ise_pass",
+        "url": "https://ise-server.com",
+        "devices_file": None,
+        "verbosity": LogLevel.WARNING,
+        "fetch_latest": False,
+        "endpoints_file": None,
+        "timeout": 30,
+        "output": None,
+        "version": None,
+    }
+    kwargs.update(overrides)
+    return kwargs
+
+
+class TestExcludeOptions:
+    ENDPOINTS = [
+        {"name": "endpoint", "endpoint": "/ers/config/endpoint"},
+        {"name": "tacacs_profile", "endpoint": "/ers/config/tacacsprofile"},
+        {"name": "internal_user", "endpoint": "/ers/config/internaluser"},
+    ]
+
+    @patch("nac_collector.cli.main.CiscoClientISE")
+    @patch("nac_collector.cli.main.EndpointResolver.resolve_endpoint_data")
+    def test_unknown_name_exits_1_before_collection(self, mock_resolver, mock_ise):
+        mock_resolver.return_value = list(self.ENDPOINTS)
+        with patch("nac_collector.cli.main.console") as mock_console:
+            with pytest.raises(typer.Exit) as exc_info:
+                main(**_ise_kwargs(exclude_endpoint=["typo_name"]))
+        assert exc_info.value.exit_code == 1
+        assert "typo_name" in str(mock_console.print.call_args_list)
+        mock_ise.assert_not_called()
+
+    @patch("nac_collector.cli.main.CiscoClientISE")
+    @patch("nac_collector.cli.main.EndpointResolver.resolve_endpoint_data")
+    def test_exclude_endpoint_and_file_are_combined(
+        self, mock_resolver, mock_ise, tmp_path
+    ):
+        mock_resolver.return_value = list(self.ENDPOINTS)
+        mock_client = MagicMock()
+        mock_client.authenticate.return_value = True
+        mock_client.get_from_endpoints_data.return_value = {}
+        mock_ise.return_value = mock_client
+        exclude_file = tmp_path / "exclude.yaml"
+        exclude_file.write_text("- tacacs_profile\n")
+
+        with patch("nac_collector.cli.main.time.time", side_effect=[0, 5]):
+            with pytest.raises(typer.Exit) as exc_info:
+                main(
+                    **_ise_kwargs(
+                        exclude_endpoint=["endpoint"],
+                        exclude_file=str(exclude_file),
+                    )
+                )
+        assert exc_info.value.exit_code == 0
+        collected = mock_client.get_from_endpoints_data.call_args.args[0]
+        assert [e["name"] for e in collected] == ["internal_user"]
+
+    @patch("nac_collector.cli.main.CiscoClientISE")
+    @patch("nac_collector.cli.main.EndpointResolver.resolve_endpoint_data")
+    def test_unknown_name_in_exclude_file_exits_1(
+        self, mock_resolver, mock_ise, tmp_path
+    ):
+        mock_resolver.return_value = list(self.ENDPOINTS)
+        exclude_file = tmp_path / "exclude.yaml"
+        exclude_file.write_text("- tacacs_typo\n")
+        with pytest.raises(typer.Exit) as exc_info:
+            main(**_ise_kwargs(exclude_file=str(exclude_file)))
+        assert exc_info.value.exit_code == 1
+        mock_ise.assert_not_called()
+
+    @patch("nac_collector.cli.main.CiscoClientISE")
+    @patch("nac_collector.cli.main.EndpointResolver.resolve_endpoint_data")
+    def test_missing_exclude_file_exits_1(self, mock_resolver, mock_ise, tmp_path):
+        mock_resolver.return_value = list(self.ENDPOINTS)
+        with pytest.raises(typer.Exit) as exc_info:
+            main(**_ise_kwargs(exclude_file=str(tmp_path / "nope.yaml")))
+        assert exc_info.value.exit_code == 1
+        mock_ise.assert_not_called()
+
+    @patch("nac_collector.cli.main.CiscoClientIOSXE")
+    @patch("nac_collector.cli.main.load_devices_from_file")
+    @patch("nac_collector.cli.main.console")
+    def test_device_based_solution_ignores_exclude_options_with_warning(
+        self, mock_console, mock_load_devices, mock_iosxe_class
+    ):
+        mock_load_devices.return_value = [
+            {"name": "Device1", "url": "https://device1.example.com"}
+        ]
+        mock_iosxe_class.return_value = MagicMock()
+        with patch("nac_collector.cli.main.time.time", side_effect=[0, 5]):
+            with pytest.raises(typer.Exit) as exc_info:
+                main(
+                    **_ise_kwargs(
+                        solution=Solution.IOSXE,
+                        devices_file="devices.yaml",
+                        exclude_endpoint=["endpoint"],
+                        exclude_file="exclude.yaml",
+                    )
+                )
+        assert exc_info.value.exit_code == 0
+        warnings = [str(c) for c in mock_console.print.call_args_list]
+        assert any(
+            "--exclude-endpoint/--exclude-file are ignored" in w for w in warnings
+        )

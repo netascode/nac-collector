@@ -167,6 +167,29 @@ def main(
         str | None,
         typer.Option("-e", "--endpoints-file", help="Path to the endpoints YAML file"),
     ] = None,
+    exclude_endpoint: Annotated[
+        list[str] | None,
+        typer.Option(
+            "--exclude-endpoint",
+            help=(
+                "Name of an endpoint definition (top-level or child) to skip "
+                "during collection (repeatable, e.g. --exclude-endpoint endpoint). "
+                "Unknown names abort the run. "
+                "Only applies to controller-based solutions."
+            ),
+        ),
+    ] = None,
+    exclude_file: Annotated[
+        str | None,
+        typer.Option(
+            "--exclude-file",
+            help=(
+                "Path to a YAML file listing endpoint names to skip "
+                "(combined with --exclude-endpoint). "
+                "Only applies to controller-based solutions."
+            ),
+        ),
+    ] = None,
     timeout: Annotated[
         int,
         typer.Option("-t", "--timeout", help="Request timeout in seconds"),
@@ -227,6 +250,12 @@ def main(
             raise typer.Exit(1)
 
         # Device-based solutions don't need endpoints file
+        if exclude_endpoint or exclude_file:
+            console.print(
+                "[yellow]Warning: --exclude-endpoint/--exclude-file are ignored "
+                f"for {solution.value} "
+                "(device-based solutions use built-in endpoints)[/yellow]"
+            )
         if endpoints_file:
             console.print(
                 f"[yellow]Warning: --endpoints-file is ignored for {solution.value} "
@@ -289,6 +318,18 @@ def main(
             console.print("2. Use --fetch-latest to fetch from upstream sources")
             console.print("3. Ensure packaged resources are available")
             raise typer.Exit(1)
+
+        if exclude_endpoint or exclude_file:
+            try:
+                names = list(exclude_endpoint or [])
+                if exclude_file:
+                    names += EndpointResolver.load_exclude_file(exclude_file)
+                endpoints_data = EndpointResolver.exclude_endpoints(
+                    endpoints_data, names
+                )
+            except ValueError as e:
+                console.print(f"[red]{e}[/red]")
+                raise typer.Exit(1) from e
 
         cisco_client_class: type[CiscoClientController] | None = None
         if solution == Solution.SDWAN:
