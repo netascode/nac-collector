@@ -189,3 +189,15 @@ overrides:
 - name: template_version
   import_id_attributes:
   - field: templateId
+
+- name: wireless_profile_policy_tag
+  import_id_attributes:
+  - source: parent
+  - field: policyTagId
+  - field: policyTagId
+
+- name: wireless_profile_site_tag
+  import_id_attributes:
+  - source: parent
+  - field: siteTagId
+  - field: siteTagId
