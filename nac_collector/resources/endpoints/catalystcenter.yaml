@@ -318,13 +318,13 @@
   - name: wireless_profile_policy_tag
     import_id_attributes:
     - source: parent
-    - source: parent
+    - field: policyTagId
     - field: policyTagId
     endpoint: /policyTags
   - name: wireless_profile_site_tag
     import_id_attributes:
     - source: parent
-    - source: parent
+    - field: siteTagId
     - field: siteTagId
     endpoint: /siteTags
 - name: wireless_rf_profile
