@@ -442,6 +442,8 @@
       - name: 
           transport_wan_vpn_interface_cellular_feature_associate_tracker_group
         endpoint: /tracker
+    - name: transport_wan_vpn_interface_dsl_ipoe
+      endpoint: /interface/dsl-ipoe
     - name: transport_wan_vpn_interface_ethernet
       endpoint: /interface/ethernet
       children:
