@@ -102,7 +102,9 @@ def test_fetch_all_pages_null_results_key(mocker, authenticated_client) -> None:
     assert result == []
 
 
-def test_fetch_all_pages_appends_pagination_params(mocker, authenticated_client) -> None:
+def test_fetch_all_pages_appends_pagination_params(
+    mocker, authenticated_client
+) -> None:
     from nac_collector.controller.intersight import _PAGE_SIZE
 
     mock_resp = _mock_response(200, {"Results": [], "Count": 0})

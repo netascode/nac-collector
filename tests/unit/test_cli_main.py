@@ -499,7 +499,9 @@ class TestIntersightCLI:
     @patch("nac_collector.cli.main.CiscoClientINTERSIGHT")
     @patch("nac_collector.cli.main.EndpointResolver.resolve_endpoint_data")
     def test_intersight_solution_success(self, mock_resolver, mock_intersight_class):
-        mock_endpoints_data = [{"name": "organization", "endpoint": "/api/v1/organization/Organizations"}]
+        mock_endpoints_data = [
+            {"name": "organization", "endpoint": "/api/v1/organization/Organizations"}
+        ]
         mock_resolver.return_value = mock_endpoints_data
 
         mock_client = MagicMock()
@@ -544,7 +546,9 @@ class TestIntersightCLI:
 
     @patch("nac_collector.cli.main.EndpointResolver.resolve_endpoint_data")
     def test_intersight_missing_api_key_exits(self, mock_resolver):
-        mock_resolver.return_value = [{"name": "organization", "endpoint": "/api/v1/organization/Organizations"}]
+        mock_resolver.return_value = [
+            {"name": "organization", "endpoint": "/api/v1/organization/Organizations"}
+        ]
 
         with pytest.raises(typer.Exit) as exc_info:
             main(
@@ -567,7 +571,9 @@ class TestIntersightCLI:
 
     @patch("nac_collector.cli.main.EndpointResolver.resolve_endpoint_data")
     def test_intersight_missing_secret_key_exits(self, mock_resolver):
-        mock_resolver.return_value = [{"name": "organization", "endpoint": "/api/v1/organization/Organizations"}]
+        mock_resolver.return_value = [
+            {"name": "organization", "endpoint": "/api/v1/organization/Organizations"}
+        ]
 
         with pytest.raises(typer.Exit) as exc_info:
             main(

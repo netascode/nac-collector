@@ -339,10 +339,11 @@ def main(
         if solution == Solution.INTERSIGHT:
             if not api_key or not api_secret_key:
                 console.print(
-                    "[red]--api-key-id (NAC_API_KEY) and --secret-key "
+                    "[red]--api-key (NAC_API_KEY) and --api-secret-key "
                     "(NAC_API_SECRET_KEY) are required for INTERSIGHT[/red]"
                 )
                 raise typer.Exit(1)
+            url = url or CiscoClientINTERSIGHT.DEFAULT_BASE_URL
         else:
             if not api_token and not (username and password):
                 console.print(
@@ -351,7 +352,9 @@ def main(
                 )
                 raise typer.Exit(1)
             if not url:
-                console.print("[red]URL is required for controller-based solutions[/red]")
+                console.print(
+                    "[red]URL is required for controller-based solutions[/red]"
+                )
                 raise typer.Exit(1)
 
         if cisco_client_class:
@@ -409,7 +412,7 @@ def main(
                 client = CiscoClientINTERSIGHT(
                     api_key_id=api_key or "",
                     secret_key=api_secret_key or "",
-                    base_url=url or CiscoClientINTERSIGHT.DEFAULT_BASE_URL,
+                    base_url=url,
                     max_retries=MAX_RETRIES,
                     retry_after=RETRY_AFTER,
                     timeout=timeout,

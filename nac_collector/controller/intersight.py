@@ -2,8 +2,9 @@ import base64
 import hashlib
 import logging
 import time
+from collections.abc import Generator
 from datetime import datetime, timezone
-from typing import Any, Generator
+from typing import Any
 from urllib.parse import urlparse
 
 import httpx
@@ -89,9 +90,7 @@ def _load_private_key(secret_key: str) -> Any:
         key_data = secret_key.replace("\\n", "\n").encode()
 
     lines = [
-        line
-        for line in key_data.decode().splitlines()
-        if not line.startswith("-----")
+        line for line in key_data.decode().splitlines() if not line.startswith("-----")
     ]
     der = base64.b64decode("".join(lines))
     return serialization.load_der_private_key(der, password=None)
@@ -121,7 +120,7 @@ class CiscoClientINTERSIGHT(CiscoClientController):
     ) -> None:
         # Pass empty strings for username/password — Intersight does not use them.
         # Endpoints start with "/", so a trailing slash would produce "//api/v1/...".
-        super().__init__(
+        super().__init__(  # nosec B106 - empty password, Intersight uses API keys
             username="",
             password="",
             base_url=(base_url or self.DEFAULT_BASE_URL).rstrip("/"),
@@ -213,9 +212,7 @@ class CiscoClientINTERSIGHT(CiscoClientController):
             elif response.status_code == 200:
                 return response
             elif response.status_code == 404:
-                logger.debug(
-                    "GET %s returned 404 — resource not available.", full_url
-                )
+                logger.debug("GET %s returned 404 — resource not available.", full_url)
                 return None
             else:
                 logger.error(
