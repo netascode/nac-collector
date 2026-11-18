@@ -419,6 +419,25 @@ class TestSpecialCases:
 
         assert exc_info.value.exit_code == 1
 
+    def test_intersight_fetch_latest_incompatibility(self):
+        # The Intersight provider has no gen/definitions to fetch endpoints from
+        with pytest.raises(typer.Exit) as exc_info:
+            main(
+                solution=Solution.INTERSIGHT,
+                username=None,
+                password=None,
+                url=None,
+                devices_file=None,
+                verbosity=LogLevel.WARNING,
+                fetch_latest=True,
+                endpoints_file=None,
+                timeout=30,
+                output=None,
+                version=None,
+            )
+
+        assert exc_info.value.exit_code == 1
+
     @patch("nac_collector.cli.main.CiscoClientIOSXE")
     @patch("nac_collector.cli.main.load_devices_from_file")
     @patch("nac_collector.cli.main.time.time")

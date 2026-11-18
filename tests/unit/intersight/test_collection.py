@@ -19,8 +19,20 @@ def _make_rsa_pem() -> str:
     ).decode()
 
 
+def _mock_response(status_code: int, json_body: dict) -> MagicMock:
+    response = MagicMock(spec=httpx.Response)
+    response.status_code = status_code
+    response.json.return_value = json_body
+    response.headers = {}
+    return response
+
+
 @pytest.fixture
-def authenticated_client():
+def authenticated_client(mocker):
+    # authenticate() sends one signed request to check the key
+    mocker.patch.object(
+        httpx.Client, "get", return_value=_mock_response(200, {"Results": []})
+    )
     client = CiscoClientINTERSIGHT(
         api_key_id="test-key-id",
         secret_key=_make_rsa_pem(),
@@ -32,14 +44,6 @@ def authenticated_client():
     )
     client.authenticate()
     return client
-
-
-def _mock_response(status_code: int, json_body: dict) -> MagicMock:
-    response = MagicMock(spec=httpx.Response)
-    response.status_code = status_code
-    response.json.return_value = json_body
-    response.headers = {}
-    return response
 
 
 def test_fetch_all_pages_single_page(mocker, authenticated_client) -> None:
@@ -173,3 +177,26 @@ def test_get_from_endpoints_data_with_filter(mocker, authenticated_client) -> No
     assert result == {"wwnn_pool": pools}
     called_path = mock_fetch.call_args[0][0]
     assert "$filter=PoolPurpose eq 'WWNN'" in called_path
+
+
+def test_get_full_url_401_returns_none(mocker, authenticated_client) -> None:
+    mock_get = mocker.patch.object(
+        authenticated_client.client, "get", return_value=_mock_response(401, {})
+    )
+    mock_auth = mocker.patch.object(authenticated_client, "authenticate")
+
+    assert authenticated_client._get_full_url("https://intersight.com/x") is None
+    mock_get.assert_called_once()
+    mock_auth.assert_not_called()
+
+
+def test_get_full_url_retries_exhausted_returns_none(
+    mocker, authenticated_client
+) -> None:
+    mocker.patch("nac_collector.controller.intersight.time.sleep")
+    mock_get = mocker.patch.object(
+        authenticated_client.client, "get", return_value=_mock_response(429, {})
+    )
+
+    assert authenticated_client._get_full_url("https://intersight.com/x") is None
+    assert mock_get.call_count == authenticated_client.max_retries

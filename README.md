@@ -31,7 +31,7 @@ Usage: nac-collector [OPTIONS]
 A CLI tool to collect various network configurations.
 
 Options:
-  * -s, --solution [SDWAN|ISE|NDO|FMC|CDFMC|CATALYSTCENTER|MERAKI|NDFC|INTERSIGHT|IOSXE|IOSXR|NXOS|]
+  * -s, --solution [SDWAN|ISE|NDO|FMC|CDFMC|CATALYSTCENTER|MERAKI|NDFC|INTERSIGHT|IOSXE|IOSXR|NXOS]
                         Solutions supported [required]
   * -u, --username TEXT Username for authentication [required]
                         [env var: NAC_USERNAME]
@@ -43,7 +43,7 @@ Options:
                         If set, --username/--password are not required.
                         [env var: NAC_API_TOKEN]
   --api-key TEXT        API key ID for authentication (needed for Intersight authentication).
-                        [env var: NAC_API_TOKEN]
+                        [env var: NAC_API_KEY]
   --api-secret-key TEXT Path to the secret PEM private key file, or the PEM key contents for
                         authentication (needed for Intersight authentication).
                         [env var: NAC_API_SECRET_KEY] 

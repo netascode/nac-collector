@@ -1,6 +1,7 @@
 import base64
 import hashlib
 import logging
+import os
 import time
 from collections.abc import Generator
 from datetime import datetime, timezone
@@ -81,13 +82,13 @@ def _load_private_key(secret_key: str) -> Any:
     Load a private key from a file path or a PEM string (with literal \\n escapes).
     Handles both RSA and EC keys in PKCS#1 or PKCS#8 DER encoding.
     """
-    import os
-
     if os.path.isfile(secret_key):
         with open(secret_key, "rb") as f:
             key_data = f.read()
-    else:
+    elif "-----BEGIN" in secret_key:
         key_data = secret_key.replace("\\n", "\n").encode()
+    else:
+        raise FileNotFoundError(f"Secret key file not found: {secret_key}")
 
     lines = [
         line for line in key_data.decode().splitlines() if not line.startswith("-----")
@@ -139,13 +140,28 @@ class CiscoClientINTERSIGHT(CiscoClientController):
             logger.error("Failed to load Intersight private key: %s", e)
             return False
 
-        auth = _IntersightAuth(self.api_key_id, private_key)
         self.client = httpx.Client(
-            auth=auth,
+            auth=_IntersightAuth(self.api_key_id, private_key),
             verify=self.ssl_verify,
             timeout=self.timeout,
             headers={"Content-Type": "application/json"},
         )
+        # Loading the key only checks it locally, so send one signed request
+        # to confirm that Intersight accepts the key ID and key.
+        try:
+            response = self.client.get(
+                f"{self.base_url}/api/v1/organization/Organizations?$top=1"
+            )
+        except httpx.HTTPError as e:
+            logger.error("Unable to reach Intersight at %s: %s", self.base_url, e)
+            return False
+        if response.status_code != 200:
+            logger.error(
+                "Intersight rejected the API key at %s (HTTP %s)",
+                self.base_url,
+                response.status_code,
+            )
+            return False
         logger.info("Intersight client initialised with HTTP Signature auth.")
         return True
 
@@ -185,7 +201,13 @@ class CiscoClientINTERSIGHT(CiscoClientController):
         return all_results
 
     def _get_full_url(self, full_url: str) -> httpx.Response | None:
-        """GET a fully-qualified URL directly (bypasses base_url prepend)."""
+        """
+        GET a URL with Intersight-specific error handling.
+
+        This replaces get_request() from the base class because a 401 must not
+        trigger re-authentication: request signatures do not expire, so a 401
+        means that Intersight rejected the API key.
+        """
         response = None
 
         for _ in range(self.max_retries):
@@ -207,8 +229,8 @@ class CiscoClientINTERSIGHT(CiscoClientController):
                 logger.info("Rate limited. Retrying in %s s.", wait)
                 time.sleep(wait)
             elif response.status_code == 401:
-                logger.info("Token outdated — re-authenticating.")
-                self.authenticate()
+                logger.error("GET %s returned 401, API key rejected.", full_url)
+                return None
             elif response.status_code == 200:
                 return response
             elif response.status_code == 404:
@@ -222,7 +244,14 @@ class CiscoClientINTERSIGHT(CiscoClientController):
                 )
                 return None
 
-        return response
+        # Reaching this point means that every attempt failed.
+        logger.error(
+            "GET %s failed after %s attempts (last status: %s).",
+            full_url,
+            self.max_retries,
+            response.status_code if response is not None else "no response",
+        )
+        return None
 
     def get_from_endpoints_data(
         self, endpoints_data: list[dict[str, Any]]

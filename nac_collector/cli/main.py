@@ -219,9 +219,9 @@ def main(
     DEVICE_BASED_SOLUTIONS = [Solution.IOSXE, Solution.IOSXR, Solution.NXOS]
 
     # Check for incompatible option combinations
-    if fetch_latest and solution == Solution.NDO:
+    if fetch_latest and solution in (Solution.NDO, Solution.INTERSIGHT):
         console.print(
-            "[red]--fetch-latest option is not supported with NDO solution. The NDO solution uses a different repository structure that is incompatible with fetching from upstream.[/red]"
+            f"[red]--fetch-latest option is not supported with {solution.value} solution. The {solution.value} solution uses a different repository structure that is incompatible with fetching from upstream.[/red]"
         )
         raise typer.Exit(1)
 

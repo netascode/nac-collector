@@ -1,6 +1,6 @@
 # Intersight endpoints for nac-compute resource collection.
 # Each entry maps a nac-compute resource key to its Intersight REST API path.
-# The optional `filter` field is appended as ?$filter=<value> (URL-encoded by the controller).
+# The optional `filter` field is appended as ?$filter=<value>; httpx URL-encodes it when the request is sent.
 
 - name: organization
   endpoint: /api/v1/organization/Organizations
@@ -126,7 +126,7 @@
   endpoint: /api/v1/fabric/MacSecPolicies
 
 - name: memory_policy
-  endpoint: /api/v1/memory/PersistentMemoryPolicies
+  endpoint: /api/v1/memory/Policies
 
 - name: multicast_policy
   endpoint: /api/v1/fabric/MulticastPolicies
