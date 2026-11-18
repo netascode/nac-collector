@@ -120,10 +120,11 @@ class CiscoClientINTERSIGHT(CiscoClientController):
         ssl_verify: bool = True,
     ) -> None:
         # Pass empty strings for username/password — Intersight does not use them.
+        # Endpoints start with "/", so a trailing slash would produce "//api/v1/...".
         super().__init__(
             username="",
             password="",
-            base_url=base_url or self.DEFAULT_BASE_URL,
+            base_url=(base_url or self.DEFAULT_BASE_URL).rstrip("/"),
             max_retries=max_retries,
             retry_after=retry_after,
             timeout=timeout,

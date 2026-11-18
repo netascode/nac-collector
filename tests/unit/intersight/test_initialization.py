@@ -39,3 +39,15 @@ def test_default_base_url() -> None:
 
 def test_solution_constant() -> None:
     assert CiscoClientINTERSIGHT.SOLUTION == "intersight"
+
+
+def test_base_url_trailing_slash_is_removed() -> None:
+    client = CiscoClientINTERSIGHT(
+        api_key_id="key",
+        secret_key="dummy",
+        base_url="https://eu-central-1.intersight.com/",
+        max_retries=3,
+        retry_after=1,
+        timeout=5,
+    )
+    assert client.base_url == "https://eu-central-1.intersight.com"

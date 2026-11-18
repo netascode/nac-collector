@@ -217,15 +217,20 @@ nac-collector -s NDFC --username USERNAME --password PASSWORD --url URL -v INFO
 
 The Intersight collector authenticates with an API key and secret key.
 
+It connects to `https://intersight.com` by default. To use a regional SaaS endpoint (for example `https://eu-central-1.intersight.com`) or an Intersight appliance, set the URL with `--url` or `NAC_URL`.
 
 ```sh
 # With environment variables
 export NAC_API_KEY=<api key>
 export NAC_API_SECRET_KEY=<file path to secret key file>
+export NAC_URL=https://eu-central-1.intersight.com  # optional, defaults to https://intersight.com
 uv run nac-collector -s INTERSIGHT
 
 # Without environment variables
 uv run nac-collector -s INTERSIGHT --api-key API_KEY --api-secret-key FILE_PATH_TO_SECRET_KEY_FILE
+
+# With a different Intersight endpoint
+uv run nac-collector -s INTERSIGHT --api-key API_KEY --api-secret-key FILE_PATH_TO_SECRET_KEY_FILE --url https://eu-central-1.intersight.com
 ```
 
 ### IOSXE (Device-Based Collection)
