@@ -31,7 +31,7 @@ Usage: nac-collector [OPTIONS]
 A CLI tool to collect various network configurations.
 
 Options:
-  * -s, --solution [SDWAN|ISE|NDO|FMC|CATALYSTCENTER|IOSXE|IOSXR|NXOS]
+  * -s, --solution [SDWAN|ISE|NDO|FMC|CDFMC|CATALYSTCENTER|MERAKI|NDFC|INTERSIGHT|IOSXE|IOSXR|NXOS]
                         Solutions supported [required]
   * -u, --username TEXT Username for authentication [required]
                         [env var: NAC_USERNAME]
@@ -42,6 +42,11 @@ Options:
   --api-token TEXT      API token for authentication (SDWAN 20.18+ only).
                         If set, --username/--password are not required.
                         [env var: NAC_API_TOKEN]
+  --api-key TEXT        API key ID for authentication (needed for Intersight authentication).
+                        [env var: NAC_API_KEY]
+  --api-secret-key TEXT Path to the secret PEM private key file, or the PEM key contents for
+                        authentication (needed for Intersight authentication).
+                        [env var: NAC_API_SECRET_KEY] 
   -v, --verbosity [CRITICAL|ERROR|WARNING|INFO|DEBUG]
                         Log level [default: WARNING]
   -f, --fetch-latest    Fetch the latest endpoint definitions from
@@ -248,6 +253,26 @@ All child data for each network that passes the filter is still collected in ful
 export NDFC_FABRIC_NAME="FAB1"
 
 nac-collector -s NDFC --username USERNAME --password PASSWORD --url URL -v INFO
+```
+
+### Intersight
+
+The Intersight collector authenticates with an API key and secret key.
+
+It connects to `https://intersight.com` by default. To use a regional SaaS endpoint (for example `https://eu-central-1.intersight.com`) or an Intersight appliance, set the URL with `--url` or `NAC_URL`.
+
+```sh
+# With environment variables
+export NAC_API_KEY=<api key>
+export NAC_API_SECRET_KEY=<file path to secret key file>
+export NAC_URL=https://eu-central-1.intersight.com  # optional, defaults to https://intersight.com
+uv run nac-collector -s INTERSIGHT
+
+# Without environment variables
+uv run nac-collector -s INTERSIGHT --api-key API_KEY --api-secret-key FILE_PATH_TO_SECRET_KEY_FILE
+
+# With a different Intersight endpoint
+uv run nac-collector -s INTERSIGHT --api-key API_KEY --api-secret-key FILE_PATH_TO_SECRET_KEY_FILE --url https://eu-central-1.intersight.com
 ```
 
 ### IOSXE (Device-Based Collection)
