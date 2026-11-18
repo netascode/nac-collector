@@ -215,7 +215,7 @@ nac-collector -s NDFC --username USERNAME --password PASSWORD --url URL -v INFO
 
 ### Intersight
 
-The Meraki collector authenticates with an API key and secret key.
+The Intersight collector authenticates with an API key and secret key.
 
 
 ```sh
