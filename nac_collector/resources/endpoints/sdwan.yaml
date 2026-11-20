@@ -171,6 +171,8 @@
     endpoint: /security-identity
   - name: policy_object_security_ips_signature
     endpoint: /security-ipssignature
+  - name: policy_object_security_ips_signature_set
+    endpoint: /security-ipssignatureset
   - name: policy_object_security_local_application_list
     endpoint: /security-localapp
   - name: policy_object_security_local_domain_list
