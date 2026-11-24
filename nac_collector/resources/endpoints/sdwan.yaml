@@ -42,6 +42,8 @@
   endpoint: /template/policy/list/color/
 - name: configuration_group
   endpoint: /v1/config-group/
+- name: configuration_group_devices
+  endpoint: /v1/config-group/
 - name: custom_application
   endpoint: /template/policy/customapp/
 - name: custom_control_topology_policy_definition
@@ -127,6 +129,8 @@
 - name: policer_policy_object
   endpoint: /template/policy/list/policer/
 - name: policy_group
+  endpoint: /v1/policy-group/
+- name: policy_group_devices
   endpoint: /v1/policy-group/
 - name: policy_object_feature_profile
   endpoint: /v1/feature-profile/sdwan/policy-object
